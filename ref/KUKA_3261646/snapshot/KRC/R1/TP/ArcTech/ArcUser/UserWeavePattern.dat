@@ -1,0 +1,6 @@
+&ACCESS RO2
+&REL 2
+&COMMENT ArcTech User Pettern Figure
+DEFDAT UserWeavePattern
+
+ENDDAT

@@ -1,0 +1,37 @@
+&ACCESS RVO
+&REL 25
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1
+DEF PLC_RETURN( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+$ASYNC_AXIS = 'B0011'
+;FOLD SPTP p13 CONT Vel=20 % PDAT8 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p13; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT8; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp13 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp13), $BASE = SBASE(Fp13.BASE_NO), $IPO_MODE = SIPO_MODE(Fp13.IPO_FRAME), $LOAD = SLOAD(Fp13.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT8), $APO = SAPO_PTP(PPDAT8), $GEAR_JERK[1] = SGEAR_JERK(PPDAT8), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+
+;FOLD SPTP p18 Vel=20 % PDAT13 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p18; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT13; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp18 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp18), $BASE = SBASE(Fp18.BASE_NO), $IPO_MODE = SIPO_MODE(Fp18.IPO_FRAME), $LOAD = SLOAD(Fp18.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT13), $APO = SAPO_PTP(PPDAT13), $GEAR_JERK[1] = SGEAR_JERK(PPDAT13), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+PLC_HOME()
+
+$ASYNC_AXIS = 'B0000'
+
+END

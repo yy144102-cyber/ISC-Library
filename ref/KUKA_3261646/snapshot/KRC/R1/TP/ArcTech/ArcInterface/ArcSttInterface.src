@@ -1,0 +1,13 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF  ArcSttInterface()
+END
+GLOBAL DEFFCT INT SttCmdInterface(tCmd :IN,tArg1:IN,tArg2:IN,tArg3:IN,tArg4:IN)
+DECL INT tCmd
+DECL INT tArg1
+DECL REAL tArg2
+DECL REAL tArg3
+DECL REAL tArg4
+;RETURN STT_CmdInterface(tCmd,tArg1,tArg2,tArg3,tArg4)     ;[10.06.2026 11:39:29] Disabled by WoV code gen
+RETURN -1 ;Disabled Stt
+ENDFCT

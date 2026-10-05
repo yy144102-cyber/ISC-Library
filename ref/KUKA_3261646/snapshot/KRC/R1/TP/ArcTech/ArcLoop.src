@@ -1,0 +1,1509 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEF ArcLoop( )
+END
+;***************************************************
+;Submit: PLC_INIT
+;***************************************************
+GLOBAL DEF ArcSubmitInit()
+DECL INT tI
+ArcSubMitState(#Begin)
+;Set variable ArcIsKukaSim
+IF (ArcIsOnSimEnvironment() == TRUE) THEN
+  IF (wATBEnabled == TRUE) THEN
+    gArcTechBasicOption = TRUE
+  ENDIF
+  IF (wATAEnabled == TRUE) THEN
+    gArcTechAdvancedOption = TRUE
+  ENDIF
+  ArcSubMitState(#Finish)
+  wDoArcSubmitInit = FALSE
+  RETURN ;Workaround for KukaSim
+ENDIF
+enArcKssToolDirection = $TOOL_DIRECTION
+;Check Installed option package
+ArcChkOptionPackage()
+;Initializze Arc Custom value
+UserArcCustom()
+;Initialize All table Signals
+ArcInitAllTableSignal()
+;ArcTech option Selection
+ArcOptionSelection()
+;Initialization Submit Loop Time
+ArcInitSubmitLoopTime()
+;Sets output to initialization state
+FOR tI = 1 TO 4
+  ArcClearOutputs(tI,#SubmitInit) 
+ENDFOR 
+;Pre definitions
+ArcInitVariables(#All)
+;Initialization Watchdog
+ArcPrepareWatchdogCtrl()
+;Initialization Collision device
+ArcCollisionInit()
+;Initialization Process hot variables
+ArcProcessHotInit()
+;Checks configuration of strategy selection by PLC
+FOR tI = 1 TO 4
+  CheckStrategySelectinCfg(tI)
+ENDFOR
+;Check WorkVisual Configuration
+ArcCheckWovConfiguration()
+;Messages at poor configuration
+ArcConfigurationWarnings()
+;Initialize Life Bit
+ArcLifeBitInit()
+;Initialize Arc messages Error
+ArcPowerSourceMsgInit()
+;Initialize user pettern figure
+UserWeavePattern()
+;Initialize user weave side
+ArcWeaveUserInitSide()
+;Slope Init
+ArcSlopeInit()
+;Init SoftKey TechMode
+ArcTechModeBySoftKeyInit(1) ;TODO Check Howto
+;ArcTechModeBySoftKeyInit(2) ;TODO Check Howto
+;ArcTechModeBySoftKeyInit(3) ;TODO Check Howto
+;ArcTechModeBySoftKeyInit(4) ;TODO Check Howto
+;Init Statuskey Fronius TWIN Select Mode
+ArcFroniusTwinOpModeInit(1) ;TODO Check Howto
+;ArcFroniusTwinOpModeInit(2) ;TODO Check Howto
+;ArcFroniusTwinOpModeInit(3) ;TODO Check Howto
+;ArcFroniusTwinOpModeInit(4) ;TODO Check Howto
+;MultiLayer Initialize
+AmlLoopInit()
+;Adaptive Welding Initialize
+AawLoopInit()
+;Update Parts Variables from csv file
+ArcPartLoopInit()
+;Check OriType
+mOriTypeErrorFired = FALSE
+;Init Line Select
+gArcLineSelState = 0
+;+++++++++++++++++++++++++++++++++++++++++++++++++++
+;Submit: ArcTechAdvanced
+;+++++++++++++++++++++++++++++++++++++++++++++++++++
+ArcRTInit()
+WAIT FOR ($POWER_FAIL == FALSE)
+wDoArcSubmitInit = FALSE
+ArcSubMitState(#Finish)
+END
+;***************************************************
+;Submit: PLC_LOOP
+;***************************************************
+GLOBAL DEF ArcSubmitLoop()
+DECL INT tI
+IF (wDoArcSubmitInit == TRUE) THEN
+  ArcSubmitInit()
+ENDIF
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  RETURN ;Workaround for KukaSim
+ENDIF
+SWITCH $PRO_STATE1
+  CASE #P_STOP
+    IF ($OV_APPL == 0) THEN
+      ;OV_APPL is 0 when WeaveDelay is active and on Amplitude side -> Reset to 100
+      $OV_APPL = cOvApplDefault
+    ENDIF
+    IF (enArcCurrentState == #WELDING) THEN
+      ArcStopSigGen()
+    ENDIF
+    ;Stop and Flying Gas is active
+    IF (gArcGasPreTargetTime > 0) THEN
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+      gArcGasPreTargetTime = 0
+    ENDIF
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Submit: Error recognition
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF ((enArcCurrentState <> #Nothing) AND (gArcIgnoreError == FALSE) AND (enArcErrorState == #Nothing)) THEN
+      IF ((gArcStillstandError == FALSE) AND (gArcWatchdogError == FALSE) AND (gArcSyncIgnitionError == FALSE) AND (gArcDefaultError == FALSE)) THEN
+        IF ($STOPMESS == TRUE) THEN
+          SetErrorState(#IRStopMess) ;For Master and Slaves
+        ELSE
+          IF ($PRO_MODE1 == #GO) THEN
+            SetErrorState(#TechStop) ;For Master and Slaves
+          ENDIF
+        ENDIF
+      ENDIF
+      IF (gArcStillstandError == TRUE) THEN
+        gArcStillstandError = FALSE
+        SetErrorState(#StillStandCtrl)
+        IF (enArcRTError == #Nothing) THEN
+          ArcRemoteErrorSet(#StillStandCtrl)
+        ENDIF
+      ENDIF
+      IF (enArcRTError == #StillStandCtrl) THEN
+        enArcRTError = #Nothing
+        SetErrorState(#StillStandCtrl)
+      ENDIF
+      IF (gArcWatchdogError == TRUE) THEN
+        gArcWatchdogError = FALSE
+        SetErrorState(#WatchdogCtrl)
+        IF (enArcRTError == #Nothing) THEN
+          ArcRemoteErrorSet(#WatchdogCtrl)
+        ENDIF
+      ENDIF
+      IF (enArcRTError == #WatchdogCtrl) THEN
+        enArcRTError = #Nothing
+        SetErrorState(#WatchdogCtrl)
+      ENDIF
+      IF (gArcSyncIgnitionError == TRUE) THEN
+        gArcSyncIgnitionError = FALSE
+        SetErrorState(#SyncIgnitionCrtl)
+        IF (enArcRTError == #Nothing) THEN
+          ArcRemoteErrorSet(#SyncIgnitionCrtl)
+        ENDIF
+      ENDIF
+      IF (enArcRTError == #SyncIgnitionCrtl) THEN
+        enArcRTError = #Nothing
+        SetErrorState(#SyncIgnitionCrtl)
+      ENDIF
+      IF (gArcDefaultError == TRUE) THEN
+        gArcDefaultError = FALSE
+        SetErrorState(#DefaultError)
+        IF (enArcRTError == #Nothing) THEN
+          ArcRemoteErrorSet(#DefaultError)
+        ENDIF
+      ENDIF
+      IF (enArcRTError == #DefaultError) THEN
+        ArcMsgWriteS(,#NOTIFY,"DefaultErrorOnRemoteRobot","ARC",20019,Opt_VLSTOP_LOG,ArcRTErrorOnRobot[],gArcSeamName[])
+        enArcRTError = #Nothing
+        SetErrorState(#DefaultError)
+      ENDIF
+    ENDIF
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Submit: ArcSense
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcSenseOption == TRUE) AND (gArcSensorActive == TRUE) THEN
+      IF ($STOPMESS == FALSE) THEN
+        ArsTechStopActive()
+      ENDIF
+      IF ($STOPMESS == TRUE) THEN
+        ArsIRStopActive()
+      ENDIF
+    ENDIF
+  CASE #P_RESET,#P_FREE
+    IF (mArcClearedOutputFlag == FALSE) THEN
+      ArcInitVariables(#All)
+      FOR tI = 1 TO 4
+        ArcClearOutputs(tI,#ProgReset)
+      ENDFOR
+      AmlProgReset()
+      AawProgReset()
+      ArcSeamReset()
+      mArcClearedOutputFlag = TRUE
+    ENDIF
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Submit: ArcSense
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcSenseOption == TRUE) THEN
+      ArsTechFreeOrReset()
+    ENDIF
+  CASE #P_ACTIVE
+    mArcClearedOutputFlag = FALSE
+    ;Force 100 % override at hot process
+    IF (enArcCurrentState == #Welding) THEN
+      ForceRealWeldSpeedIfHot()
+    ENDIF
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Submit: RDM point memory
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcCommand == #PreDefinition) THEN
+      IF (STRLEN($PRO_IP1.P_NAME[]) > 1) THEN
+        IF (STRCLEAR(gArcPointNames[1].PointName[])) THEN
+          ON_ERROR_PROCEED
+          gArcPointNames[1].PointName[] = $PRO_IP1.P_NAME[] ;ArcOn Point Name (RDM Driver)
+          IF ($ERR.NUMBER > 0) THEN
+            ERR_CLEAR($ERR)
+            gArcPointNames[1].PointName[] = "***"
+          ENDIF 
+        ENDIF
+      ENDIF
+      gArcCommand = #None
+    ENDIF
+    IF (enArcCurrentState == #Welding) THEN
+      SWITCH gArcPointStateCounter
+        CASE 0
+          IF (STRLEN($PRO_IP1.P_NAME[]) > 1) THEN
+            IF (gArcCommand == #ArcOn) THEN
+              gArcPointStateCounter = 1
+            ENDIF
+            IF (gArcCommand == #ArcSwi) THEN
+              IF (gArcPointArrayIndex == 2) THEN
+                gArcPointArrayIndex = 3
+              ENDIF
+              IF (gArcPointArrayIndex == 3) THEN
+                gArcPointArrayIndex = 2
+              ENDIF
+              gArcPointStateCounter = 2
+            ENDIF
+            IF (gArcCommand == #ArcOff) THEN
+              gArcPointStateCounter = 3
+            ENDIF
+          ENDIF
+        CASE 1 ;ArcOn
+          gArcCommand = #None
+          gArcPointArrayIndex = 2
+          IF (STRCLEAR(gArcPointNames[gArcPointArrayIndex].PointName[])) THEN
+            ON_ERROR_PROCEED
+            gArcPointNames[gArcPointArrayIndex].PointName[] = $PRO_IP1.P_NAME[] ;1. ArcSwi Point Name (RDM Driver)
+            IF ($ERR.NUMBER > 0) THEN
+              ERR_CLEAR($ERR)
+              gArcPointNames[gArcPointArrayIndex].PointName[] = "***"
+            ENDIF
+          ENDIF
+          gArcPointStateCounter = 0
+        CASE 2 ;ArcSwi
+          gArcCommand = #None
+          IF (STRCLEAR(gArcPointNames[gArcPointArrayIndex].PointName[])) THEN
+            ON_ERROR_PROCEED
+            gArcPointNames[gArcPointArrayIndex].PointName[] = $PRO_IP1.P_NAME[] ;ArcSwi Toggle Point Name (RDM Driver)
+            IF ($ERR.NUMBER > 0) THEN
+              ERR_CLEAR($ERR)
+              gArcPointNames[gArcPointArrayIndex].PointName[] = "***"
+            ENDIF            
+          ENDIF
+          gArcPointStateCounter = 0
+        CASE 3 ;ArcOff
+          gArcCommand = #None
+          gArcPointStateCounter = 0
+      ENDSWITCH
+    ENDIF
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Submit: Restart after Error
+    ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcErrorRestartActive == FALSE) THEN
+      IF ((enArcSaveState == #Welding) AND (enArcCurrentState == #Error) AND ($PRO_MODE1 == #GO) AND (gArcNoErrorRestart == FALSE) AND (gArcInterruptRestartOn == FALSE)) THEN
+        SWITCH enArcErrorState
+        CASE #Techstop, #IRStopMess, #StillStandCtrl, #WatchdogCtrl, #DefaultError
+          gArcInterruptRestartOn = TRUE
+       ENDSWITCH
+       IF (gArcStatKeyWeldOn == TRUE) THEN
+         gArcStatKeyWeldOn = FALSE
+         gArcInterruptRestartOn = TRUE
+       ENDIF
+    ENDIF
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Submit: ArcSense
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+  IF (gArcSenseOption == TRUE) THEN
+    IF (gArcSensorActive == TRUE) THEN
+      ArsCheckSignalQuality()
+      ArsCheckParDetection()
+      ArsCheckMBCondition()
+      ArsCheckControlSignal()
+      ArsCheckStatusKey()
+      IF (($MODE_OP == #AUT) OR ($MODE_OP == #EX)) THEN
+        skArsCorrectionOn = TRUE
+      ENDIF
+    ENDIF
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Submit: ArcTechAdvanced
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++
+  IF (gArcTechAdvancedOption == TRUE) THEN
+    ATA_ER_LoopSensorActive()
+  ENDIF
+ENDSWITCH
+;Submit Loop Time
+ArcSubmitLoopTime()
+;Submit Message SPSslow
+ArcSubmitMsg()
+;Message Buffer
+ArcReadMsgBuffer()
+;Clear User Message from Remote Robot if exist
+ArcRemoteClearMsg()
+;Write User message from Remote
+ArcRemoteShowMsg()
+;Line selection
+LineSelectControl()
+;Statuskey Fronius TWIN Select Mode
+ArcFroniusTwinSetOpMode(1); TODO Check how to
+;Statuskey Wire feed
+IF (ArcIsWelderActive(gArcActSkWelder) == TRUE) THEN
+  ArcWirefeedControl(gArcActSkWelder)
+  ;Statuskey Gas purge
+  ArcGasPurgeCtrlBySoftKey(gArcActSkWelder)
+  ;Statuskey Clear power control
+  ArcClearPwrCtrlBySoftKey(gArcActSkWelder)
+  ;Statuskay TechMode Fronius TPSi Function
+  ArcTechModeBySoftKey(gArcActSkWelder)
+ENDIF
+;Status key Switch Off welding
+HotStatusKeyControl()
+;Status key Dry run
+DryStatusKeyControl()
+;Check Error Ignition Timeout
+ArcSyncIgnitionTimeout()
+;Stillstand control
+ArcMotionForwardControl()
+;Watchdog control
+ArcWatchDogControl()
+;ArcLinkXT
+ArcLinkXTControl(gArcActIlfWelder)
+;Collision Device
+ArcCollisionLoop()
+;Process hot
+ArcProcessHotLoop()
+;$PRO_Mode conditions
+ProModeControl()
+;$MODE_OP dependant conditions
+ArcModeOPControl()
+;Life Bit
+ArcLifeBitMain()
+;Arc Error Msg
+ArcPowerSourceMsg()
+;Arc On Plug-In Global Set Changed
+ArcPlugInGlobSetChanged()
+;UserSignals AdvMonitoring
+UserSignalsPLC()
+;User Weave Set Side
+ArcWeaveUserSetSide()
+;Power source Input Channels
+ArcReadInputChannels()
+;Power source Input Sensor
+ArcReadInputSensor()
+;AdvancedMonitoring
+ArcAdvMonitoring()
+;MultiLayer Loop
+AmlLoop()
+;Adaptive Welding
+AawWeldingLoop()
+;Check OriType
+ArcCheckOriType()
+;RefreshSignals
+ArcRefreshSignals()
+;Robot Team State
+ArcRTState()
+;Interface with oder option package 
+ArcBitStateLoop()
+IF ($TIMER[ctArcWeldingOnTimeout]>=1000) THEN
+  $TIMER_STOP[ctArcWeldingOnTimeout] = TRUE
+ENDIF
+;+++++++++++++++++++++++++++++++++++++++++++++++++++
+;Submit: ArcTechAdvanced
+;+++++++++++++++++++++++++++++++++++++++++++++++++++
+IF (gArcTechAdvancedOption == TRUE) THEN
+  AdvancedArcContinueDef()
+  ArcVelTransLoop()
+  ArcPreStartError()
+ENDIF
+;Touch Sense
+ArcTouchSenseState()
+
+IF (gArcErrorWelderSelection == TRUE) THEN
+  ArcMsgWriteS(mHandleOnWrongWelder,#STATE,"WrongWelderSelection","ARC",10150,OPt_VLSTOP_LOG,ArcIntToStr(ArcCheckWelderNr),ArcIntToStr(gArcActIlfWelder),gArcWdatId[])
+  ArcRobotStopFromSUBMIT(TRUE)
+ELSE
+  ArcMsgWriteClearHandle(mHandleOnWrongWelder)
+ENDIF
+;Save to *.csv file diagnostic (Only for Internal Use)
+ArcDiagSaveToFile()
+ArcSeamLengthLoop()
+END
+;********************************************************
+;PLC INIT ConfigurationWarnings
+;********************************************************
+DEF ArcConfigurationWarnings()
+IF (gArcTechBasicOption == FALSE) THEN
+  RETURN
+ENDIF
+IF(wArcStillStandOption == FALSE)THEN
+  ArcMsgWrite(,#NOTIFY,"StillstandControlInactive","ARC",10038,OPt_VLSTOP_LOG)
+ENDIF
+END
+;********************************************************
+;ArcCheckWovConfiguration
+;********************************************************
+DEF ArcCheckWovConfiguration()
+DECL BOOL tWelderActive
+DECL BOOL tNeedConfig
+DECL INT tWelderNr
+DECL INT tI
+DECL INT tHandle
+DECL CHAR tChar[256]
+DECL stArcModeCoding_T tArcModeCoding
+tWelderActive = FALSE
+FOR tWelderNr = 1 TO 4  
+  IF (wArcWelder[tWelderNr].Type <> #NONE) THEN
+    tWelderActive = TRUE
+  ENDIF
+ENDFOR
+IF (tWelderActive == FALSE) THEN
+ RETURN
+ENDIF
+tNeedConfig = FALSE
+FOR tWelderNr = 1 TO 4
+  FOR tI = 1 TO gArcMaxNrOfArcModi[tWelderNr]
+    tArcModeCoding = ArcGetModiCoding(tWelderNr,tI)
+    IF ((tArcModeCoding.InUse) == TRUE) THEN
+      ON_ERROR_PROCEED
+      tChar[] = tArcModeCoding.JobModeId[]
+      IF ($ERR.Number > 0) THEN
+        ERR_CLEAR($ERR)
+        tChar[] = " "
+      ENDIF
+      tChar[] = ArcStrRemoveSpace(tChar[])
+      IF (STRLEN(tChar[]) < 3) THEN
+        tNeedConfig = TRUE
+        EXIT
+      ENDIF
+    ENDIF
+  ENDFOR
+ENDFOR
+IF (tNeedConfig == TRUE) THEN
+  tHandle = 0
+  ArcMsgWrite(tHandle,#STATE,"ProjectUpdateNecessary","ARC",10092,OPt_VLSTOP_LOG)
+ENDIF
+END
+;********************************************************
+;Arc check option packages configuration
+;********************************************************
+DEF ArcChkOptionPackage()
+DECL INT tHandle[7]
+IF ((VARSTATE("gATBEnabled") <> #UNKNOWN) EXOR (wATBEnabled == TRUE)) THEN
+  tHandle[1] = 0
+  ArcMsgWrite(tHandle[1],#STATE,"OptionArcTechBasicNeedConfig","ARC",10127,OPt_VLSTOP_LOG)
+ENDIF
+IF ((VARSTATE("gATAEnabled") <> #UNKNOWN) EXOR (wATAEnabled == TRUE)) THEN
+  tHandle[2] = 0
+  ArcMsgWrite(tHandle[2],#STATE,"OptionArcTechAdvancedNeedConfig","ARC",20021,OPt_VLSTOP_LOG)
+ENDIF
+IF ((VARSTATE("gARSEnabled") <> #UNKNOWN) EXOR (wARSEnabled == TRUE)) THEN
+  tHandle[3] = 0
+  ArcMsgWrite(tHandle[3],#STATE,"OptionArcSenseNeedConfig","ARCS",30045,OPt_VLSTOP_LOG)
+ENDIF
+IF ((VARSTATE("gARSEnabled") <> #UNKNOWN) AND (wARSEnabled == TRUE)) THEN
+  IF (VARSTATE("RSILOGCONTEXT") == #UNKNOWN) THEN
+    tHandle[4] = 0
+    ArcMsgWrite(tHandle[4],#STATE,"OptionRSIMissing","ARCS",30046,OPt_VLSTOP_LOG)
+  ENDIF
+ENDIF
+IF ((VARSTATE("gAmlEnabled") <> #UNKNOWN) EXOR (wAmlEnabled == TRUE)) THEN
+  tHandle[6] = 0
+  ArcMsgWrite(tHandle[6],#STATE,"OptionArcTechMultiLayerNeedConfig","AML",50001,OPt_VLSTOP_LOG)
+ENDIF
+IF ((VARSTATE("gARCAWEnabled") <> #UNKNOWN) EXOR (wAAWEnabled == TRUE)) THEN
+  tHandle[7] = 0
+  ArcMsgWrite(tHandle[7],#STATE,"OptionArcTechAdaptiveWeldingNeedConfig","AAW",60001,OPt_VLSTOP_LOG)
+ENDIF
+END
+;********************************************************
+;Statuskey Fronius TWIN Select Mode
+;********************************************************
+DEF ArcFroniusTwinOpModeInit(tWelderNr :IN)
+DECL INT tI
+DECL INT tWelderNr
+DECL stArcSignal_T tSignal
+DECL stArcSignal_T tFroniusTwinOpModeBit1
+DECL stArcSignal_T tFroniusTwinOpModeBit2
+mFroniusTwinOpModeOk = FALSE
+mFroniusTwinOpModeBit1 = mFroniusTwinOpModeInit
+mFroniusTwinOpModeBit2 = mFroniusTwinOpModeInit
+IF (wArcWelder[tWelderNr].Type <> #FRONIUS_TWIN) THEN
+  RETURN
+ENDIF
+ON_ERROR_PROCEED
+tFroniusTwinOpModeBit1 = wArcOSpecial[tWelderNr,1,1]
+IF ($ERR.Number > 0) THEN
+  ERR_CLEAR($ERR)  
+  RETURN
+ENDIF
+ON_ERROR_PROCEED
+tFroniusTwinOpModeBit2   = wArcOSpecial[tWelderNr,1,2]
+IF ($ERR.Number > 0) THEN
+  ERR_CLEAR($ERR)  
+  RETURN
+ENDIF
+FOR tI = 1 TO gArcMaxNrOfArcModi[tWelderNr]
+  ON_ERROR_PROCEED
+  tSignal = wArcOSpecial[tWelderNr,tI,1]
+  IF ($ERR.Number > 0) THEN
+    ERR_CLEAR($ERR)  
+    RETURN
+  ENDIF
+  ON_ERROR_PROCEED
+  tSignal   = wArcOSpecial[tWelderNr,tI,2]
+  IF ($ERR.Number > 0) THEN
+    ERR_CLEAR($ERR)  
+    RETURN
+  ENDIF
+  IF (tFroniusTwinOpModeBit1.Offset.SignNr <> wArcOSpecial[tWelderNr,tI,1].Offset.SignNr) THEN
+    RETURN
+  ENDIF
+  IF (tFroniusTwinOpModeBit2.Offset.SignNr <> wArcOSpecial[tWelderNr,tI,2].Offset.SignNr) THEN
+    RETURN 
+  ENDIF
+ENDFOR
+mFroniusTwinOpModeBit1 = wArcOSpecial[tWelderNr,1,1]
+mFroniusTwinOpModeBit2 = wArcOSpecial[tWelderNr,1,2]
+mFroniusTwinOpModeOk = TRUE
+END
+;********************************************************
+;PLC LOOP Fronius Twin Mode
+;********************************************************
+DEF ArcFroniusTwinSetOpMode(tWelderNr :IN)
+DECL INT tWelderNr
+IF (wArcWelder[tWelderNr].Type <> #FRONIUS_TWIN) THEN
+  skArcActFroniusTwinMode = -1
+  skArcStsKeyFroniusTwinMo = -1
+  RETURN
+ENDIF
+skArcActFroniusTwinMode = ArcFroniusTwinGetOpMode()
+IF (ArcCheckRangeValue(skArcStsKeyFroniusTwinMo,0,3) <> 1) THEN
+  skArcStsKeyFroniusTwinMo = -1
+  RETURN
+ENDIF
+IF (mFroniusTwinOpModeOk == FALSE) THEN
+  RETURN
+ENDIF
+SWITCH skArcStsKeyFroniusTwinMo
+  CASE 0 ;PS1: Active  PS2: Disable
+    $OUT[mFroniusTwinOpModeBit1.Offset.SignNr]= FALSE
+    $OUT[mFroniusTwinOpModeBit2.Offset.SignNr]= FALSE
+  CASE 1 ;PS1: Lead    PS2: Trail
+    $OUT[mFroniusTwinOpModeBit1.Offset.SignNr]= TRUE
+    $OUT[mFroniusTwinOpModeBit2.Offset.SignNr]= FALSE
+  CASE 2 ;PS1: Trail   PS2: Lead
+    $OUT[mFroniusTwinOpModeBit1.Offset.SignNr]= FALSE
+    $OUT[mFroniusTwinOpModeBit2.Offset.SignNr]= TRUE
+  CASE 3 ;PS1: Disable PS2: Active
+    $OUT[mFroniusTwinOpModeBit1.Offset.SignNr]= TRUE
+    $OUT[mFroniusTwinOpModeBit2.Offset.SignNr]= TRUE
+  DEFAULT
+    $OUT[mFroniusTwinOpModeBit1.Offset.SignNr]= FALSE
+    $OUT[mFroniusTwinOpModeBit2.Offset.SignNr]= FALSE
+ENDSWITCH
+skArcStsKeyFroniusTwinMo = -1
+END
+;********************************************************
+;PLC LOOP Fronius Twin Get Selected Mode
+;********************************************************
+DEFFCT INT ArcFroniusTwinGetOpMode()
+IF (mFroniusTwinOpModeOk == FALSE) THEN
+  RETURN -1
+ENDIF
+IF (($OUT[mFroniusTwinOpModeBit1.Offset.SignNr] == FALSE) AND ($OUT[mFroniusTwinOpModeBit2.Offset.SignNr] == FALSE)) THEN
+  RETURN 0
+ENDIF
+IF (($OUT[mFroniusTwinOpModeBit1.Offset.SignNr] == TRUE) AND ($OUT[mFroniusTwinOpModeBit2.Offset.SignNr] == FALSE)) THEN
+  RETURN 1
+ENDIF
+IF (($OUT[mFroniusTwinOpModeBit1.Offset.SignNr] == FALSE) AND ($OUT[mFroniusTwinOpModeBit2.Offset.SignNr] == TRUE)) THEN
+  RETURN 2
+ENDIF
+IF (($OUT[mFroniusTwinOpModeBit1.Offset.SignNr] == TRUE) AND ($OUT[mFroniusTwinOpModeBit2.Offset.SignNr] == TRUE)) THEN
+  RETURN 3
+ENDIF
+RETURN -1
+ENDFCT
+;********************************************************
+;PLC LOOP ArcWirefeedControl
+;********************************************************
+DEF ArcWirefeedControl(tWelderNr :IN)
+DECL INT tWelderNr
+IF (gArcWSActive == TRUE) THEN
+  skArcWireFeed = 0 ;Function Disable (Use for TeachSense)
+  RETURN
+ENDIF
+IF ((skArcWireFeed <> 0) AND ($SAFETY_SW <> #PRESSED))THEN
+  skArcWireFeed = 0
+ENDIF
+IF NOT(skArcWireFeedHistroy == skArcWireFeed) THEN
+  IF (skArcWireFeed == 0) THEN
+    ;Stop any direction of wirefeeder
+    ArcOutputReset(tWelderNr,wArcOWireFeedForward[])
+    ArcOutputReset(tWelderNr,wArcOWireFeedBackward[])
+  ELSE
+    SWITCH ArcInputGroupStatusOn(tWelderNr,wArcIRdyWeldSource[,],0)
+      CASE 0
+        ArcOutputPulseGroupSet(tWelderNr,wArcOReceiptError[,])
+        ArcMsgWrite(,#NOTIFY,"NoWireFeederActiveSourceNotReady","ARC",10061,Opt_NOVLSTOP_LOG)
+      CASE -1,1
+        SWITCH skArcWireFeed
+        CASE 1
+          ArcOutputSet(tWelderNr,wArcOWireFeedForward[])
+        CASE -1
+          ArcOutputSet(tWelderNr,wArcOWireFeedBackward[])
+        DEFAULT
+          ArcMsgWrite(,#NOTIFY,"WireFeederWrongCommandByStatusKey","ARC",10047,Opt_NOVLSTOP_LOG)
+      ENDSWITCH
+    ENDSWITCH
+  ENDIF
+  skArcWireFeedHistroy = skArcWireFeed
+ENDIF
+END
+;********************************************************
+;PLC LOOP Status Key Actions
+;********************************************************
+DEF ArcGasPurgeCtrlBySoftKey(tWelderNr :IN)
+DECL INT tWelderNr
+DECL INT tTimeSet
+DECL INT tTimeGasMin
+DECL INT tTimeGasMax
+IF($PRO_ACT==FALSE) THEN
+  skArcStatusGas=ArcOutputStatusOn(tWelderNr,wArcOGasActive[],0)
+  IF (skArcSetGas == TRUE) THEN
+    IF (skArcKrlSetGas == FALSE) THEN
+      skArcKrlSetGas = TRUE
+      mGasPurge = gArcGasPulseLength
+      mArcTimeGasStamp = ArcCalcTimeoutSec(mGasPurge) ;as OUT (no CONST =>[s])
+    ENDIF
+    IF ((skArcSetGas == TRUE) AND ($ROB_TIMER < mArcTimeGasStamp)) THEN
+      ArcOutputSet(tWelderNr,wArcOGasActive[])
+    ELSE
+      ArcOutputReset(tWelderNr,wArcOGasActive[])
+    ENDIF
+  ELSE
+    IF (skArcKrlSetGas == TRUE) THEN
+      skArcKrlSetGas=FALSE
+      ArcOutputReset(tWelderNr,wArcOGasActive[])
+    ENDIF
+  ENDIF
+ELSE
+  skArcKrlSetGas=FALSE
+ENDIF
+END
+;********************************************************
+; Acknowledge power source by status key
+;********************************************************
+DEF ArcClearPwrCtrlBySoftKey(tWelderNr :IN)
+DECL INT tWelderNr
+skArcPSReady = ArcInputStatusOn(tWelderNr,wArcIPowerSourceReady[],0)
+IF($PRO_ACT==FALSE) THEN
+  skArcStatusErrQuit = ArcOutputStatusOn(tWelderNr,wArcOAcknowledgePowerSrc[],0)
+  IF (skArcSetErrQuit == TRUE) THEN
+    ArcOutputGroupSet(tWelderNr,wArcOWeldEnd[,])
+    IF (skArcKrlSetErrQuit == FALSE) THEN
+      skArcKrlSetErrQuit = TRUE
+      ArcClearOutputs(tWelderNr,#StatKeyReset)
+      ArcOutputSet(tWelderNr,wArcOAcknowledgePowerSrc[])
+    ENDIF
+  ELSE
+    IF (skArcKrlSetErrQuit == TRUE) THEN
+      skArcKrlSetErrQuit = FALSE
+      ArcOutputReset(tWelderNr,wArcOAcknowledgePowerSrc[])
+    ENDIF
+    skArcKrlSetErrQuit = FALSE
+  ENDIF
+ELSE
+  skArcKrlSetErrQuit = FALSE
+ENDIF
+END
+
+;********************************************************
+;TeachMode present
+;********************************************************
+DEFFCT BOOL ArcTeachModePresent(tWelderNr :IN)
+DECL INT tWelderNr
+SWITCH wArcWelder[tWelderNr].Type
+  CASE #FRONIUS_TPSI,#FRONIUS_TWIN
+    RETURN TRUE
+ENDSWITCH
+RETURN FALSE  
+ENDFCT
+;********************************************************
+;TeachMode by status key
+;skArcStsKeyFroniusTeach = -2 ;Function Disable (Use for TeachSense)
+;skArcStsKeyFroniusTeach = -1 ;Fuction Not Present
+;skArcStsKeyFroniusTeach = 0 ;Fuction Deactive
+;skArcStsKeyFroniusTeach = 1 ;Fuction Active
+;********************************************************
+DEF ArcTechModeBySoftKeyInit(tWelderNr :IN)
+DECL INT tWelderNr
+skArcSetKeyTeachMode = FALSE
+IF (ArcTeachModePresent(tWelderNr) == FALSE) THEN
+  skArcStsKeyFroniusTeach = -1
+  RETURN
+ENDIF
+skArcStsKeyFroniusTeach = ArcOutputStatusOn(tWelderNr,wArcOTeachMode[],0)
+END
+;********************************************************
+;TeachMode by status key
+;********************************************************
+DEF ArcTechModeBySoftKey(tWelderNr :IN)
+DECL BOOL tTimeOut
+DECL INT tWelderNr
+IF (ArcTeachModePresent(tWelderNr) == FALSE) THEN
+  skArcStsKeyFroniusTeach = -1 ;Fuction Not Present
+  RETURN
+ENDIF
+IF (gArcTMActive == TRUE) THEN
+  skArcStsKeyFroniusTeach = -2 ;Function Disable (Use for TeachSense)
+  RETURN
+ENDIF
+IF (ArcTeachModeCondition() == FALSE) THEN
+  IF (skArcSetKeyTeachMode == TRUE) THEN
+    ArcOutputReset(tWelderNr,wArcOTeachMode[])
+  ENDIF
+  skArcSetKeyTeachMode = FALSE
+  skArcStsKeyFroniusTeach = ArcOutputStatusOn(tWelderNr,wArcOTeachMode[],0)
+  RETURN
+ENDIF
+IF (ArcOutputStatusOn(tWelderNr,wArcOTeachMode[],0) < 0) THEN
+  skArcStsKeyFroniusTeach = -1 ;Fuction Not Present
+  RETURN
+ENDIF
+IF (stArcProcessState.WeldingActive == TRUE) THEN
+  skArcStsKeyFroniusTeach = -3
+  IF (skArcSetKeyTeachMode == TRUE) THEN
+    ArcOutputReset(tWelderNr,wArcOTeachMode[])
+  ENDIF
+  RETURN
+ENDIF
+skArcStsKeyFroniusTeach = ArcOutputStatusOn(tWelderNr,wArcOTeachMode[],0)
+SWITCH skArcStsKeyFroniusTeach
+  CASE 0
+    IF (skArcSetKeyTeachMode == TRUE) THEN
+      ArcOutputSet(tWelderNr,wArcOTeachMode[])
+      mArcTeachModeTimeOut = ArcCalcTimeoutMilliSec(gArcTeachModeTimeOut)
+    ENDIF
+  CASE 1
+    IF (ArcTeachModeTimerEnable() == TRUE) THEN
+      mArcTeachModeTimeOut = ArcCalcTimeoutMilliSec(gArcTeachModeTimeOut)
+      tTimeOut = FALSE
+    ELSE
+      tTimeOut = ($ROB_TIMER > mArcTeachModeTimeOut)
+    ENDIF
+    IF ((skArcSetKeyTeachMode == FALSE) OR tTimeOut) THEN
+      skArcSetKeyTeachMode = FALSE
+      ArcOutputReset(tWelderNr,wArcOTeachMode[])
+    ENDIF    
+ENDSWITCH
+
+END
+;********************************************************
+;TeachMode Timer Start
+;********************************************************
+DEFFCT BOOL ArcTeachModeCondition()
+SWITCH $MODE_OP
+  CASE #AUT,#EX
+    RETURN FALSE    
+ENDSWITCH
+RETURN TRUE
+ENDFCT
+;********************************************************
+;TeachMode Timer Start
+;********************************************************
+DEFFCT BOOL ArcTeachModeTimerEnable()
+SWITCH $MODE_OP
+  CASE #T1,#T2
+    RETURN ($PERI_RDY == TRUE)
+ENDSWITCH
+RETURN FALSE
+ENDFCT
+;********************************************************
+;PLC LOOP ArcLinkXTControl
+;********************************************************
+DEF ArcLinkXTControl(tWelderNr :IN)
+DECL INT tWelderNr
+IF (wArcWelder[tWelderNr].Type <> #ARCLINKXT) THEN
+  RETURN
+ENDIF
+IF (ISMESSAGESET(41000)) THEN
+  IF (ArcIsHot(tWelderNr) == TRUE) THEN
+    mArcChecksumMsgSet = TRUE
+  ELSE
+    mArcChecksumMsgSet = FALSE
+  ENDIF
+ENDIF
+IF (mArcChecksumMsgSet <> mArcChecksumMsgSave) AND (mArcChecksumMsgSet == TRUE) THEN
+  gArcChecksumMsgAndHot = TRUE
+ENDIF
+IF (mArcChecksumMsgSet <> mArcChecksumMsgSave) AND (mArcChecksumMsgSet == FALSE) THEN
+  gArcChecksumMsgAndHot = FALSE
+ENDIF
+mArcChecksumMsgSave = mArcChecksumMsgSet
+END
+;********************************************************
+;PLC LOOP mArcModeOPControl
+;********************************************************
+DEF ArcModeOPControl()
+SWITCH $MODE_OP
+  CASE #T1
+    mArcModeOP = 1
+  CASE #T2
+    mArcModeOP = 2
+  CASE #AUT
+    mArcModeOP = 3
+  CASE #EX
+    mArcModeOP = 4
+ENDSWITCH
+IF (mArcModeOP <> mArcModeOPSave) THEN
+  gArcModeOpChanged = TRUE
+ENDIF
+mArcModeOPSave = mArcModeOP
+END
+;********************************************************
+;Arc Collision Initializze
+;********************************************************
+DEF ArcCollisionInit()
+  ArcCollisionRobRelease()
+  ArcClearMsgWriteDialog(mArcCollisionDlgHandle)
+  ArcMsgWriteClearHandle(mArcCollisionSta1Handle)
+  ArcMsgWriteClearHandle(mArcCollisionSta2Handle)
+  mArcCollisionDlgHandle = 0
+  mArcCollisionSta1Handle = 0
+  mArcCollisionSta2Handle = 0
+  ArcOutputReset(1,wArcOCollisionDetect[])
+  ArcOutputReset(2,wArcOCollisionDetect[])
+  ArcOutputReset(3,wArcOCollisionDetect[])
+  ArcOutputReset(4,wArcOCollisionDetect[])
+  gArcCollisionDetected = FALSE
+  mArcCollisionSec = 0
+  mArcCollisionSecOn = 0
+  ArcCollisionChkConfig(1)
+  ArcCollisionChkConfig(2)
+  ArcCollisionChkConfig(3)
+  ArcCollisionChkConfig(4)
+  ArcCollisionInterrupt()
+END
+;********************************************************
+;Arc Collision Check Signal bit Configuration
+;********************************************************
+DEF ArcCollisionChkConfig(tWelderNr :IN)
+DECL INT tWelderNr
+  IF (wArcCollisionCtrlOption == FALSE) THEN
+    RETURN
+  ENDIF
+  IF (wArcWelder[tWelderNr].Type == #NONE) THEN
+    RETURN
+  ENDIF
+  SWITCH ArcInputStatusOn(tWelderNr,wArcICollisionMonitoring[],0)
+    CASE -1
+      ArcMsgWrite(,#NOTIFY,"CollisionMonitoringGloballyEnabledButNotForWelder","ARC",10155,Opt_NOVLSTOP_LOG)
+  ENDSWITCH
+END
+;********************************************************
+;Arc Collision Interrupt
+;********************************************************
+DEF ArcCollisionInterrupt()
+DECL INT tI
+DECL INT tNrCol
+tNrCol = 0
+$CYCFLAG[cfArcCollisionCheck] = TRUE
+INTERRUPT OFF irtsArcCollisionCheck
+IF (wArcCollisionCtrlOption == FALSE) THEN
+  RETURN
+ENDIF
+FOR tNrCol = 1 TO 4
+  mWelderId[tNrCol] = 0
+  mSigNr[tNrCol]    = 0
+  mSigState[tNrCol] = FALSE
+ENDFOR
+tNrCol = 0
+FOR tI = 1 TO 4
+  IF (wArcWelder[tI].Type <> #NONE) THEN
+    tNrCol = tNrCol + 1
+    mWelderId[tNrCol] = tI
+    mSigNr[tNrCol]    = wArcICollisionMonitoring[tI].Offset.SignNr
+    mSigState[tNrCol] = wArcICollisionMonitoring[tI].State
+  ENDIF
+ENDFOR
+SWITCH tNrCol
+  CASE 1
+    $CYCFLAG[cfArcCollisionCheck] = (($IN[mSigNr[1]] == mSigState[1]) AND (gArcActIlfWelder == mWelderId[1]))
+  CASE 2
+    $CYCFLAG[cfArcCollisionCheck] = (($IN[mSigNr[1]] == mSigState[1]) AND (gArcActIlfWelder == mWelderId[1])) OR (($IN[mSigNr[2]] == mSigState[2]) AND (gArcActIlfWelder == mWelderId[2]))
+  CASE 3
+    $CYCFLAG[cfArcCollisionCheck] = (($IN[mSigNr[1]] == mSigState[1]) AND (gArcActIlfWelder == mWelderId[1])) OR (($IN[mSigNr[2]] == mSigState[2]) AND (gArcActIlfWelder == mWelderId[2])) OR (($IN[mSigNr[3]] == mSigState[3]) AND (gArcActIlfWelder == mWelderId[3]))
+  CASE 4
+    $CYCFLAG[cfArcCollisionCheck] = (($IN[mSigNr[1]] == mSigState[1]) AND (gArcActIlfWelder == mWelderId[1])) OR (($IN[mSigNr[2]] == mSigState[2]) AND (gArcActIlfWelder == mWelderId[2])) OR (($IN[mSigNr[3]] == mSigState[3]) AND (gArcActIlfWelder == mWelderId[3])) OR (($IN[mSigNr[4]] == mSigState[4]) AND (gArcActIlfWelder == mWelderId[4]))
+  DEFAULT
+    RETURN   
+ENDSWITCH
+GLOBAL INTERRUPT DECL irtsArcCollisionCheck WHEN NOT $CYCFLAG[cfArcCollisionCheck] DO ArcCollisionRobStop()
+INTERRUPT ON irtsArcCollisionCheck
+END
+;********************************************************
+;Arc Collision Robot Stop
+;********************************************************
+DEF ArcCollisionRobStop()
+DECL BOOL tB
+tB=ROB_STOP(#PATH_MAINTAINING) ;=> $STOPMESS_Flag becomes active
+END
+;********************************************************
+;Arc Collision Robot Release
+;********************************************************
+DEF ArcCollisionRobRelease()
+ROB_STOP_RELEASE()
+END
+;********************************************************
+;Arc Collision Loop Main
+;********************************************************
+DEF ArcCollisionLoop()
+DECL BOOL tB
+DECL INT tAnswer
+DECL CHAR tKay1[10],tPara2[26],tPara3[26]
+  IF (wArcCollisionCtrlOption == FALSE) THEN
+    RETURN
+  ENDIF
+  SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcICollisionMonitoring[],0)
+    CASE 0 ;Collision
+      IF ($OV_JOG > cArcOvAfterCollission) THEN
+        $OV_JOG = cArcOvAfterCollission
+      ENDIF
+      IF ($PRO_ACT == TRUE) THEN
+        ArcMsgWrite(,#NOTIFY,"NoProgramMovingAllowed","ARC",10073,Opt_NOVLSTOP_LOG)
+        ArcRobotStopFromSUBMIT(TRUE)
+      ENDIF
+      ArcOutputSet(gArcActIlfWelder,wArcOCollisionDetect[])
+      mArcCollisionSecOn = ArcCalcTimeoutSec(mInputRestoreTimeOut)
+      ArcMsgWriteS(mArcCollisionSta2Handle,#STATE,"CrashRecognizedRelieveTaskNeeded","ARC",10072,Opt_VLSTOP_LOG)
+      IF (gArcCollisionDetected == FALSE) THEN
+        mArcCollisionStep = 1
+      ENDIF      
+      gArcCollisionDetected = TRUE
+    CASE 1 ; Collision Restore
+      IF (gArcCollisionDetected == TRUE) THEN
+        IF ($ROB_TIMER > mArcCollisionSecOn) THEN
+          mArcCollisionStep = 0
+          ArcMsgWrite(,#NOTIFY,"RobotIsFreeAagin","ARC",10074,Opt_NOVLSTOP_LOG)
+        ENDIF
+      ENDIF
+  ENDSWITCH
+  
+  IF (gArcCollisionDetected == TRUE) THEN
+    SWITCH mArcCollisionStep
+      CASE 0 ; Reset All Variables
+        ArcCollisionInit()
+      CASE 1
+        ArcCollisionRobStop()
+        ArcStrParam(wArcICollisionMonitoring[gArcActIlfWelder].Description[],tPara2[],tPara3[])
+        tB = STRCOPY(tKay1[],ArcStrAdd(ArcIntToStr(cTimeOutExclude)," Sec"))
+        tAnswer = ArcMsgWriteDialogS(mArcCollisionDlgHandle,"MoveFreeDialogMsg","ARC",10076,Opt_VLSTOP_LOG,tKay1[],,,,,,,gArcSeamName[],tPara2[],tPara3[])
+        mArcCollisionStep = 2
+      CASE 2
+        IF (ArcMsgWriteDialogPresent(mArcCollisionDlgHandle) == FALSE) THEN
+          ArcCollisionRobRelease()
+          mArcCollisionStep = 3
+          mArcCollisionDlgHandle = 0
+        ENDIF
+      CASE 3
+        mArcCollisionActTimeOut = cTimeOutExclude
+        mArcCollisionStep = 4
+      CASE 4
+        ArcMsgWriteClearHandle(mArcCollisionSta1Handle)
+        mArcCollisionSta1Handle = 0
+        ArcMsgWriteI(mArcCollisionSta1Handle,#STATE,"FreeMoveIsActive","ARC",10075,Opt_VLSTOP_LOG,mArcCollisionActTimeOut)
+        mArcCollisionActTimeOut = mArcCollisionActTimeOut - mOutSec
+        mArcCollisionSec = ArcCalcTimeoutSec(mOutSec)
+        mArcCollisionStep = 5
+      CASE 5
+        IF ($ROB_TIMER > mArcCollisionSec) THEN
+          mArcCollisionStep = 4
+        ENDIF
+        IF (mArcCollisionActTimeOut <= 0) THEN
+          ArcMsgWriteClearHandle(mArcCollisionSta1Handle)
+          mArcCollisionSta1Handle = 0
+          mArcCollisionStep = 1
+        ENDIF  
+    ENDSWITCH
+  ENDIF  
+END
+;********************************************************
+;PLC LOOP ProModeControl
+;********************************************************
+DEF ProModeControl()
+IF (skArcStatusKeyHot == FALSE) THEN
+  IF ($PRO_MODE1==#GO) THEN
+    mProModeState = 1
+  ELSE
+    mProModeState = 2
+  ENDIF
+  IF (mProModeStateBuffer <> mProModeState) THEN
+    IF (mProModeState == 1) THEN
+      gArcOnStopConditionOn = TRUE
+      gArcOffStopConditionOn = TRUE
+      IF (gArcOnSeam == TRUE) THEN
+        enArcCurrentState = #Error
+      ELSE
+        enArcCurrentState = #Nothing
+      ENDIF
+    ENDIF
+    IF (mProModeState == 2) THEN
+      ;Because of Spline Conditional Stop
+      gArcOnStopConditionOn = FALSE
+      gArcOffStopConditionOn = FALSE
+    ENDIF
+  ENDIF
+  mProModeStateBuffer = mProModeState
+ENDIF
+END
+;********************************************************
+;Arc Process Hot Initialize
+;********************************************************
+DEF ArcProcessHotInit() 
+  ArcOutputReset(1,wArcOProcessHot[])
+  ArcOutputReset(2,wArcOProcessHot[])
+  ArcOutputReset(3,wArcOProcessHot[])
+  ArcOutputReset(4,wArcOProcessHot[])
+  mArcStatKeyHotBuffer = FALSE
+END
+;********************************************************
+;Arc Process hot loop
+;********************************************************
+DEF ArcProcessHotLoop()
+IF (stArcProcessState.WeldingActive == TRUE) THEN
+  ArcOutputSet(gArcActIlfWelder,wArcOProcessHot[])
+ELSE
+  ArcOutputReset(gArcActIlfWelder,wArcOProcessHot[])
+ENDIF
+END
+;********************************************************
+;PLC LOOP HotStatusKeyControl
+;********************************************************
+DEF HotStatusKeyControl()
+DECL INT tI
+DECL enArcState_T resultState
+IF (mArcStatKeyHotBuffer <> skArcStatusKeyHot) THEN
+  IF (skArcStatusKeyHot == TRUE) THEN
+    mArcStatKeyHotRising = TRUE
+  ELSE
+    mArcStatKeyHotFalling = TRUE
+    IF (($MODE_OP == #T1) OR ($MODE_OP == #T2)) THEN
+      FOR tI = 1 TO 4
+        ArcClearOutputs(tI,#StatKeyCold)
+      ENDFOR
+    ENDIF
+  ENDIF
+ENDIF
+mArcStatKeyHotBuffer = skArcStatusKeyHot
+;Falling Edge StatusKey HOT -> Switch to COLD
+IF (ArcGetActiveWeldState() AND (mArcStatKeyHotFalling == TRUE)) THEN
+  IF ($PRO_STATE1 == #P_Active) THEN
+    SetBurnBackArcLinkXt(gArcActIlfWelder)
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+    stArcProcessState.ProzessActive = FALSE
+    stArcProcessState.WeldingActive = FALSE
+    ArcMsgWriteS(,#NOTIFY,"SwitchedOffByStatuskey","ARC",10044,Opt_VLSTOP_LOG,gArcSeamName[])
+  ENDIF
+ENDIF
+;Rising Edge Statuskey HOT -> Switch to HOT
+IF (mArcStatKeyHotRising == TRUE) AND ($PRO_STATE1 <> #P_Active) THEN
+  IF (enArcCurrentState == #Error) THEN
+    gArcStatKeyWeldOn = TRUE
+  ENDIF
+ENDIF
+IF (skArcHotRequest == TRUE) THEN
+  skArcInfoToSetStsKeyHot = 0
+  IF($PRO_MODE1 <> #GO)THEN
+    skArcInfoToSetStsKeyHot = 1
+    ArcMsgWrite(,#NOTIFY,"WrongProModes","ARC",10046,Opt_NOVLSTOP_LOG)
+  ENDIF
+  IF ($MODE_OP == #T1)THEN
+    IF (wArcWeldingInT1Mode == TRUE) THEN
+      IF ($RED_T1_OV_CP == TRUE) THEN
+        skArcInfoToSetStsKeyHot = 1
+        ArcMsgWrite(,#NOTIFY,"RedT1OVCPNotAdjusted","ARC",10048,Opt_NOVLSTOP_LOG)
+      ENDIF
+    ELSE
+      skArcInfoToSetStsKeyHot = 1
+      ArcMsgWrite(,#NOTIFY,"WeldinginTest1NotEnabled","ARC",10049,Opt_NOVLSTOP_LOG)
+    ENDIF
+  ENDIF
+  IF ($SIMULATED_AXIS <> 0) THEN
+    skArcInfoToSetStsKeyHot = 1
+    ArcMsgWrite(,#NOTIFY,"AxisSimulated","ARC",10209,Opt_NOVLSTOP_LOG)
+  ENDIF
+  IF (ArcGetActiveWeldState() AND (skArcStatusKeyHot == FALSE) AND ($PRO_STATE1 == #P_ACTIVE)) THEN
+    skArcInfoToSetStsKeyHot = 1
+    ArcMsgWriteS(,#NOTIFY,"SwitchOnWeldingNotPossible","ARC",10062,Opt_NOVLSTOP_LOG,gArcSeamName[])
+  ENDIF
+ENDIF
+skArcHotRequest = FALSE ;Data valid as handshake
+mArcStatKeyHotRising = FALSE
+mArcStatKeyHotFalling = FALSE
+END
+;********************************************************
+;PLC LOOP DryStatusKeyControl
+;********************************************************
+DEF DryStatusKeyControl()
+IF (ATAg_ER_ErrorOnSeam == FALSE) THEN
+  IF (skArcDryRun == TRUE) THEN
+    gArcDryVelFactor = 2
+  ELSE
+    gArcDryVelFactor = 1
+  ENDIF
+ENDIF
+END
+;********************************************************
+;PLC LOOP CheckStrategySelectinCfg
+;********************************************************
+DEF CheckStrategySelectinCfg(tWelderNr :IN)
+DECL INT tWelderNr
+IF (ArcIsWelderActive(tWelderNr) == FALSE) THEN
+  RETURN
+ENDIF
+IF ((wArcStrategySelectMaxErr == #OnlyBySps) OR (wArcStrategySelectMaxErr == #DependingModeOP)) THEN
+  SWITCH ArcInputStatusOn(tWelderNr,wArcIStrategyDecision[],0)
+    CASE -1
+      ArcMsgWrite(,#NOTIFY,"WrongPointerOfStrategyDecisionInput","ARC",10086,Opt_NOVLSTOP_LOG)
+  ENDSWITCH
+  SWITCH ArcInputStatusOn(tWelderNr,wArcIDecisionValid[],0)
+    CASE -1
+      ArcMsgWrite(,#NOTIFY,"WrongPointerOfStrategyDecisionValidInput","ARC",10091,Opt_NOVLSTOP_LOG)
+  ENDSWITCH
+  SWITCH ArcOutputStatusOn(tWelderNr,wArcODecisionRequest[],0)
+    CASE -1
+      ArcMsgWrite(,#NOTIFY,"WrongPointerOfStrategyDecisionOutput","ARC",10087,Opt_NOVLSTOP_LOG)
+  ENDSWITCH
+ENDIF
+END
+;********************************************************
+;PLC LOOP LineSelectControl
+;********************************************************
+DEF LineSelectControl()
+DECL INT tI
+SWITCH gArcLineSelState
+  CASE 0
+    mExeLineSel = FALSE
+    gArcLineSelectCounter = 0
+    IF ($LINE_SEL_OK == TRUE) THEN
+      gArcLineSelState = 10
+    ENDIF
+  CASE 10
+    ;Bugfix: Delay because of TouchUpProblem (BugTicket 860303)
+    gArcLineSelectCounter = gArcLineSelectCounter + 1
+    IF (gArcLineSelectCounter >= gArcLineSelDelayCtr) THEN
+      mExeLineSel = TRUE
+      gArcLineSelState = 20
+    ENDIF
+  CASE 20
+    mExeLineSel = FALSE
+    $LINE_SEL_OK = FALSE
+    gArcLineSelState = 0
+ENDSWITCH
+
+IF (mExeLineSel == TRUE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[SUBMIT] LineSelected")
+  gArcLineSelected = TRUE
+  IF (gArcSenseOption == TRUE) THEN
+    ArsLineSel()
+  ENDIF
+  ArcRsiLineSel()
+  ArcInitVariables(#All)
+  RestoreOverride()
+  FOR tI = 1 TO 4
+    ArcClearOutputs(tI,#LineSel)  
+  ENDFOR
+  ArcWeaveSubMitInit()
+  ArcClearAllErrorSignals()
+  ArcSlopeLineSelect()
+  AmlLineSelect()
+  AawProgSelect()
+  ArcSeamLineSelect()
+  FOR tI = 1 TO 4
+    IF (ArcInputStatusOn(tI,wArcIPowerSourceReady[],0) == 0) THEN
+      ;Acknowledge only when not ready and configured
+      ArcOutputPulseGroupSet(tI,wArcOReceiptError[,])
+    ENDIF
+  ENDFOR
+ENDIF
+END
+;********************************************************
+;ArcGetActiveWeldState
+;********************************************************
+DEFFCT BOOL ArcGetActiveWeldState()
+IF ((enArcCurrentState == #PrepIgnition)OR(enArcCurrentState == #Ignition)OR(enArcCurrentState == #WaitArcStable)OR(enArcCurrentState == #Welding)OR(enArcCurrentState == #StopWelding))THEN
+  RETURN(TRUE)
+ELSE
+  RETURN(FALSE)
+  ;Cold and welding process not started
+ENDIF
+ENDFCT
+;********************************************************
+;AdvancedArcContinueDef
+;********************************************************
+DEF AdvancedArcContinueDef()
+IF (gArcIgnoreError == True) AND (gArcTmpSyncCmdSim <> $SyncCmd_Sim) THEN
+  gArcSyncList = GetgArcSyncList(gArcSyncList)
+  gArcTmpSyncCmdSim = $SyncCmd_Sim
+ENDIF
+END
+;********************************************************
+;PLC LOOP ArcVelTransLoop
+;********************************************************
+GLOBAL DEF ArcVelTransLoop()
+DECL INT tI
+DECL INT tIntValueForSignals
+DECL INT tArcOVelocity
+IF (wArcSpeedOutputOption == FALSE) THEN
+  RETURN
+ENDIF
+  IF (enArcCurrentState == #Welding) THEN
+    SWITCH $MOVE_STATE
+      CASE #PTP_SINGLE,#PTP_AP01,#PTP_AP02,#LIN_SINGLE,#LIN_AP01,#LIN_AP02,#CIRC_SINGLE,#CIRC_AP01,#CIRC_AP02
+        IF (stArcActWeaveSet.Pattern <> #None)THEN
+          tIntValueForSignals = wArcSpeedFactor * $VEL_C.CP
+        ELSE
+          tIntValueForSignals = wArcSpeedFactor * $VEL_ACT
+        ENDIF
+      CASE #SPLINE_LIN,#SPLINE_CIRC,#SPLINE_SPL,#SPLINE_UES
+        tIntValueForSignals = wArcSpeedFactor * $VEL_ACT
+      DEFAULT
+        tIntValueForSignals = 0
+    ENDSWITCH
+  ELSE
+    tIntValueForSignals = wArcSpeedFactor * stArcActWeldSet.Velocity
+  ENDIF
+  
+  ;tSignalOutInfo = GET_SIG_INF("wsArcOVelocity")
+  ;IF (tIntValueForSignals > GetMaxNumberAtBitWidth(tSignalOutInfo.LEN)) THEN
+  ;  tIntValueForSignals = GetMaxNumberAtBitWidth(tSignalOutInfo.LEN)
+  ;ENDIF
+  tArcOVelocity = ArcBitToInt($OUT[],wsArcOVelocity[gArcActIlfWelder])
+  IF (tArcOVelocity <> tIntValueForSignals) THEN
+    FOR tI = 19 TO 1 STEP -1
+      mArcSigTCPSpeedFilter[tI + 1] = mArcSigTCPSpeedFilter[tI]
+    ENDFOR
+    mArcSigTCPSpeedFilter[1] = tIntValueForSignals
+    tIntValueForSignals = 0
+    FOR tI = 1 TO 20
+      tIntValueForSignals = tIntValueForSignals + mArcSigTCPSpeedFilter[tI]
+    ENDFOR
+    tIntValueForSignals = tIntValueForSignals / 20
+    IF (gArcSignalGroupSelection == TRUE) THEN
+      ArcOutSignalGroup(wsArcOVelocity[gArcActIlfWelder],gArcActIlfWelder,0,tIntValueForSignals)
+    ELSE
+      ArcIntToBit($OUT[],wsArcOVelocity[gArcActIlfWelder],tIntValueForSignals)
+    ENDIF
+  ENDIF
+END
+;********************************************************
+;ArcTech Option Selection
+;********************************************************
+DEF ArcOptionSelection()
+IF ($PRO_STATE1 == #P_ACTIVE) THEN
+  RETURN
+ENDIF
+IF ((VARSTATE("gATBEnabled") <> #UNKNOWN) AND (wATBEnabled == TRUE)) THEN
+  gArcTechBasicOption = TRUE 
+ELSE
+  gArcTechBasicOption = FALSE
+ENDIF
+IF ((VARSTATE("gATAEnabled") <> #UNKNOWN) AND (wATAEnabled == TRUE)) THEN 
+  gArcTechAdvancedOption = TRUE
+ELSE 
+  gArcTechAdvancedOption = FALSE 
+ENDIF
+IF ((VARSTATE("gARSEnabled") <> #UNKNOWN) AND (wARSEnabled == TRUE) AND (VARSTATE("RSILOGCONTEXT") <> #UNKNOWN)) THEN  
+  gArcSenseOption = TRUE
+ELSE 
+  gArcSenseOption = FALSE
+ENDIF 
+IF (VARSTATE("STTg_FlagSensorActiv") <> #UNKNOWN) THEN  ;STT 3.x
+  gArcSttV3Option = TRUE
+ELSE
+  gArcSttV3Option = FALSE
+ENDIF
+IF (VARSTATE("STT_iActSensNr") <> #UNKNOWN) THEN        ;STT 4.x
+  gArcSttV4Option = TRUE
+ELSE
+  gArcSttV4Option = FALSE
+ENDIF
+IF ((gArcSttV3Option == TRUE) AND (gArcSttV4Option == TRUE)) THEN
+  gArcSttV3Option = FALSE
+  gArcSttV4Option = FALSE
+  ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"None","STT both version are","present: V3.X and V4.X")
+ENDIF
+IF ((VARSTATE("gAmlEnabled") <> #UNKNOWN) AND (wAmlEnabled == TRUE)) THEN 
+  gArcMultiLayerOption = TRUE
+ELSE 
+  gArcMultiLayerOption = FALSE 
+ENDIF
+IF (VARSTATE("RSILOGCONTEXT") <> #UNKNOWN) THEN
+  gArcRSIOption = TRUE
+ELSE
+  gArcRSIOption = FALSE
+ENDIF
+IF (VARSTATE("gARCAWEnabled") <> #UNKNOWN) THEN
+  gArcAWOption = TRUE
+ELSE
+  gArcAWOption = FALSE
+ENDIF
+IF (VARSTATE("TS_TeachModeIsAct") <> #UNKNOWN) THEN
+  gArcTMOption = TRUE
+ELSE
+  gArcTMOption = FALSE
+ENDIF
+END
+;********************************************************
+;ArcTech Check ORI_TYPE and Weaving
+;********************************************************
+DEF ArcCheckOriType()
+;Message when Weaving and Circ and ORI_TYPE = JOINT
+;Only in Submit possible
+IF ((enArcCurrentState == #Welding) AND (gArcRsiWeavingActive == FALSE)) THEN
+  SWITCH $MOVE_STATE
+    CASE #CIRC_SINGLE, #CIRC_AP01, #CIRC_AP02
+      IF (($ORI_TYPE_C == #JOINT) AND (mOriTypeErrorFired == FALSE)) THEN
+        IF ((stArcActWeaveSet.Pattern <> #None) AND (stArcActWeaveSet.Amplitude > 0)) THEN
+          ArcMsgWrite(,#NOTIFY,"CircOriTypeJointErr","ARC",10142,Opt_NOVLSTOP_LOG)
+          mOriTypeErrorFired = TRUE
+        ENDIF
+      ENDIF
+    DEFAULT
+      mOriTypeErrorFired = FALSE
+  ENDSWITCH
+ENDIF
+END
+;********************************************************
+;ArcTech Simulation Environment
+;********************************************************
+DEFFCT BOOL ArcIsOnSimEnvironment()
+gArcIsSimulation = (VARSTATE(gArcVarIsSimulation[]) <> #UNKNOWN)
+gArcIsWorkVisual = (VARSTATE(gArcVarIsWorkVisual[]) <> #UNKNOWN)
+gArcIsKukaSim    = (VARSTATE(gArcVarIsKukaSim[]   ) <> #UNKNOWN)
+gArcIsOnSimEnvironment = (gArcIsSimulation == TRUE) OR (gArcIsWorkVisual == TRUE) OR (gArcIsKukaSim == TRUE)
+RETURN gArcIsOnSimEnvironment
+ENDFCT
+;******************************************************************************
+;[Global Routine] State of TouchSense
+;******************************************************************************
+GLOBAL DEF ArcTouchSenseState()
+DECL BOOL tTMFalse,tTMTrue,tWSFalse,tWSTrue
+IF (gArcTMOption == FALSE) THEN
+  gArcTMActive = FALSE
+  gArcWSActive = FALSE
+ENDIF
+tTMFalse = (VARSTATE("TSg_TeachModeIsAct.VarFalse") == #INITIALIZED)
+tTMTrue  = (VARSTATE("TSg_TeachModeIsAct.VarTrue")  == #INITIALIZED)
+tWSFalse = (VARSTATE("TSg_WireSenseIsAct.VarFalse") == #INITIALIZED)
+tWSTrue  = (VARSTATE("TSg_WireSenseIsAct.VarTrue")  == #INITIALIZED)
+
+  IF ((tWSFalse == TRUE) AND (tWSTrue == FALSE))THEN
+    gArcWSActive = FALSE
+  ENDIF
+  IF ((tWSFalse == FALSE) AND (tWSTrue == TRUE)) THEN
+    gArcWSActive = TRUE
+  ENDIF
+  IF ((tTMFalse == TRUE) AND (tTMTrue == FALSE)) AND ((tWSFalse == TRUE) AND (tWSTrue == FALSE))THEN
+    gArcTMActive = FALSE
+    RETURN
+  ENDIF
+  IF ((tTMFalse == FALSE) AND (tTMTrue == TRUE)) OR ((tWSFalse == FALSE) AND (tWSTrue == TRUE)) THEN
+    gArcTMActive = TRUE
+    RETURN
+  ENDIF
+  gArcTMActive = FALSE
+  gArcWSActive = FALSE
+END
+;********************************************************
+;ArcTech Initialization Message
+;********************************************************
+DEF ArcSubMitState(tIntMsgState :IN)
+DECL enIntMsgState tIntMsgState
+SWITCH tIntMsgState
+  CASE #Begin
+    mArcInitEnd = 0
+    mArcInitTimeStart = $ROB_TIMER
+    ArcMsgWriteS(mArcInitEnd,#STATE,"ArcInitializationActive","ARC",10153,Opt_VLSTOP_LOG)
+    gArcSubMitInitDone = FALSE
+  CASE #Finish
+   ArcMsgWriteClearHandle(mArcInitEnd)
+   mArcInitTimeCycle = $ROB_TIMER - mArcInitTimeStart
+   ArcMsgWriteS(,#NOTIFY,"ArcInitializationEnd","ARC",10154,Opt_VLSTOP_LOG,ArcIntToStr(mArcInitTimeCycle)," ms")
+   gArcSubMitInitDone = TRUE
+  ENDSWITCH
+END
+;********************************************************
+;Advanced Monitoring
+;********************************************************
+DEF ArcAdvMonitoring()
+IF (ArcIsWelderActive(gArcActSkWelder) == FALSE) THEN
+  RETURN
+ENDIF
+  ;Only Welder 1 at the Moment
+  IF (gArcActSkWelder == 1) THEN
+    IF (gArcSignalGroupSelection == TRUE) THEN
+      gArcMonOModiCoding = ArcInSignalGroup(wsArcOModiCoding[gArcActSkWelder],gArcActSkWelder,0)
+      gArcMonOChannel1   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,1],gArcActSkWelder,1)
+      gArcMonOChannel2   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,2],gArcActSkWelder,2)
+      gArcMonOChannel3   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,3],gArcActSkWelder,3)
+      gArcMonOChannel4   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,4],gArcActSkWelder,4)
+      gArcMonOChannel5   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,5],gArcActSkWelder,5)
+      gArcMonOChannel6   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,6],gArcActSkWelder,6)
+      gArcMonOChannel7   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,7],gArcActSkWelder,7)
+      gArcMonOChannel8   = ArcInSignalGroup(wsArcOChannel[gArcActSkWelder,8],gArcActSkWelder,8)
+      gArcMonIChannel1   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,1],gArcActSkWelder,1)
+      gArcMonIChannel2   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,2],gArcActSkWelder,2)
+      gArcMonIChannel3   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,3],gArcActSkWelder,3)
+      gArcMonIChannel4   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,4],gArcActSkWelder,4)
+      gArcMonIChannel5   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,5],gArcActSkWelder,5)
+      gArcMonIChannel6   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,6],gArcActSkWelder,6)
+      gArcMonIChannel7   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,7],gArcActSkWelder,7)
+      gArcMonIChannel8   = ArcInSignalGroup(wsArcIChannel[gArcActSkWelder,8],gArcActSkWelder,8)        
+    ELSE
+      gArcMonOModiCoding = ArcBitToInt($OUT[],wsArcOModiCoding[gArcActSkWelder])
+      gArcMonOChannel1   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,1])
+      gArcMonOChannel2   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,2])
+      gArcMonOChannel3   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,3])
+      gArcMonOChannel4   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,4])
+      gArcMonOChannel5   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,5])
+      gArcMonOChannel6   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,6])
+      gArcMonOChannel7   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,7])
+      gArcMonOChannel8   = ArcBitToInt($OUT[],wsArcOChannel[gArcActSkWelder,8])
+      gArcMonIChannel1   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,1])
+      gArcMonIChannel2   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,2])
+      gArcMonIChannel3   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,3])
+      gArcMonIChannel4   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,4])
+      gArcMonIChannel5   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,5])
+      gArcMonIChannel6   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,6])
+      gArcMonIChannel7   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,7])
+      gArcMonIChannel8   = ArcBitToInt($IN[],wsArcIChannel[gArcActSkWelder,8])
+    ENDIF
+  ELSE
+    gArcMonOModiCoding = 0.0
+    gArcMonOChannel1   = 0.0
+    gArcMonOChannel2   = 0.0
+    gArcMonOChannel3   = 0.0
+    gArcMonOChannel4   = 0.0
+    gArcMonOChannel5   = 0.0
+    gArcMonOChannel6   = 0.0
+    gArcMonOChannel7   = 0.0
+    gArcMonOChannel8   = 0.0
+    gArcMonIChannel1   = 0.0
+    gArcMonIChannel2   = 0.0
+    gArcMonIChannel3   = 0.0
+    gArcMonIChannel4   = 0.0
+    gArcMonIChannel5   = 0.0
+    gArcMonIChannel6   = 0.0
+    gArcMonIChannel7   = 0.0
+    gArcMonIChannel8   = 0.0
+  ENDIF
+END
+;********************************************************
+;Interfce with oder option package
+;********************************************************
+DEF ArcBitStateLoop()
+IF (stArcProcessState.WeldingActive == TRUE) THEN
+  stArcWeldingOn = stValTrue
+ELSE
+  stArcWeldingOn = stValFalse
+ENDIF
+
+IF (gArcOnSeam == TRUE) THEN
+  stArcOnSeam = stValTrue
+ELSE
+  stArcOnSeam = stValFalse
+ENDIF
+
+IF (gArcWeldCondition == FALSE) THEN
+  stArcGhostMode = stValTrue
+ELSE
+  stArcGhostMode = stValFalse
+ENDIF
+
+IF (enArcErrorState <> #Nothing) THEN
+  stArcErrorGlobal = stValTrue
+ELSE
+  stArcErrorGlobal = stValFalse
+ENDIF
+END

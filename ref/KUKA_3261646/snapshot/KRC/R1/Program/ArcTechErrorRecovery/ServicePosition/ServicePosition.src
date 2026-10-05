@@ -1,0 +1,22 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+DEF ServicePosition( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+;ENDFOLD (INI)
+IF (ATAg_ER_ArcGroupEnabled == FALSE) THEN
+  PTP $POS_ACT ;helpful at direct selecting service routine
+ENDIF
+HALT ;Please remove this line after teaching 
+;************************************
+;Service Position
+;FOLD ArcTech Call ServicePosition
+ATA_ER_ServicePos()
+;ENDFOLD
+;************************************
+
+END

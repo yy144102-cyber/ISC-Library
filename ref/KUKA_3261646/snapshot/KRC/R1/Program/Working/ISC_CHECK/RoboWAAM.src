@@ -1,0 +1,128 @@
+&ACCESS RVO
+&REL 33
+&COMMENT RoboWAAM Control Program
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+&PARAM DISKPATH = KRC:\R1\Program
+DEF RoboWAAM( )
+;************************************************
+;* Description: RoboWAAM ()                     *
+;*                                              *
+;*              This routine is designed to     *
+;*              read the data from the buffer   *
+;*              and create a motion path.       *
+;************************************************
+;*    Software: KSS 8.5                         *
+;************************************************
+;*    Modified: KUKA UK                         *
+;*        Date: 2020.04.14                      *
+;*     Version: 01.01.08                        *
+;************************************************ 
+  ;FOLD COPYRIGHT
+  ; Copyright(c)2020 KUKA Robotics UK Ltd
+  ; Great Western Street
+  ; Wednesbury
+  ; WS10 7LL  
+  ;ENDFOLD (COPYRIGHT)          
+  ;FOLD INI
+  
+  ;FOLD BASISTECH INI
+  GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+  INTERRUPT ON 3 
+  BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+  ;Make your modifications here
+  
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)  
+        
+; Reset Data
+ResetData (FALSE)
+
+;FOLD RSI ON ()
+   
+
+; Create RSI Context 
+nContainer = 0 
+
+ ; Trim RSI context name
+ 
+IF Trim(chRSIContextTrim[],chRSIContext[]) THEN
+ IF RSI_CREATE(chRSIContextTrim[], nContainer, TRUE) <> RSIOK THEN
+   MsgQuit("Error Creating RSI Context; Correction Aborted", "RoboWAAM.ResetData") 
+ ELSE
+            
+  ; Start RSI execution
+  IF NOT (RSI_ON(#RELATIVE) == RSIOK) THEN
+    MsgQuit("Unable to Start RSI Execution", "RoboWAAM.WeldCommand") 
+  ENDIF
+            
+ ENDIF
+ENDIF
+   
+;ENDFOLD (RSI_ON)   
+  
+FOR nCurrentLayer = 1 TO nLayerQty
+  FOR nCurrentPosition = nStartPosition to nBufferSize 
+      
+      ;FOLD ..WAIT FOR DATA READY 
+      
+      ; Wait for Data to be ready
+      WHILE (NOT DataReady ())
+        
+      ENDWHILE
+      
+      ;ENDFOLD (Wait For Data Ready)  
+      
+    ; Motion Parameters
+    MotionParameters (nCurrentPosition)
+      
+    ; Execute Command
+    SWITCH Command[nCurrentPosition].ArcTech
+    CASE #NONE
+      RobotMotion ()
+    CASE #ARC_ON, #ARC_SWITCH, #ARC_OFF
+      WeldCommand (Command[nCurrentPosition].ArcTech)
+    CASE #PROGRAM_END
+      
+      RobotMotion ()
+        
+      CONTINUE
+      IF nCurrentLayer < nLayerQty THEN
+        ResetData (TRUE) 
+      ENDIF
+        
+      EXIT    
+    DEFAULT
+    ENDSWITCH        
+      
+    CONTINUE
+  ENDFOR
+  CONTINUE
+ENDFOR
+
+;FOLD RSI OFF ()
+
+; Turn off RSI 
+IF (nContainer <> 0) THEN
+  IF RSI_OFF() <> RSIOK THEN
+     MsgQuit("Unable to Turn Off RSI", "RoboWAAM.WeldCommand") 
+  ENDIF
+ENDIF  
+   
+   ;ENDFOLD (Rsi Off)
+  
+;FOLD PTP HOME Vel=5 % DEFAULT;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=5; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PDEFAULT
+FDAT_ACT = FHOME
+BAS(#PTP_PARAMS, 5.0)
+SET_CD_PARAMS (0)
+PTP XHOME
+;ENDFOLD
+  
+END

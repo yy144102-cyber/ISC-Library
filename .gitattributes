@@ -1,0 +1,7 @@
+# workspace.md R6: never convert line endings of these files
+# hashed evidence files
+engineering/sources/** -text
+# KRL files: keep the bytes exactly as they came from the controller
+*.src -text
+*.dat -text
+*.sub -text

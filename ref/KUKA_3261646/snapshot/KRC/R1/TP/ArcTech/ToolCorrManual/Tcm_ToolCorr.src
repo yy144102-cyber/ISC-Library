@@ -1,0 +1,359 @@
+&ACCESS R1
+&COMMENT ATB Tool Correction Manual program
+DEF  TCM_ToolCorr ()
+END; (TCM_ToolCorr)
+GLOBAL DEF TCM_CheckTool(ToolNo:IN)
+;For each Tool one RefData with the same Index, number
+DECL INT ToolNo, RefDataNo
+WAIT FoR TRUE
+RefDataNo=ToolNo
+TCM_ToolCorrMan(ToolNo, RefDataNo)
+END ;(TCM_CheckTool)
+GLOBAL DEF TCM_CheckToolRef(ToolNo:IN, RefDataNo:IN)
+;RefData independent from Tool
+DECL INT ToolNo, RefDataNo
+WAIT FoR TRUE
+TCM_ToolCorrMan(ToolNo, RefDataNo)
+END ;(TCM_CheckToolRef)
+GLOBAL DEF TCM_ToolCorrMan(ToolNo:IN, RefDataNo:IN)
+;Start of ToolCorrManual (TCM)
+DECL INT ToolNo,RefDataNo,Counter,DialogAnswer
+WAIT FoR TRUE
+IF (NOT TCM_ToolDataOK (ToolNo)) Then
+  RETURN
+ENDIF
+TCM_Init(ToolNo)
+TCM_CheckModeOP(TCM_CorrModeOP)
+TCM_RefDataExists=(NOT TCM_RefDataIsNull(RefDataNo))
+IF (TCM_RefDataExists) THEN
+  TCM_MoveToRefPos(ToolNo,RefDataNo)
+  IF (TCM_MoveToRef<>#MoveToRefMan) THEN
+    IF (TCM_RefPosReached AND (DialAnswPosIsCorrect(1)<>2)) THEN
+      ;Pos is correct, Cancel or Error
+      TCM_MoveBackToStartPos ()
+      RETURN
+    ENDIF
+  ENDIF
+ELSE
+  ;RefData does NOT exists, RefData will be saved first => action below
+  ArcMsgWriteI(,#QUIT,"SaveRefData","ARC",10022,Opt_VLSTOP_LOG,RefDataNo)
+ENDIF
+REPEAT
+  TCM_CheckModeOP(#T1)
+  TCM_ShowServicePlugIn()
+  IF (NOT TCM_ShowPlugInAgain) THEN
+    IF ((TCM_PlugInAnsw==#ActPosSaved) AND  TCM_PosIsCorrect) THEN
+      ;New pos saved and pos is correct --> don't show plugIn again
+      IF (TCM_RefDataExists) THEN
+        ArcMsgWriteI(,#NOTIFY,"CalcNewToolData","ARC",10001,Opt_VLSTOP_LOG,ToolNo)
+        TCM_CalcDiff(ToolNo, RefDataNo)
+      ELSE
+        TCM_SafeRefData(RefDataNo)
+      ENDIF
+    ENDIF
+  ENDIF
+UNTIL (TCM_ShowPlugInAgain==FALSE)
+TCM_MoveBackToStartPos ()
+END ;(TCM_ToolCorrMan)
+DEFFCT BOOL TCM_ToolDataOK(ToolNo:IN)
+;check Tool-No and tool calibration
+DECL BOOL bToolIsCal
+DECL INT ToolNo,I
+DECL REAL Tool_Dat[3]
+IF (ToolNo < 1) OR (ToolNo > MAX_TOOL) THEN
+  ArcMsgWriteI(,#Quit,"SelToolDoesNotExist","ARC",10024,Opt_VLSTOP_LOG,ToolNo)
+  RETURN (FALSE)
+ENDIF
+IF (ToolNo > TCM_MAX_TOOL) THEN
+  ArcMsgWriteI(,#Quit,"SelToolExceedsTCMMaxTool","ARC",10025,Opt_VLSTOP_LOG,ToolNo)
+  RETURN (FALSE)
+ENDIF
+;Is the selected tool calibrated
+bToolIsCal=FALSE
+Tool_Dat[1]=Tool_DATA[ToolNo].X
+Tool_Dat[2]=Tool_DATA[ToolNo].Y
+Tool_Dat[3]=Tool_DATA[ToolNo].Z
+FOR I=1 TO  3
+  IF (Tool_Dat[I] <> 0.0) THEN
+    bToolIsCal=TRUE
+  ENDIF
+ENDFOR
+IF bToolIsCal THEN
+  ;Check and save the masterToolData
+  SaveMasterToolData(ToolNo)
+ELSE
+  ;X,Y,Z=0.0, Tool not calibrated
+  ArcMsgWriteI(,#Quit,"ToolNotCalibrated","ARC",10028,Opt_VLSTOP_LOG,ToolNo)
+ENDIF
+RETURN(bToolIsCal)
+ENDFCT ;(TCM_ToolDataOK)
+DEF TCM_Init(ToolNo:IN)
+;Save current Base,Tool and Position for Backward-Motion
+DECL INT ToolNo
+TCM_OrgBase=$BASE
+TCM_OrgTool=$TOOL
+TCM_StartPos=$POS_ACT
+$BASE=$NULLFRAME
+$TOOL=TOOL_DATA[ToolNo]
+TCM_StartPosNT=$POS_ACT
+;Inits for ServicePlugIn
+TCM_SaveActPos=FALSE
+TCM_NewRefPos=$NULLFRAME
+END ; (TCM_Init)
+DEF TCM_CheckModeOP(AlwdModeOP:IN)
+;check allowed Mode_OP
+DECL TCM_CorrModeOP_T AlwdModeOP
+SWITCH AlwdModeOP
+  CASE #T1
+    WHILE  ($MODE_OP<>#T1)
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1","ARC",10014,Opt_VLSTOP_LOG)
+    ENDWHILE
+  CASE #T1T2
+    WHILE  (($MODE_OP==#AUT) OR ($MODE_OP==#EX))
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1T2","ARC",10015,Opt_VLSTOP_LOG)
+    ENDWHILE
+  CASE #T1T2EXT
+    WHILE  ($MODE_OP==#AUT)
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1T2EXT","ARC",10017,Opt_VLSTOP_LOG)
+    ENDWHILE
+  CASE #T1T2AUT
+    WHILE  ($MODE_OP==#EX)
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1T2AUT","ARC",10016,Opt_VLSTOP_LOG)
+    ENDWHILE
+  CASE #T1T2AUTEX
+    WHILE  ($MODE_OP==#EX)
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1T2AUT","ARC",10016,Opt_VLSTOP_LOG)
+    ENDWHILE
+  DEFAULT
+    WHILE  ($MODE_OP<>#T1)
+      ArcMsgWrite(,#Quit,"OnlyAllowedInT1","ARC",10014,Opt_VLSTOP_LOG)
+    ENDWHILE
+ENDSWITCH
+END ; (TCM_CheckModeOP)
+DEF TCM_MoveToRefPos(ToolNo:IN, RefDataNo:IN)
+DECL INT ToolNo,RefDataNo
+TCM_RefPosReached=FALSE
+TCM_MoveToRef=#Empty
+IF (NOT TCM_MoveToRefWithDial) THEN
+  ;Move to RefPos without dialog
+  TCM_MoveToRef=#MoveToRefAut
+ELSE
+  ;Move to RefPos with dialog
+  SWITCH ArcMsgWriteDialog(,"MoveAutOrManToRefPos","ARC",10010,Opt_VLSTOP_LOG,"_MoveMan","_MoveProg")
+    CASE 1; Move to RefPos manually
+      TCM_MoveToRef=#MoveToRefMan
+      ArcMsgWriteI(,#NOTIFY,"DlgMoveToRefMan","ARC",10004,Opt_VLSTOP_LOG,RefDataNo)
+    CASE 2; Move to RefPos through program
+      ArcMsgWriteI(,#NOTIFY,"DlgMoveToRefAut","ARC",10003,Opt_VLSTOP_LOG,RefDataNo)
+      TCM_MoveToRef=#MoveToRefAut
+    DEFAULT
+      ArcMsgWriteI(,#NOTIFY,"UnexpectedSelectionInMoveToRef","ARC",10031,Opt_VLSTOP_LOG,RefDataNo)
+  ENDSWITCH
+ENDIF
+IF ((TCM_MoveToRef==#MoveToRefAut) AND (TCM_RefDataExists)) THEN
+  ;RefData exists and move aut. to RefPos
+  WAIT FOR TRUE
+  ArcMsgWriteI(,#NOTIFY,"MoveToReferencePoint","ARC",10012,Opt_VLSTOP_LOG,RefDataNo)
+  $BASE=$NULLFRAME
+  $TOOL=TOOL_DATA[ToolNo]
+  $VEL.CP=TCM_VelToRefPoint/1000.0 ;[mm/s] --> [m/s]
+  ;set same orientation as Startpos
+  TCM_RefData[RefDataNo].A=TCM_StartPosNT.A
+  TCM_RefData[RefDataNo].B=TCM_StartPosNT.B
+  TCM_RefData[RefDataNo].C=TCM_StartPosNT.C
+  ;Move to RefPos
+  LIN TCM_RefData[RefDataNo]
+  WAIT FoR TRUE
+  TCM_RefPosReached=TRUE
+  ArcMsgWriteI(,#NOTIFY,"ReferencePointReached","ARC",10021,Opt_VLSTOP_LOG,RefDataNo)
+ENDIF
+END ; (TCM_MoveToRefPos)
+DEF TCM_ShowServicePlugIn()
+DECL INT DialogAnswer
+;Start Communication with PlugIn
+WAIT FOR TRUE
+TCM_PlugInAnsw=#Empty; will be set through plugIn
+TCM_NewRefPos=$POS_ACT; will be overwrite through plugIn
+TCM_ActPosSaved=FALSE; will be set through plugIn
+TCM_SaveActPos=TRUE ;trigger to open plugIn
+REPEAT
+  ;Repeat until answer from PlugIn
+UNTIL (TCM_PlugInAnsw <> #Empty)
+;-- END Communication with PlugIn
+TCM_SaveActPos=FALSE ;trigger to close plugIn
+;PlugIn Results
+SWITCH TCM_PlugInAnsw
+  CASE #ActPosSaved ; New Pos saved in TCM_NewRefPos through PlugIn
+    TCM_ActPosSaved=TRUE
+    ArcMsgWrite(,#NOTIFY,"PlugInNewRefPointSaved","ARC",10020,Opt_VLSTOP_LOG)
+    HALT
+    TCM_CheckModeOP(#T1)
+    LIN TCM_NewRefPos
+    WAIT FOR TRUE
+    DialogAnswer=DialAnswPosIsCorrect(2)
+    IF (DialogAnswer<>2) THEN
+      ;Bei 1, 3 und Def PlugIn-Schleife verlassen
+      TCM_ShowPlugInAgain=FALSE
+    ELSE
+      TCM_ShowPlugInAgain=TRUE
+    ENDIF
+  CASE #Cancelled ;Cancel through PlugIn
+    ArcMsgWrite(,#NOTIFY,"PlugInCancelled","ARC",10018,Opt_VLSTOP_LOG)
+    TCM_ShowPlugInAgain=FALSE
+    HALT
+    TCM_CheckModeOP(#T1)
+    TCM_MoveBackToStartPos()
+  CASE #Clossed
+    ;PlugIn Closed (repeat it)
+    ;Don't move the robot
+    ArcMsgWrite(,#NOTIFY,"PlugInClossed","ARC",10019,Opt_VLSTOP_LOG)
+    TCM_ShowPlugInAgain=TRUE
+  DEFAULT
+    ArcMsgWrite(,#NOTIFY,"UnexpectedErrorOccured","ARC",10029,Opt_VLSTOP_LOG)
+    TCM_ShowPlugInAgain=FALSE
+    TCM_CheckModeOP(#T1)
+    HALT
+    TCM_MoveBackToStartPos()
+ENDSWITCH
+END ;(TCM_ShowServicePlugIn)
+DEF TCM_CalcDiff(ToolNo:IN, RefDataNo:IN)
+;Calculate new Tool_Data
+DECL REAL MasterTool[3],NewTool[3],OldTool[3],DistToolPosAct[3],DistMasterPosAct[3]
+DECL FRAME SaveBase,SaveTool
+DECL INT ToolNo,RefDataNo,I
+SaveTool=$TOOL
+SaveBase=$BASE
+$TOOL=$NULLFRAME
+$BASE=$POS_ACT
+$BASE.X=TCM_RefData[RefDataNo].X
+$BASE.Y=TCM_RefData[RefDataNo].Y
+$BASE.Z=TCM_RefData[RefDataNo].Z
+NewTool[1]=-$POS_ACT.X
+NewTool[2]=-$POS_ACT.Y
+NewTool[3]=-$POS_ACT.Z
+$TOOL=SaveTool
+$BASE=SaveBase
+OldTool[1]=TOOL_DATA[ToolNo].X
+OldTool[2]=TOOL_DATA[ToolNo].Y
+OldTool[3]=TOOL_DATA[ToolNo].Z
+MasterTool[1]=TCM_MasterToolData[ToolNo].X
+MasterTool[2]=TCM_MasterToolData[ToolNo].Y
+MasterTool[3]=TCM_MasterToolData[ToolNo].Z
+FOR I=1 TO  3
+  DistToolPosAct[I]=NewTool[I]-OldTool[I]
+  DistMasterPosAct[I]= NewTool[I]-MasterTool[I]
+ENDFOR
+;Actual deviation to original one
+ActDeviation=TCM_LengthVector(DistMasterPosAct[],3)
+IF (TCM_LengthVector(DistMasterPosAct[],3)>TCM_MaxDiff) THEN
+  ArcMsgWriteI(,#Quit,"ToBigDifferenceAtMasterToolData","ARC",10027,Opt_VLSTOP_LOG,ToolNo)
+ELSE
+  IF (TCM_LengthVector(DistToolPosAct[],3)<=TCM_MinDiff) THEN
+    ArcMsgWriteI(,#NOTIFY,"NoDifferenceAtToolData","ARC",10013,Opt_VLSTOP_LOG,ToolNo)
+  ELSE
+    ArcMsgWriteI(,#NOTIFY,"DifferenceInToleranceArea","ARC",10002,Opt_VLSTOP_LOG,ToolNo)
+    TOOL_DATA[ToolNo].X=NewTool[1]
+    TOOL_DATA[ToolNo].Y=NewTool[2]
+    TOOL_DATA[ToolNo].Z=NewTool[3]
+  ENDIF
+ENDIF
+END ;(TCM_CalcDiff)
+DEFFCT INT DialAnswPosIsCorrect (iCounter:IN)
+DECL INT iCounter,DialogAnswer
+DialogAnswer=-1
+TCM_PosIsCorrect=FALSE
+IF (iCounter <= 1) THEN
+  DialogAnswer = ArcMsgWriteDialog(,"IsThePositionCorrect","ARC",10008,Opt_VLSTOP_LOG,"Common#Yes","Common#No")
+ELSE
+  DialogAnswer = ArcMsgWriteDialog(,"IsThePositionNowCorrect","ARC",10009,Opt_VLSTOP_LOG,"Common#Yes","Common#No")
+ENDIF
+SWITCH DialogAnswer
+  CASE 1; Yes
+    TCM_PosIsCorrect=TRUE
+    ArcMsgWrite(,#NOTIFY,"DlgPositionIsCorrect","ARC",10006,Opt_VLSTOP_LOG)
+  CASE 2; No
+    ArcMsgWrite(,#NOTIFY,"DlgPositionIsNotCorrect","ARC",10007,Opt_VLSTOP_LOG)
+  CASE 3; Cancel
+    ArcMsgWrite(,#NOTIFY,"DlgPositionCanceled","ARC",10005,Opt_VLSTOP_LOG)
+  DEFAULT
+    ArcMsgWrite(,#NOTIFY,"UnexpectedSelectionInIsPositionCorrect","ARC",10030,Opt_VLSTOP_LOG)
+ENDSWITCH
+RETURN (DialogAnswer)
+ENDFCT ; (DialAnswPosIsCorrect)
+DEF TCM_MoveBackToStartPos()
+;Move from Pos_Act back to start pos
+;Prepare move parameter
+$BASE=TCM_OrgBase
+$TOOL=TCM_OrgTool
+$VEL.CP=TCM_VelToRefPoint/1000.0 ;[mm/s] --> [m/s]
+;Move now to start pos
+LIN TCM_StartPos
+WAIT FOR TRUE
+ArcMsgWrite(,#NOTIFY,"MoveBackToStartPointReached","ARC",10011,Opt_VLSTOP_LOG)
+END ; (TCM_MoveBackToStartPos)
+DEF TCM_SafeRefData (RefDataNo:IN)
+;Safe RefData
+DECL INT RefDataNo
+$BASE=$NULLFRAME
+WAIT FoR TRUE
+TCM_RefData[RefDataNo].X=$POS_ACT.X
+TCM_RefData[RefDataNo].Y=$POS_ACT.Y
+TCM_RefData[RefDataNo].Z=$POS_ACT.Z
+ArcMsgWriteI(,#NOTIFY,"SaveRefDataDone","ARC",10023,Opt_VLSTOP_LOG,RefDataNo)
+END ; (TCM_SafeRefData)
+DEF SaveMasterToolData(ToolNo:IN)
+;Save Master Tool-Data
+DECL INT ToolNo,I
+DECL REAL MasterTool_Dat[3]
+DECL BOOL bToolIsNull
+MasterTool_Dat[1]=TCM_MasterToolData[ToolNo].X
+MasterTool_Dat[2]=TCM_MasterToolData[ToolNo].Y
+MasterTool_Dat[3]=TCM_MasterToolData[ToolNo].Z
+bToolIsNull=TRUE
+FOR I=1 TO  3
+  IF (MasterTool_Dat[I] <> 0.0) THEN
+    bToolIsNull=FALSE
+  ENDIF
+ENDFOR
+IF bToolIsNull THEN
+  ;Save Master ToolData --> X, Y, Z are 0.0
+  TCM_MasterToolData[ToolNo]=Tool_Data[ToolNo]
+  ArcMsgWriteI(,#NOTIFY,"SetMasterToolDataDone","ARC",10026,Opt_VLSTOP_LOG,ToolNo)
+ELSE
+  ;Dont save Master ToolData --> X, Y, Z are not 0.0
+ENDIF
+END ; (SaveMasterToolData)
+DEFFCT BOOL TCM_RefDataIsNull(RefDataNo:IN)
+;Check RefData
+DECL BOOL bRefDataIsNull
+DECL INT RefDataNo,I
+DECL REAL RefData[3]
+bRefDataIsNull=TRUE
+RefData[1]=TCM_RefData[RefDataNo].X
+RefData[2]=TCM_RefData[RefDataNo].Y
+RefData[3]=TCM_RefData[RefDataNo].Z
+FOR I=1 TO  3
+  IF (RefData[I] <> 0.0) THEN
+    bRefDataIsNull=FALSE
+  ENDIF
+ENDFOR
+RETURN(bRefDataIsNull)
+ENDFCT ;(TCM_RefDataIsNull)
+DEFFCT REAL TCM_LengthVector(V[]:OUT,N:IN)
+;Calc the length of the vector
+DECL REAL V[]
+DECL INT N
+RETURN  (SQRT(TCM_VectorsDotProduct(V[],V[],N)))
+ENDFCT ;(TCM_LengthVector)
+DEFFCT REAL TCM_VectorsDotProduct(V[]:OUT,W[]:OUT,N:IN)
+;Calc Skalarproduct
+DECL REAL V[],W[]
+DECL INT N
+DECL REAL SK_PROD
+DECL INT I
+SK_PROD=0
+FOR I=1 TO  N
+  SK_PROD=SK_PROD+V[I]*W[I]
+ENDFOR
+RETURN  (SK_PROD)
+ENDFCT ;(TCM_VectorsDotProduct)

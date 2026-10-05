@@ -1,0 +1,969 @@
+&ACCESS R2
+&REL 2
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEF ArcMultiLayer( )
+END
+;******************************************************************************
+;[Global Routine] Set Position Call from Trigger by ArcOn ArcSwi ArcOff
+;******************************************************************************
+GLOBAL DEF AmlSetPos(tArcFunc:IN,tArcDat:IN,tAmlDat:OUT,tArcDatHP:OUT)
+DECL enArcCall_T tArcFunc
+DECL stArcDat_T tArcDat,tAmlDat,tArcDatHP
+DECL stMultiLayer_T tMl
+  IF (gAmlRootLayer == FALSE) THEN
+    RETURN
+  ENDIF
+  IF (gArcTrackActive == TRUE) THEN
+    mArcTrackActive = TRUE
+  ENDIF
+  WHILE ((gArcSensorActive == TRUE) AND (mArcTrackActive == TRUE))
+    ArcMsgWrite(,#QUIT,"AmlInternalError","AML",50007,Opt_NOVLSTOP_LOG)
+  ENDWHILE
+  tAmlDat.MultiLayer   = stAmlInit
+  tArcDatHP.MultiLayer = stAmlInit
+  tMl = stAmlInit
+  SWITCH tArcFunc
+    CASE #ArcOnMoveStd
+      mAmlErr  =  #None
+      mAmlPosArcEnd = {C 0.0}
+      AmlCheckTechSys()
+      AmlSaveBaseCorr()
+      AmlVarInit(FALSE)
+      mAmlActPos = $POS_ACT
+      tMl = AmlSavePos(tArcFunc)
+      mAmlDat = tMl
+    CASE #ArcSwiMoveStd
+      AmlCheckTechSys()
+      tMl = AmlSavePos(tArcFunc)
+      AmlCheckDistance()
+      mAmlActPos = $POS_ACT
+      mAmlDat = tMl
+    CASE #ArcOffMoveStd
+      AmlCheckTechSys()
+      tMl = AmlSavePos(tArcFunc)
+      AmlCheckDistance()
+      mAmlActPos         = $NULLFRAME
+      mAmlDat         = tMl
+      mArcTrackActive = FALSE
+  ENDSWITCH
+  tAmlDat.MultiLayer = tMl
+  tAmlDat.MultiLayer.ActPos = $POS_ACT
+  IF (tArcFunc <> #ArcOnMoveStd) THEN
+    ;By ArcOn not need to SavePos Circ Help Point [HP]
+    tArcDatHP.MultiLayer = mAmlHP
+    mAmlHP = stAmlInit
+  ENDIF
+END
+;******************************************************************************
+;[Routine] Check distance beatwin two pints
+;******************************************************************************
+DEF AmlCheckDistance()
+DECL REAL tDistance
+IF (gAmlSttCalcOption == #TTSCALC) THEN
+  tDistance = 11.0
+ELSE
+  tDistance = 4.0
+ENDIF
+  IF (AmlDistance2P(mAmlActPos,$POS_ACT) <= tDistance) THEN
+    ArcMsgWriteI(,#QUIT,"DistanceFromTwoArcPoint","AML",50009,Opt_NOVLSTOP_LOG,tDistance)
+    mAmlErr =  #Dist2Point
+  ENDIF
+END
+;******************************************************************************
+;[Routine] Save Position with different Ooption package
+;******************************************************************************
+DEFFCT stMultiLayer_T AmlSavePos(tArcFunc:IN)
+DECL enArcCall_T tArcFunc
+  IF (gArcSensorActive == TRUE) THEN
+    RETURN AmlGetArcSenseShift()
+  ELSE
+    IF ((mArcTrackActive == TRUE) OR (gArcTrackActive == TRUE)) THEN
+        RETURN AmlGetSttShift(tArcFunc)
+    ELSE
+      RETURN AmlGetTTSFromTSYS()
+    ENDIF
+  ENDIF
+ENDFCT
+;******************************************************************************
+;[Routine] Save Base Correction Used only with STT
+;******************************************************************************
+DEF AmlSaveBaseCorr()
+  mAmlBaseCorr = stAmlInit.SBase
+  IF ((mArcTrackActive == TRUE) OR (gArcTrackActive == TRUE)) THEN
+    IF (M_BAS_COR_ON == TRUE) THEN
+      mAmlBaseCorr = M_BASE_CORR
+    ENDIF
+  ENDIF
+END
+;******************************************************************************
+;[Global Routine] Save ArcOff Position Used only with STT
+;******************************************************************************
+GLOBAL DEF AmlSaveArcOffPos()
+  IF (($ERR.INTERPRETER == #R_INT) AND (($ERR.TRIGGER_TYPE <> #TRG_NONE) OR ($ERR.INT_TYPE <> #I_NORMAL))) THEN
+    mAmlPosArcEnd = $POS_INT
+  ELSE
+    mAmlPosArcEnd = $POS_ACT
+  ENDIF
+END
+;******************************************************************************
+;[Routine] Check $TECHSYS Value
+;******************************************************************************
+DEF AmlCheckTechSys()
+DECL INT tHandle 
+tHandle = 0
+  IF (gArcSensorActive == TRUE) THEN ;MultiLayer with ArcSense
+    IF ($TECHSYS <> #TTS) AND ($TECHSYS_C <> #TTS) THEN
+      mAmlErr = #InternalError     
+      ArcMsgWriteS(tHandle,#QUIT,"AmlInternalError","AML",50007,Opt_NOVLSTOP_LOG,"Wrong Value: MultiLayer", "with ArcSense must have", "$TSYS==#TTS")   
+    ENDIF
+  ELSE
+    IF (mArcTrackActive == TRUE) THEN ;MultiLayer with STT
+       ;Nothing ToDo
+    ELSE
+      IF ($TECHSYS <> #TTS) AND ($TECHSYS_C <> #TTS) THEN ;Only MultiLayer
+        mAmlErr = #InternalError
+        ArcMsgWriteS(tHandle,#QUIT,"AmlInternalError","AML",50007,Opt_NOVLSTOP_LOG,"Wrong Value: MultiLayer", "must have $TSYS==#TTS")
+      ENDIF
+    ENDIF
+  ENDIF
+  IF (mAmlErr == #InternalError) THEN
+    WHILE (Exists_KrlMsg(tHandle) == TRUE)
+      ArcRobotStopFromSUBMIT(TRUE)
+    ENDWHILE  
+  ENDIF
+END
+;******************************************************************************
+;[Global Routine] Routine Save on Circ Help Point from SubMit Loop
+;******************************************************************************
+  ; $MOVE_STATE #ENUM
+  ; 0: Arrived at the target or auxiliary point of the motion
+  ; 1: Target point not reached (robot is somewhere on thepath)
+  ; 2: Not relevant
+  ; 3: Arrived at the auxiliary point of a CIRC or SCIRC motion
+  ; 4: On the move in the section between the start and the auxiliary point
+;******************************************************************************
+DEF AmlSaveSwitchHP()
+DECL INT tPArrive
+  IF (gAmlRootLayer == FALSE) THEN
+    RETURN
+  ENDIF
+  ON_ERROR_PROCEED
+  tPArrive = $PRO_IP1.P_ARRIVED
+  IF ($ERR.NUMBER <> 0) THEN
+    tPArrive = 0
+    ERR_CLEAR($ERR)
+  ENDIF
+  IF (tPArrive == 4) THEN
+    mAmlHP = AmlSavePos(#ArcSwiMoveStd)
+  ENDIF
+END
+;******************************************************************************
+;[Routine] ArcSense Get Different & Orientation from teach point
+;******************************************************************************
+DEFFCT stMultiLayer_T AmlGetArcSenseShift()
+DECL stMultiLayer_T tML
+  tML = stAmlInit
+  tML = AmlGetTTSFromTSYS()
+  tML.SPos.X = 0.0
+  tML.SPos.Y = $SEN_PREA[cArsMultilayerY]
+  tML.SPos.Z = $SEN_PREA[cArsMultilayerZ]
+  tML.OP = #As
+  RETURN tML
+ENDFCT
+;******************************************************************************
+;[Routine] Midium from N Point
+;******************************************************************************
+DEFFCT E6POS PosActMid(tMaxPoint :IN, tOnDistance :IN)
+DECL BOOL tON
+DECL INT tI,tMaxPoint,tTimeOut,tMemTime
+DECL REAL tOnDistance,tDistance
+DECL FRAME tCalc
+DECL E6POS tMid, tRsiActPos[10]
+tCalc = $NULLFRAME
+tTimeOut = 2000 ;ms
+IF (tOnDistance > 0) THEN
+  tDistance = $DISTANCE + tOnDistance
+  tMemTime = ArcCalcTimeoutMilliSec(tTimeOut)
+  WAIT FOR (($DISTANCE > tDistance) OR ($ROB_TIMER > tMemTime))
+ENDIF
+FOR tI = 1 TO tMaxPoint
+  tRsiActPos[tI] = $NULLFRAME
+  tRsiActPos[tI].X = $SEN_PREA[cSttPosActMultilayerX]
+  tRsiActPos[tI].Y = $SEN_PREA[cSttPosActMultilayerY]
+  tRsiActPos[tI].Z = $SEN_PREA[cSttPosActMultilayerZ]
+  tRsiActPos[tI].A = $SEN_PREA[cSttPosActMultilayerA]
+  tRsiActPos[tI].B = $SEN_PREA[cSttPosActMultilayerB]
+  tRsiActPos[tI].C = $SEN_PREA[cSttPosActMultilayerC]
+  IF (tMaxPoint > 1) THEN
+    tDistance = $DISTANCE + 1.0
+    tMemTime = ArcCalcTimeoutMilliSec(tTimeOut)
+    WAIT FOR (($DISTANCE > tDistance) OR ($ROB_TIMER > tMemTime))
+    IF ($ROB_TIMER > tMemTime) THEN
+      EXIT
+    ENDIF
+  ENDIF
+ENDFOR
+FOR tI = 1 TO tMaxPoint
+  tCalc.X = tCalc.X + tRsiActPos[tI].X
+  tCalc.Y = tCalc.Y + tRsiActPos[tI].Y
+  tCalc.Z = tCalc.Z + tRsiActPos[tI].Z
+  tCalc.A = tCalc.A + tRsiActPos[tI].A
+  tCalc.B = tCalc.B + tRsiActPos[tI].B
+  tCalc.C = tCalc.C + tRsiActPos[tI].C
+ENDFOR
+tMid.X = (tCalc.X / tMaxPoint)
+tMid.Y = (tCalc.Y / tMaxPoint)
+tMid.Z = (tCalc.Z / tMaxPoint)
+tMid.A = (tCalc.A / tMaxPoint)
+tMid.B = (tCalc.B / tMaxPoint)
+tMid.C = (tCalc.C / tMaxPoint)
+RETURN tMid
+ENDFCT
+;******************************************************************************
+;[Routine] STT Get Different & Orientation from teach point
+;******************************************************************************
+DEFFCT stMultiLayer_T AmlGetSttShift(tArcFunc:IN)
+DECL INT tI
+DECL REAL tDistance
+DECL FRAME tVector
+DECL E6POS tAmlRsiActPos
+DECL enArcCall_T tArcFunc
+DECL stMultiLayer_T tML
+tAmlRsiActPos = $NULLFRAME
+tVector = $NULLFRAME
+tML = stAmlInit
+IF (ArsRSI_CHECKID(gArcSttContId) == TRUE) THEN
+  IF (ArsRSI_SETPUBLICPAR(gArcSttContId,"TTS_POS_XYZ", "Target",4) <> cArsRSIOK) THEN
+    ArcMsgWriteS(,#QUIT,"ErrorSetParameter","AML",50010,Opt_NOVLSTOP_LOG,"[TTS_POS_XYZ]:", "Set [Target] =","[#TTS]")
+  ENDIF
+  IF (ArsRSI_SETPUBLICPAR(gArcSttContId,"TTS_POS_ABC", "Source",4) <> cArsRSIOK) THEN
+    ArcMsgWriteS(,#QUIT,"ErrorSetParameter","AML",50010,Opt_NOVLSTOP_LOG,"[TTS_POS_ABC]:", "Set [Source] =","[#TTS]")
+  ENDIF
+  WAIT SEC 0.012 ;Wait sec by set: TTS_POS_XYZ Target=4 and  TTS_POS_ABC Source=4 
+  tML.SPos.X = $SEN_PREA[cSttMultilayerX]
+  tML.SPos.Y = $SEN_PREA[cSttMultilayerY]
+  tML.SPos.Z = $SEN_PREA[cSttMultilayerZ]
+  tML.SPos.A = $SEN_PREA[cSttMultilayerA]
+  tML.SPos.B = $SEN_PREA[cSttMultilayerB]
+  tML.SPos.C = $SEN_PREA[cSttMultilayerC]
+  tML.CPos = tML.SPos
+  IF (gAmlSttCalcOption == #TTSCALC) THEN
+    SWITCH tArcFunc
+      CASE #ArcOnMoveStd 
+        tAmlRsiActPos = PosActMid(3,3);Mid from 3Point and start after 3mm
+        ;Save ActPos when Laser is Stabile
+        mAmlRsiActPos = PosActMid(2,1);Mid from 2Point and start after 1mm
+        ;Use only to calculate A & B angle
+        tVector = AmlGetFrame(tAmlRsiActPos,mAmlRsiActPos,tAmlRsiActPos:{x 0.0,y 10.0,z 0.0,a 0.0,b 0,c 0.0})
+      CASE #ArcSwiMoveStd
+        tAmlRsiActPos = PosActMid(3,0);Mid from 2Point and start after 0mm
+        ;Use only to calculate A & B angle
+        tVector = AmlGetFrame(mAmlRsiActPos,tAmlRsiActPos,mAmlRsiActPos:{x 0.0,y 10.0,z 0.0,a 0.0,b 0,c 0.0})
+      CASE #ArcOffMoveStd
+        tAmlRsiActPos = PosActMid(1,0);Mid from 1Point and start after 0mm
+        ;Use only to calculate A & B angle
+        tVector = AmlGetFrame(mAmlRsiActPos,tAmlRsiActPos,mAmlRsiActPos:{x 0.0,y 10.0,z 0.0,a 0.0,b 0,c 0.0})
+        mAmlRsiActPos = tAmlRsiActPos
+    ENDSWITCH
+    tML.CPos.A = tVector.A
+    tML.CPos.B = tVector.B
+  ENDIF
+  IF (ArsRSI_SETPUBLICPAR(gArcSttContId,"TTS_POS_XYZ", "Target",0) <> cArsRSIOK) THEN
+    ArcMsgWriteS(,#QUIT,"ErrorSetParameter","AML",50010,Opt_NOVLSTOP_LOG,"[TTS_POS_XYZ]:", "Set [Target] =","[#WORLD]")
+  ENDIF
+  IF (ArsRSI_SETPUBLICPAR(gArcSttContId,"TTS_POS_ABC", "Source",0) <> cArsRSIOK) THEN
+    ArcMsgWriteS(,#QUIT,"ErrorSetParameter","AML",50010,Opt_NOVLSTOP_LOG,"[TTS_POS_ABC]:", "Set [Source] =","[#WORLD]")
+  ENDIF
+ELSE
+  ArcMsgWriteS(,#QUIT,"AmlInternalError","AML",50007,Opt_NOVLSTOP_LOG,"gArcSttContId","Missing value from STT")
+ENDIF
+IF (ArcVarExistR(mAmlPosArcEnd.X) == TRUE) THEN
+  tML.EPos = mAmlPosArcEnd
+ENDIF
+tML.SBase = mAmlBaseCorr
+tML.OP = #Stt
+RETURN tML
+ENDFCT
+;******************************************************************************
+;[Routine] Get TTS from $TSYS dirrection
+;******************************************************************************
+DEFFCT stMultiLayer_T AmlGetTTSFromTSYS()
+DECL stMultiLayer_T tML
+  tML = stAmlInit
+  ;Save Motion Orientation
+  SWITCH $MOVE_STATE
+    CASE #CIRC_SINGLE,#CIRC_AP01,#CIRC_AP02
+      ON_ERROR_PROCEED
+      tML.SPos.A = $TSYS.A
+      IF ($ERR.NUMBER == 0) THEN
+        tML.SPos.B = $TSYS.B
+        tML.SPos.C = $TSYS.C
+      ELSE
+        ERR_CLEAR($ERR)
+      ENDIF
+    CASE #SPLINE_LIN,#SPLINE_CIRC,#SPLINE_SPL,#SPLINE_UES
+      ON_ERROR_PROCEED
+      tML.SPos.A = $SPL_TSYS[1].A
+      IF ($ERR.NUMBER == 0) THEN
+        tML.SPos.B = $SPL_TSYS[1].B
+        tML.SPos.C = $SPL_TSYS[1].C
+      ELSE
+        ERR_CLEAR($ERR)
+      ENDIF
+  DEFAULT
+      ON_ERROR_PROCEED
+      tML.SPos.A = $TSYS.A
+      IF ($ERR.NUMBER == 0) THEN
+        tML.SPos.B = $TSYS.B
+        tML.SPos.C = $TSYS.C
+      ELSE
+        ERR_CLEAR($ERR)
+      ENDIF 
+  ENDSWITCH 
+  tML.OP = #Arc
+  RETURN tML
+ENDFCT
+;******************************************************************************
+;[Global Routine] Call from MultiLayer ILF Block on Begin
+;******************************************************************************
+GLOBAL DEF AmlBlockBegin(tLayer:OUT,tAmlInfo:OUT)
+DECL BOOL tB,tExit
+DECL INT tI,tLayer,tSwitch,tMaxLayer,tArcPage
+DECL CHAR tButtonNext[10],tButtonBack[10]  
+DECL CHAR tmKey[10],tKey1[10],tKey2[10],tKey3[10],tKey4[10],tKey5[10],tKey6[10],tKey7[10]
+DECL CHAR tKey[7,10] 
+DECL CHAR tStr[256]
+DECL stAmlInfo_T tAmlInfo
+  IF (gArcMultiLayerOption == FALSE) THEN
+    LOOP
+      ArcMsgWrite(,#QUIT,"OptionPackageMultiLayerMissing","AML",50002,Opt_NOVLSTOP_LOG)
+      tLayer = 0
+    ENDLOOP
+    RETURN
+  ENDIF
+  IF (ArcVarExistI(tAmlInfo.MaxLayer,0) == FALSE) THEN
+    ArcMsgWrite(,#QUIT,"MissingMaximumLayervalue","AML",50003,Opt_NOVLSTOP_LOG)
+  ENDIF
+  tMaxLayer = tAmlInfo.MaxLayer
+  tB = (ArcVarExistI(tLayer,-2) == FALSE)
+  IF (tLayer > 0) THEN
+    IF (StrLen(tAmlInfo.Info[]) > 1) THEN
+      LOOP
+        ArcMsgWrite(,#QUIT,"MissingOrientation","AML",50008,Opt_NOVLSTOP_LOG)
+      ENDLOOP
+    ENDIF  
+  ENDIF
+  IF (tLayer == -2) THEN
+    IF (StrLen(tAmlInfo.Info[]) > 1) THEN
+      tMaxLayer = 0
+      mAmlRootInExecution = TRUE
+    ENDIF
+    tArcPage = 0
+    tButtonNext[] = ">"
+    tButtonBack[] = "<"
+    REPEAT
+      tExit = TRUE
+      IF (tArcPage > 0) THEN
+        IF (tMaxLayer - tArcPAge > 7) THEN
+          tSwitch = 7
+        ELSE
+          tSwitch = tMaxLayer - tArcPage + 1
+          IF (tSwitch > 7) THEN
+            tSwitch = 7
+          ENDIF
+        ENDIF
+      ELSE
+        IF (tMaxLayer > 6) THEN
+          tSwitch = 6
+        ELSE
+          tSwitch = tMaxLayer - tArcPage + 1
+          IF (tSwitch > 7) THEN
+            tSwitch = 7
+          ENDIF
+        ENDIF
+      ENDIF
+      FOR tI=1 TO 7
+        tB = STRCLEAR(tKey[tI,])
+        tKey[tI,] = " "
+      ENDFOR
+      tB = STRCLEAR(tKey1[])
+      tB = STRCLEAR(tKey2[])
+      tB = STRCLEAR(tKey3[])
+      tB = STRCLEAR(tKey4[])
+      tB = STRCLEAR(tKey5[])
+      tB = STRCLEAR(tKey6[])
+      tB = STRCLEAR(tKey7[])
+      SWITCH tSwitch
+        CASE 1
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[2,] = tButtonBack[]
+          ENDIF
+        CASE 2
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[3,] = tButtonBack[]
+          ENDIF
+        CASE 3
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          tKey[3,] = AmlIntToStr(2 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[4,] = tButtonBack[]
+          ENDIF
+        CASE 4
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          tKey[3,] = AmlIntToStr(2 + tArcPage)
+          tKey[4,] = AmlIntToStr(3 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[5,] = tButtonBack[]
+          ENDIF
+        CASE 5
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          tKey[3,] = AmlIntToStr(2 + tArcPage)
+          tKey[4,] = AmlIntToStr(3 + tArcPage)
+          tKey[5,] = AmlIntToStr(4 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[6,] = tButtonBack[]
+          ENDIF
+        CASE 6
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          tKey[3,] = AmlIntToStr(2 + tArcPage)
+          tKey[4,] = AmlIntToStr(3 + tArcPage)
+          tKey[5,] = AmlIntToStr(4 + tArcPage)
+          IF (tArcPage > 0) THEN
+            tKey[6,] = tButtonBack[]
+            tKey[7,] = tButtonNext[]
+          ELSE
+            tKey[6,] = tButtonNext[]
+          ENDIF
+        CASE 7     
+          tKey[1,] = AmlIntToStr(0 + tArcPage)
+          tKey[2,] = AmlIntToStr(1 + tArcPage)
+          tKey[3,] = AmlIntToStr(2 + tArcPage)
+          tKey[4,] = AmlIntToStr(3 + tArcPage)
+          tKey[5,] = AmlIntToStr(4 + tArcPage)
+          IF (tArcPage > 0) THEN 
+            tKey[6,] = tButtonBack[]
+          ENDIF
+          tKey[7,] = tButtonNext[]
+      ENDSWITCH
+      FOR tI=1 TO 7
+        ON_ERROR_PROCEED
+        tKey1[tI] = tKey[1,tI]
+        ON_ERROR_PROCEED
+        tKey2[tI] = tKey[2,tI]
+        ON_ERROR_PROCEED
+        tKey3[tI] = tKey[3,tI]
+        ON_ERROR_PROCEED
+        tKey4[tI] = tKey[4,tI]
+        ON_ERROR_PROCEED
+        tKey5[tI] = tKey[5,tI]
+        ON_ERROR_PROCEED
+        tKey6[tI] = tKey[6,tI]
+        ON_ERROR_PROCEED
+        tKey7[tI] = tKey[7,tI]
+      ENDFOR
+      ERR_CLEAR($ERR)
+      IF ArcStrComp(tKey1[],"0") THEN
+         tKey1[]="AML#Root"
+      ENDIF
+      tLayer = ArcMsgWriteDialogI(,"SelectLayerManualy","AML",50004,Opt_VLSTOP_LOG,tKey1[],tKey2[],tKey3[],tKey4[],tKey5[],tKey6[],tKey7[],tMaxLayer)
+      ArcRemoteSetDialogAnswer(50004,tLayer)
+      FOR tI=1 TO 7
+        ON_ERROR_PROCEED
+        tmKey[tI] = tKey[tLayer,tI]
+      ENDFOR
+      ERR_CLEAR($ERR)
+      tmKey[] = tKey[tLayer,]
+      IF ArcStrComp(tmKey[],tButtonBack[]) THEN
+        tArcPage = tArcPage - 5
+        tExit = FALSE
+      ENDIF
+      IF ArcStrComp(tmKey[],tButtonNext[]) THEN
+        tArcPage = tArcPage + 5
+        tExit = FALSE
+      ENDIF
+    UNTIL (tExit == TRUE)
+    tLayer = (tLayer - 1) + tArcPage
+    ArcMsgWriteI(,#NOTIFY,"LayerSelectedManualy","AML",50005,Opt_NOVLSTOP_LOG,tLayer)
+  ENDIF
+  IF (tLayer == 0) THEN
+    gAmlRootLayer = TRUE
+    IF (StrLen(tAmlInfo.Info[]) > 1) THEN
+      tMaxLayer = 0
+      mAmlRootInExecution = TRUE
+    ENDIF
+  ENDIF
+  gAmlActLayer = tLayer  
+  tB = STRCLEAR(gAmlActLayerStr[])
+  IF (mAmlRootInExecution == FALSE) THEN
+    tStr[] = ArcStrAdd3("Layer:[",AmlIntToStr(gAmlActLayer),"]")
+    gAmlActLayerStr[] = tStr[]
+  ELSE
+    gAmlActLayerStr[] = " "
+  ENDIF  
+END
+;******************************************************************************
+;[Global Routine] Call on MultiLayer ILF Block Case (x:Layer) Start
+;******************************************************************************
+GLOBAL DEF AmlBlockCaseBegin(tLayer:IN,tAmlInfo:OUT)
+DECL INT tLayer
+DECL stAmlInfo_T tAmlInfo
+  IF (gArcMultiLayerOption == FALSE) THEN
+    RETURN
+  ENDIF
+END
+;******************************************************************************
+;[Global Routine] Call on MultiLayer ILF Block Case (x:Layer) End
+;******************************************************************************
+GLOBAL DEF AmlBlockCaseEnd(tLayer:IN,tAmlInfo:OUT)
+DECL INT tLayer
+DECL stAmlInfo_T tAmlInfo
+  IF (gArcMultiLayerOption == FALSE) THEN
+    RETURN
+  ENDIF
+  M_BAS_COR_ON = FALSE
+  M_BASE_CORR = $NULLFRAME 
+END
+;******************************************************************************
+;[Global Routine] Call on MultiLayer ILF Block default
+;******************************************************************************
+GLOBAL DEF AmlBlockDefault(tLayer:IN,tAmlInfo:OUT)
+DECL INT tLayer
+DECL stAmlInfo_T tAmlInfo
+  LOOP
+    ArcMsgWriteI(,#QUIT,"WrongLayerDontExist","AML",50006,Opt_NOVLSTOP_LOG,tLayer)
+  ENDLOOP
+END
+;******************************************************************************
+;[Global Routine] Call on MultiLayer ILF Block End
+;******************************************************************************
+GLOBAL DEF AmlBlockEnd(tLayer:IN,tAmlInfo:OUT)
+DECL BOOL tB
+DECL INT tLayer
+DECL stAmlInfo_T tAmlInfo
+  IF (gArcMultiLayerOption == FALSE) THEN
+    RETURN  ;Exit MultiLayer Block
+  ENDIF
+  SWITCH mAmlErr
+    CASE #None
+      IF (mAmlRootInExecution == TRUE) THEN
+        tB =STRCLEAR(tAmlInfo.Info[])
+        tAmlInfo.Info[] = " "
+        mAmlRootInExecution = FALSE
+      ENDIF
+    CASE #Dist2Point
+        tB =STRCLEAR(tAmlInfo.Info[])
+        tAmlInfo.Info[] = " "    
+        tAmlInfo.Info[] = "The distance between two points must be major: 3mm"
+    CASE #InternalError
+        tB =STRCLEAR(tAmlInfo.Info[])
+        tAmlInfo.Info[] = " "        
+        tAmlInfo.Info[] = "InternalError: $TSYS variable has the wrong value"      
+  ENDSWITCH
+  AmlVarInit (FALSE)
+  gAmlActLayer = -1
+END
+;******************************************************************************
+;[Global Routine] Call from ILF Block on Begin
+;tAmlPg:  All Layer Shift
+;tAmlDat: Shift from Stt or Ars
+;tAmlPs:  Shift from singular point
+;******************************************************************************
+GLOBAL DEFFCT E6POS AmlGetPos(tXPoint:IN,tAmlPg:IN,tAmlDat:IN,tAmlInfo:IN,tAmlPs:IN)
+DECL E6POS tXPoint,tXPoint_TTSAngle,tretPos
+DECL FRAME tAmlPg,tAmlPs,tAmlTechCorr,tAmlPgPs
+DECL stArcDat_T tAmlDat
+DECL stAmlInfo_T tAmlInfo
+  gAmlRootLayer = FALSE
+  IF (gArcMultiLayerOption == FALSE) THEN
+    LOOP
+      ArcMsgWrite(,#QUIT,"OptionPackageMultiLayerMissing","AML",50002,Opt_NOVLSTOP_LOG)
+    ENDLOOP
+    RETURN $NULLFRAME
+  ENDIF
+  ON_ERROR_PROCEED
+  tAmlDat = tAmlDat
+  IF ($ERR.NUMBER <> 0) THEN
+    ERR_CLEAR($ERR)
+    LOOP
+      ArcMsgWrite(,#QUIT,"MissingWPStructure","AML",50012,Opt_NOVLSTOP_LOG)
+    ENDLOOP
+  ENDIF
+  ON_ERROR_PROCEED
+  tAmlDat.MultiLayer.OP = tAmlDat.MultiLayer.OP
+  IF ($ERR.NUMBER <> 0) THEN
+    tAmlDat.MultiLayer.OP = #NONE
+    ERR_CLEAR($ERR)
+  ENDIF
+  IF (StrLen(tAmlInfo.Info[]) > 1) OR (tAmlDat.MultiLayer.OP == #NONE)THEN
+    LOOP
+      ArcMsgWrite(,#QUIT,"MissingOrientation","AML",50008,Opt_NOVLSTOP_LOG)
+    ENDLOOP
+  ENDIF
+  ON_ERROR_PROCEED
+  tAmlPs = tAmlPs
+  IF ($ERR.NUMBER <> 0) THEN
+    tAmlPs = $NULLFRAME
+    ERR_CLEAR($ERR)
+  ENDIF
+  tXPoint_TTSAngle   = $NULLFRAME
+  tAmlTechCorr       = $NULLFRAME
+  tXPoint_TTSAngle   = tXPoint
+  tXPoint_TTSAngle.A = tAmlDat.MultiLayer.SPos.A
+  tXPoint_TTSAngle.B = tAmlDat.MultiLayer.SPos.B
+  tXPoint_TTSAngle.C = tAmlDat.MultiLayer.SPos.C
+  SWITCH tAmlDat.MultiLayer.OP
+    CASE #Arc ;MultiLayer Only
+    CASE #As ;Arc Sense Correction 
+      tAmlTechCorr.Y = tAmlDat.MultiLayer.SPos.Y
+      tAmlTechCorr.Z = tAmlDat.MultiLayer.SPos.Z 
+    CASE #Stt ;Stt Correction
+      IF (ArcVarExistR(tAmlDat.MultiLayer.SBase.X) == TRUE) THEN ;By Active STT Find ArcOn
+        M_BAS_COR_ON = TRUE
+        M_BASE_CORR = tAmlDat.MultiLayer.SBase
+        BAS(#BASE,$ACT_BASE) ;Set Actual Base
+        BAS(#FRAMES)         ;External Kinematics
+      ENDIF
+      IF (ArcVarExistR(tAmlDat.MultiLayer.EPos.X) == TRUE) THEN ;By Active STT Find ArcOff
+        tXPoint.X          = tAmlDat.MultiLayer.EPos.X
+        tXPoint.Y          = tAmlDat.MultiLayer.EPos.Y
+        tXPoint.Z          = tAmlDat.MultiLayer.EPos.Z
+        tXPoint_TTSAngle   = tXPoint
+        tXPoint_TTSAngle.A = tAmlDat.MultiLayer.SPos.A
+        tXPoint_TTSAngle.B = tAmlDat.MultiLayer.SPos.B
+        tXPoint_TTSAngle.C = tAmlDat.MultiLayer.SPos.C
+      ELSE
+        tAmlTechCorr.X = tAmlDat.MultiLayer.SPos.X
+        tAmlTechCorr.Y = tAmlDat.MultiLayer.SPos.Y
+        tAmlTechCorr.Z = tAmlDat.MultiLayer.SPos.Z
+      ENDIF
+      SWITCH gAmlSttCalcOption
+      CASE #TTS ;Shift Point in TTS
+      CASE #TTSCALC ;Shift Point in TTS with point vector calc
+         tXPoint_TTSAngle.A = tAmlDat.MultiLayer.CPos.A
+         tXPoint_TTSAngle.B = tAmlDat.MultiLayer.CPos.B
+         tXPoint_TTSAngle.C = tAmlDat.MultiLayer.CPos.C
+      CASE #TOOL ;Shift Point in Tool
+         tretPos = tXPoint
+         tAmlPg.X = (tAmlPg.X * (-1))
+         tAmlPg.Y = (tAmlPg.Y * (-1))
+         tAmlPg.Z = (tAmlPg.Z * (-1))
+         tAmlPs.X = (tAmlPs.X * (-1))
+         tAmlPs.Y = (tAmlPs.Y * (-1))
+         tAmlPs.Z = (tAmlPs.Z * (-1))
+         tAmlPgPs.X = tAmlPg.X + tAmlPs.X
+         tAmlPgPs.Y = tAmlPg.Y + tAmlPs.Y
+         tAmlPgPs.Z = tAmlPg.Z + tAmlPs.Z
+         tAmlPgPs.A = tAmlPg.A + tAmlPs.A
+         tAmlPgPs.B = tAmlPg.B + tAmlPs.B
+         tAmlPgPs.C = tAmlPg.C + tAmlPs.C
+         tretPos = tretPos : tAmlPgPs
+         tretPos = tXPoint_TTSAngle : tAmlTechCorr : INV_POS(INV_POS(tretPos) : tXPoint_TTSAngle)
+         RETURN tretPos
+      CASE #TTS_PointA
+        ;Use always A Angle from teached Point. Movement direction from Robot is X
+        ;Works with tooldirection #Z!!!
+        tXPoint_TTSAngle.A = tXPoint.A
+        ;Angle B and C musst be from TTS!!!
+      ENDSWITCH
+    DEFAULT
+      LOOP
+        ArcMsgWrite(,#QUIT,"AmlInternalError","AML",50007,Opt_NOVLSTOP_LOG)
+      ENDLOOP
+  ENDSWITCH
+  RETURN tXPoint_TTSAngle : tAmlTechCorr : tAmlPg : tAmlPs : INV_POS(INV_POS(tXPoint) : tXPoint_TTSAngle)
+ENDFCT
+;******************************************************************************
+;[Global Routine] Call from ArcLoop On Program #P_RESET,#P_FREE
+;******************************************************************************
+GLOBAL DEF AmlProgReset()
+  AmlVarInit (TRUE)
+  gAmlSelectLayer     = -2
+END
+;******************************************************************************
+;[Global Routine] Call from ArcLoop On Line Selected
+;******************************************************************************
+GLOBAL DEF AmlLineSelect()
+  AmlVarInit (TRUE)
+END
+;******************************************************************************
+;[Global Routine] Call from ArcLoop On SubMit Init
+;******************************************************************************
+GLOBAL DEF AmlLoopInit()
+  AmlVarInit (TRUE)
+END
+;******************************************************************************
+;[Global Routine] Call from ArcLoop SubMit Loop
+;******************************************************************************
+GLOBAL DEF AmlLoop()
+  AmlSaveSwitchHP()
+  AmlBaseCorrMsg()
+
+END
+;******************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;[Routine] Show Message when M_BASE:_CORR is active
+;******************************************************************************
+DEF AmlBaseCorrMsg()
+  IF (M_BAS_COR_ON == TRUE) THEN
+    IF (AmlDistance2P(mAmlBaseCorrMsg,M_BASE_CORR) > 1.0) THEN
+      ArcMsgWriteClearHandle(mAmlHandleBaseCorr)
+      mAmlBaseCorrMsg = M_BASE_CORR
+      ArcMsgWriteR(mAmlHandleBaseCorr,#STATE,"BaseCorrActive","AML",50011,Opt_NOVLSTOP_LOG,mAmlBaseCorrMsg.X,mAmlBaseCorrMsg.Y,mAmlBaseCorrMsg.Z)
+    ENDIF
+  ELSE
+    ArcMsgWriteClearHandle(mAmlHandleBaseCorr)
+    mAmlHandleBaseCorr = 0
+    mAmlBaseCorrMsg = $NULLFRAME
+  ENDIF
+END
+;******************************************************************************
+;[Routine] Initialize all Variable
+;******************************************************************************
+DEF AmlVarInit(tAll:IN)
+DECL BOOL tRes,tAll
+  mAmlDat = stAmlInit
+  mAmlHP = stAmlInit
+  mAmlSwi = stAmlInit 
+  mAmlSwiDistance = FALSE
+  IF (tAll == TRUE) THEN
+    mAmlPosArcEnd = {C 0.0}
+    mArcTrackActive     = FALSE
+    gArcTrackActive     = FALSE
+    mAmlRootInExecution = FALSE
+    mAmlErr             = #None
+    gAmlActLayer        = -1
+    gAmlRootLayer       = FALSE
+    tRes = STRCLEAR(gAmlActLayerStr[])
+    gAmlActLayerStr[] = " "
+  ENDIF
+END  
+;******************************************************************************
+;[Routine] Convert Integer to String 
+;******************************************************************************
+DEFFCT CHAR[10] AmlIntToStr(tVar:IN)
+DECL INT tVar
+DECL CHAR tStr[10]
+DECL STATE_T STATE
+DECL INT OFFSET
+  OFFSET = 0
+  SWRITE(tStr[],STATE,OFFSET,"%d",tVar)
+  RETURN tStr[]
+ENDFCT
+;******************************************************************************
+;[Routine] Calculate Distance between two point
+;******************************************************************************
+DEFFCT REAL AmlDistance2P(tP1:IN,tP2:IN)
+DECL REAL tX,tY,tZ
+DECL E6POS tP1,tP2
+  ON_ERROR_PROCEED
+  tP1.X = tP1.X
+  IF ($ERR.NUMBER <> 0) THEN
+    ERR_CLEAR($ERR)
+    RETURN 0
+  ENDIF
+  ON_ERROR_PROCEED
+  tP2.X = tP2.X
+  IF ($ERR.NUMBER <> 0) THEN
+    ERR_CLEAR($ERR)
+    RETURN 0
+  ENDIF
+  tX = (tP1.X-tP2.X)
+  tY = (tP1.Y-tP2.Y)
+  tZ = (tP1.Z-tP2.Z)
+  tX = tX * tX
+  tY = tY * tY
+  tZ = tZ * tZ
+RETURN SQRT(tX + tY + tZ)
+ENDFCT
+;******************************************************************************
+; Create a frame from an tOrigin point, a point on the x-axis
+; and a third point on the xy-plane
+;******************************************************************************
+DEFFCT FRAME AmlGetFrame(tOrigin :IN,tX :IN,tXP :IN)
+DECL E6POS tOrigin,tX,tXP
+DECL stVector3D_T tXDir,tYDir,tZDir
+  tXDir=AmlVecFrom2Point(tOrigin,tX)
+  AmlNormalise(tXDir)
+  tYDir=AmlVecFrom2Point(tOrigin,tXP)
+  AmlNormalise(tYDir)
+  tZDir=AmlCross(tXDir,tYDir)
+  AmlNormalise(tZDir)
+  tYDir=AmlCross(tZDir,tXDir)
+  AmlNormalise(tYDir)
+  RETURN AmlMat2FrameAbc(tOrigin,tXDir,tYDir,tZDir)
+ENDFCT
+;******************************************************************************
+; Create an interpolated frame from a start end end frame
+; tFactor is used to control how far between the 2 input frames the tResult is calcuated at
+; eg. tFactor=0 gives the start frame
+;     tFactor=1 gives the end frame
+;     tFactor=0.5 gives a frame half way between start and end frames
+;******************************************************************************
+DEFFCT FRAME AmlInterpolate(tStartFrame :IN,tEndFrame :IN,tFactor :IN)
+DECL FRAME tStartFrame,tEndFrame
+DECL FRAME tDelta,tSubDelta
+DECL REAL tFactor
+DECL stQuaternion_T tQ1
+DECL stAxisAngle_T tAxisAngle
+DECL stVector3D_T tDeltaABC
+  tDelta=INV_POS(tStartFrame):tEndFrame
+  tQ1=AmlABC2Quaternion(tDelta)
+  tAxisAngle=AmlQuat2AxisAngle(tQ1)
+  tAxisAngle.THETA=tAxisAngle.THETA*tFactor
+  tQ1=AmlAxisAngle2Quaternion(tAxisAngle)
+  tDeltaABC=AmlQuaternion2ABC(tQ1)
+  tSubDelta.X=tDelta.X*tFactor
+  tSubDelta.Y=tDelta.Y*tFactor
+  tSubDelta.Z=tDelta.Z*tFactor
+  tSubDelta.A=tDeltaABC.X
+  tSubDelta.B=tDeltaABC.Y
+  tSubDelta.C=tDeltaABC.Z
+  RETURN tStartFrame:tSubDelta
+ENDFCT
+;******************************************************************************
+; Convert ABC angles to a quaternion
+;******************************************************************************
+DEFFCT stQuaternion_T AmlABC2Quaternion(tABC :IN)
+DECL FRAME tABC
+DECL REAL tCosA,tCosB,tCosC,tSinA,tSinB,tSinC
+DECL stQuaternion_T tQ
+  tCosA=COS(tABC.A/2)
+  tCosB=COS(tABC.B/2)
+  tCosC=COS(tABC.C/2)
+  tSinA=SIN(tABC.A/2)
+  tSinB=SIN(tABC.B/2)
+  tSinC=SIN(tABC.C/2)
+  tQ.Q1=tSinC*tCosB*tCosA-tCosC*tSinB*tSinA
+  tQ.Q2=tCosC*tSinB*tCosA+tSinC*tCosB*tSinA
+  tQ.Q3=tCosC*tCosB*tSinA-tSinC*tSinB*tCosA
+  tQ.Q4=tCosC*tCosB*tCosA+tSinC*tSinB*tSinA
+  RETURN tQ
+ENDFCT
+;******************************************************************************
+; Calculate the equivalent axis and angle of rotation from a quaternion
+;******************************************************************************
+DEFFCT stAxisAngle_T AmlQuat2AxisAngle(tQ :IN)
+DECL stQuaternion_T tQ
+DECL stAxisAngle_T tAxisAngle
+DECL REAL tS
+  tS=SQRT(1-tQ.Q4*tQ.Q4)
+  IF(ABS(tS)<0.000001) THEN
+    tS=1
+  ENDIF
+  tAxisAngle.I=tQ.Q1/tS
+  tAxisAngle.J=tQ.Q2/tS
+  tAxisAngle.K=tQ.Q3/tS
+  tAxisAngle.THETA=ACOS(tQ.Q4)*2
+  RETURN tAxisAngle
+ENDFCT
+;******************************************************************************
+; Calculate the quaternion from equivalent axis and angle of rotation
+;******************************************************************************
+DEFFCT stQuaternion_T AmlAxisAngle2Quaternion(tAxisAngle :IN)
+DECL stAxisAngle_T tAxisAngle
+DECL stQuaternion_T tQ
+DECL REAL tS,C
+  tS=SIN(tAxisAngle.THETA/2)
+  C=COS(tAxisAngle.THETA/2)
+  tQ.Q1=tAxisAngle.I*tS
+  tQ.Q2=tAxisAngle.J*tS
+  tQ.Q3=tAxisAngle.K*tS
+  tQ.Q4=C
+  RETURN tQ
+ENDFCT
+;******************************************************************************
+; Create ABC angles from a quaternion
+;******************************************************************************
+DEFFCT stVector3D_T AmlQuaternion2ABC(tQ :IN)
+DECL stQuaternion_T tQ
+DECL stVector3D_T tABC
+  tABC.X=ATAN2(2*tQ.Q4*tQ.Q1+2*tQ.Q2*tQ.Q3,1-2*tQ.Q1*tQ.Q1-2*tQ.Q2*tQ.Q2)
+  tABC.Y=ATAN2(2*tQ.Q1*tQ.Q2+2*tQ.Q4*tQ.Q3,1-2*tQ.Q2*tQ.Q2-2*tQ.Q3*tQ.Q3)
+  tABC.Z=ATAN2(2*tQ.Q4*tQ.Q2-2*tQ.Q1*tQ.Q3,COS(tABC.X)*(1-2*tQ.Q2*tQ.Q2-2*tQ.Q3*tQ.Q3)+SIN(tABC.X)*(2*tQ.Q1*tQ.Q2+2*tQ.Q4*tQ.Q3))
+  RETURN tABC
+ENDFCT
+;******************************************************************************
+; Create a frame from an Origin point and 3 direction cosine vectors
+;******************************************************************************
+DEFFCT FRAME AmlMat2FrameAbc(tOrigin :IN, tXDir :IN, tYDir :IN, tZDir :IN)
+DECL E6POS tOrigin
+DECL stVector3D_T tXDir, tYDir, tZDir
+DECL FRAME tResult
+  tResult.X=tOrigin.X
+  tResult.Y=tOrigin.Y
+  tResult.Z=tOrigin.Z
+  IF ABS(ABS(tXDir.Z) - 1) < 0.000001 THEN
+    tResult.A=ATAN2(-tYDir.X,tYDir.Y)
+    tResult.B=ATAN2(-tXDir.Z,0)
+    tResult.C=90
+  ELSE
+    tResult.A=ATAN2(tXDir.Y,tXDir.X)
+    tResult.B=ATAN2(-tXDir.Z,SQRT(tYDir.Z*tYDir.Z+tZDir.Z*tZDir.Z))
+    tResult.C=ATAN2(tYDir.Z,tZDir.Z)
+  ENDIF
+  RETURN(tResult)
+ENDFCT
+;******************************************************************************
+; Create a vector between 2 points
+;******************************************************************************
+DEFFCT stVector3D_T AmlVecFrom2Point(STARTPT :IN,ENDPT: IN)
+DECL E6POS STARTPT,ENDPT
+DECL stVector3D_T tResult
+  tResult.X=ENDPT.X-STARTPT.X
+  tResult.Y=ENDPT.Y-STARTPT.Y
+  tResult.Z=ENDPT.Z-STARTPT.Z
+  RETURN(tResult)
+ENDFCT
+;******************************************************************************
+; Return the AmlCross product of 2 vectors
+;******************************************************************************
+DEFFCT stVector3D_T AmlCross(tV1 :IN,tV2 :IN)
+DECL stVector3D_T tV1,tV2,tResult
+  tResult.X=tV1.Y*tV2.Z-tV1.Z*tV2.Y
+  tResult.Y=tV1.Z*tV2.X-tV1.X*tV2.Z
+  tResult.Z=tV1.X*tV2.Y-tV1.Y*tV2.X
+  RETURN(tResult)
+ENDFCT
+;******************************************************************************
+; AmlNormalise a vector so that it'tS length is 1
+;******************************************************************************
+DEF AmlNormalise(tVector:OUT)
+DECL stVector3D_T tVector
+DECL REAL tNorm
+  tNorm=tVector.X*tVector.X
+  tNorm=tNorm+tVector.Y*tVector.Y
+  tNorm=tNorm+tVector.Z*tVector.Z
+  tNorm=SQRT(tNorm)
+  tVector.X=tVector.X/tNorm
+  tVector.Y=tVector.Y/tNorm
+  tVector.Z=tVector.Z/tNorm
+END

@@ -1,0 +1,42 @@
+&ACCESS RVO2
+&REL 24
+&PARAM DISKPATH = KRC:\R1
+DEFDAT  PYRO_FUNCTIONS PUBLIC
+
+SIGNAL i2ColourTemperature $IN[1200] TO $IN[1215]
+SIGNAL i1ColourTemperatureCh1 $IN[1216] TO $IN[1231]
+SIGNAL i1ColourTemperatureCh2 $IN[1232] TO $IN[1247]
+SIGNAL i1ColourTemperatureSum $IN[1248] TO $IN[1263]
+SIGNAL iEmissivitySlope $IN[1264] TO $IN[1279]
+SIGNAL iEmissivityCh1 $IN[1280] TO $IN[1295]
+SIGNAL iEmissivityCh2 $IN[1296] TO $IN[1311]
+SIGNAL iEmissivitySum $IN[1312] TO $IN[1327]
+SIGNAL iClearSettings $IN[1328] TO $IN[1335]
+SIGNAL iAnalogOutput $IN[1336] TO $IN[1343]
+SIGNAL iDeviceTemperature $IN[1344] TO $IN[1351]
+SIGNAL iErrorStatus $IN[1352] TO $IN[1359]
+SIGNAL iDeviceStatus $IN[1360] TO $IN[1391]
+SIGNAL iBeginningDeviceRange $IN[1392] TO $IN[1407]
+SIGNAL iEndDeviceRange $IN[1408] TO $IN[1423]
+SIGNAL iBeginningDeviceSubRange $IN[1424] TO $IN[1439]
+SIGNAL iEndDeviceSubRange $IN[1440] TO $IN[1455]
+
+DECL GLOBAL REAL r2ColourTemperature
+DECL GLOBAL REAL r1ColourTemperatureCh1
+DECL GLOBAL REAL r1ColourTemperatureCh2
+DECL GLOBAL REAL r1ColourTemperatureSum
+DECL GLOBAL REAL rEmissivitySlope
+DECL GLOBAL REAL rEmissivityCh1
+DECL GLOBAL REAL rEmissivityCh2
+DECL GLOBAL REAL rEmissivitySum
+DECL GLOBAL REAL rDeviceTemperature
+DECL GLOBAL REAL rBeginningDeviceRange
+DECL GLOBAL REAL rEndDeviceRange
+DECL GLOBAL REAL rBeginningDeviceSubRange
+DECL GLOBAL REAL rEndDeviceSubRange
+
+DECL GLOBAL INT nErrorStatus
+DECL GLOBAL INT nDeviceStatus
+
+
+ENDDAT

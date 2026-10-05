@@ -1,0 +1,45 @@
+{
+  "key": "stage-dry-mass",
+  "form": "m_dry = e' · m_prop",
+  "variables": {
+    "m_dry": "段の乾燥質量 [kg]",
+    "e'": "乾燥質量／推進剤質量の比 ε/(1−ε) [-]",
+    "m_prop": "段の推進剤質量 [kg]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "78,92",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "42-43",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "inherits": "e'（structural-coefficient-eprime）と m_prop（stage-propellant-mass）の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "ε 一定近似をそのまま乾燥質量に写す式であるため、段規模依存のスケール則が乾燥質量に一切反映されない。フェアリング・残留推進剤・ウルッジ/マージンは m_dry に含まれない。",
+  "limitations_ref": "lim",
+  "limitations_basis": "inferred",
+  "limitations_inference": "P-1 の ε 一定・質量項未計上（06:42-43）は m_dry を名指ししていないが、本式は m_dry を e' の一次式として定めるため、ε の誤差と未計上分がそのまま m_dry に現れると対応づけた。",
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "stage-propellant-mass とは限界の内容が重なるが、感度の出方が異なる（m_dry は e' に一次、m_prop は 1/(1−k) を介して非線形）ため VR-10 により分けている。"
+}

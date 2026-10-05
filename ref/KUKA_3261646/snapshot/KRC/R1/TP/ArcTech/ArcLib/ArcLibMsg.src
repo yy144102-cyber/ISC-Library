@@ -1,0 +1,1079 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibMsg( )
+;FOLD Msg ReadMe HowToUse
+;FOLD Message
+;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+; Message
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;ArcMsgWrite([1],[2],[3],[4],[5],[6])                                                                                                                                     ;
+;[1] INT................Return Handle                                                                                                                                     ;
+;                       -Variable Absent Wait until quit                                                                                                                  ;
+;                       -Variable Present Return Handle without Wait                                                                                                      ;
+;[2] ENUM...............Message Type:                                                                                                                                     ;
+;                       -#NOTIFY                                                                                                                                          ;
+;                       -#STATE                                                                                                                                           ;
+;                       -#QUIT                                                                                                                                            ;
+;                       -#WAITING                                                                                                                                         ;
+;[3] CHAR[80]...........Message Text                                                                                                                                      ;
+;[4] CHAR[24]...........Message module name                                                                                                                               ;
+;[5] INT................Message number                                                                                                                                    ;
+;[6] KrlMsgOpt_T........Message Option:                                                                                                                                   ;
+;                       MsgOp("[1][2][3][4]")                                                                                                                             ;
+;                       [1]BOOL VL_STOP                                                                                                                                   ;
+;                       [2]BOOL CLEAR_P_RESET                                                                                                                             ;
+;                       [3]BOOL CLEAR_P_SAW                                                                                                                               ;
+;                       [4]BOOL LOG_TO_DB                                                                                                                                 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Message with Parameter                                                                                                                                                   ;
+;Boolean                                                                                                                                                                  ;
+;ArcMsgWriteB([1],[2],[3],[4],[5],[6],[7],[8],[9])                                                                                                                        ;
+;[7] BOOLEAN.............Boolean Parameter1                                                                                                                               ;
+;[8] BOOLEAN.............Boolean Parameter2                                                                                                                               ;
+;[9] BOOLEAN.............Boolean Parameter3                                                                                                                               ;
+;Integer                                                                                                                                                                  ;
+;ArcMsgWriteI([1],[2],[3],[4],[5],[6],[7],[8],[9])                                                                                                                        ;
+;[7] INT.................Integer Parameter1                                                                                                                               ;
+;[8] INT.................Integer Parameter2                                                                                                                               ;
+;[9] INT.................Integer Parameter3                                                                                                                               ;
+;Real                                                                                                                                                                     ;
+;ArcMsgWriteR([1],[2],[3],[4],[5],[6],[7],[8],[9])                                                                                                                        ;
+;[7] REAL................Real Parameter1                                                                                                                                  ;
+;[8] REAL................Real Parameter2                                                                                                                                  ;
+;[9] REAL................Real Parameter3                                                                                                                                  ;
+;String                                                                                                                                                                   ;
+;ArcMsgWriteS([1],[2],[3],[4],[5],[6],[7],[8],[9])                                                                                                                        ;
+;[7] CHAR[26]............String Parameter1                                                                                                                                ;
+;[8] CHAR[26]............String Parameter2                                                                                                                                ;
+;[9] CHAR[26]............String Parameter3                                                                                                                                ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Example                                                                                                                                                                  ;
+;ArcMsgWrite(,#NOTIFY,"User message","User",1,Opt_NOVLSTOP_LOG);Normal Message                                                                                            ;
+;ArcMsgWriteB(,#NOTIFY,"User message BOOL %1","User",1,Opt_NOVLSTOP_LOG,TRUE,TRUE,TRUE);Message with parameter Boolean                                                    ;
+;ArcMsgWriteI(,#NOTIFY,"User message INT %1","User",1,Opt_NOVLSTOP_LOG,1,2,3);Message with parameter Integer                                                              ;
+;ArcMsgWriteR(,#NOTIFY,"User message REAL %1","User",1,Opt_NOVLSTOP_LOG,0.1,0.2,0.3);Message with parameter Real                                                          ;
+;ArcMsgWriteS(,#NOTIFY,"User message CHAR %1","User",1,Opt_NOVLSTOP_LOG,"Kuka Roboter","Kuka Roboter","Kuka Roboter");Message with parameter String                       ;
+;To translate keys parameter:
+; Param1 [NUMBER AS STRING] "#1234" with prefix
+; Param2 [NUMBER AS STRING] "#2345" with prefix
+; Param3 [NUMBER AS STRING] "#3456" with prefix
+;On same kxr file([4] Message module name) key must have prefix "P_":
+; <uiText key="P_1234">
+;   <text xml:lang="de-DEV">Test 1</text>
+;   <text xml:lang="en-DEV">Test 1</text>
+; </uiText>
+; <uiText key="P_2345">
+;   <text xml:lang="de-DEV">Test 2</text>
+;   <text xml:lang="en-DEV">Test 2</text>
+; </uiText>
+; <uiText key="P_3456">
+;   <text xml:lang="de-DEV">Test 3</text>
+;   <text xml:lang="en-DEV">Test 3</text>
+; </uiText>
+;ArcMsgWriteS(,#NOTIFY,"User message CHAR %1","User",1,Opt_NOVLSTOP_LOG,"#1234","#2345","#3456");Message with translated parameter  
+;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+;ENDFOLD
+;FOLD Message Dialogue
+;DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+; Message Dialogue
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;[1] = ArcMsgWriteDialog([2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13])                                                                                             ;
+;[1] INT................Return Dialogue Answer if [2] variable is not decelerated otherwise Answer = -1                                                                   ;
+;[2] INT................Return Handle                                                                                                                                     ;
+;                       -Variable Absent Wait until clean message                                                                                                         ;
+;                       -Variable Present Return Handle without Wait                                                                                                      ;
+;[3] CHAR[80]...........Message Text                                                                                                                                      ;
+;[4] CHAR[24]...........Message module name                                                                                                                               ;
+;[5] INT................Message number                                                                                                                                    ;
+;[6] CHAR[10]...........SoftKey1 Button text                                                                                                                              ;
+;[7] CHAR[10]...........SoftKey2 Button text                                                                                                                              ;
+;[8] CHAR[10]...........SoftKey3 Button text                                                                                                                              ;
+;[9] CHAR[10]...........SoftKey4 Button text                                                                                                                              ;
+;[10] CHAR[10]..........SoftKey5 Button text                                                                                                                              ;
+;[11] CHAR[10]..........SoftKey6 Button text                                                                                                                              ;
+;[12] CHAR[10]..........SoftKey7 Button text                                                                                                                              ;
+;[13] KrlMsgOpt_T........Message Option:                                                                                                                                  ;
+;                       ArcMsgWriteOptDef: Default option                                                                                                                 ;
+;                       MsgOp("[1][2][3][4]")                                                                                                                             ;
+;                       [1]BOOL VL_STOP                                                                                                                                   ;
+;                       [2]BOOL CLEAR_P_RESET                                                                                                                             ;
+;                       [3]BOOL CLEAR_P_SAW                                                                                                                               ;
+;                       [4]BOOL LOG_TO_DB                                                                                                                                 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Message with Parameter                                                                                                                                                   ;
+;Boolean                                                                                                                                                                  ;
+;ArcMsgWriteDialogB([2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16])                                                                                   ;
+;[14] BOOLEAN.............Boolean Parameter1                                                                                                                              ;
+;[15] BOOLEAN.............Boolean Parameter2                                                                                                                              ;
+;[16] BOOLEAN.............Boolean Parameter3                                                                                                                              ;
+;Integer                                                                                                                                                                  ;
+;ArcMsgWriteDialogI([2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14,[15],[16])                                                                                    ;
+;[14] INT.................Integer Parameter1                                                                                                                              ;
+;[15] INT.................Integer Parameter2                                                                                                                              ;
+;[16] INT.................Integer Parameter3                                                                                                                              ;
+;Real                                                                                                                                                                     ;
+;ArcMsgWriteDialogR([2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16])                                                                                   ;
+;[14] REAL................Real Parameter1                                                                                                                                 ;
+;[15] REAL................Real Parameter2                                                                                                                                 ;
+;[16] REAL................Real Parameter3                                                                                                                                 ;
+;String                                                                                                                                                                   ;
+;ArcMsgWriteDialogS([2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16])                                                                                   ;
+;[14] CHAR[26]............String Parameter1                                                                                                                               ;
+;[15] CHAR[26]............String Parameter2                                                                                                                               ;
+;[16] CHAR[26]............String Parameter3                                                                                                                               ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Example                                                                                                                                                                  ;
+;INT=ArcMsgWriteDialog(,"Dialogue message","User",1,"K1","K2","K3","K4","K5","K6","K7",Opt_NOVLSTOP_LOG);Normal Dialogue Message                                          ;
+;INT=ArcMsgWriteDialogB(,"Dialogue message BOOL %1","User",1,"K1","K2","K3","K4","K5","K6","K7",Opt_NOVLSTOP_LOG,BOOL);Dialogue Message with parameter Boolean            ;
+;INT=ArcMsgWriteDialogI(,"Dialogue message INT %1","User",1,"K1","K2","K3","K4","K5","K6","K7",Opt_NOVLSTOP_LOG,1);Dialogue Message with parameter Integer                ;
+;INT=ArcMsgWriteDialogR(,"Dialogue message REAL %1","User",1,"K1","K2","K3","K4","K5","K6","K7",Opt_NOVLSTOP_LOG,0.1);Dialogue Message with parameter Real                ;
+;INT=ArcMsgWriteDialogS(,"Dialogue message CHAR %1","User",1,"K1","K2","K3","K4","K5","K6","K7",Opt_NOVLSTOP_LOG,"Kuka Roboter");Dialogue Message with parameter String   ;
+;To translate keys parameter [fileName]#[Key] ARC#Key1                                                                                                                    ;
+;DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+;ENDFOLD
+END
+;ENDFOLD
+;##############################################################################################################
+;Global message
+; Possibility to set different parameter varaible of type
+;##############################################################################################################
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;ArcMsgWrite([1],[2],[3])                                                                                                                                                 ;
+;[1] STRUC.............. stArcMsgWrite_T                                                                                                                                  ;
+;                                      -[ENUM] .Type: [#NOTIFY,#STATE,#QUIT,#WAITING]                                                                                     ;
+;                                      -[CHAR]  .Txt[80]                                                                                                                  ;
+;                                      -[CHAR]  .Modul[24]                                                                                                                ;
+;                                      -[INT]   .Nr                                                                                                                       ;
+;                                      -[PARAM1](EXOR param only one type alowed)                                                                                         ;
+;                                              -[BOOL]   .BParam1                                                                                                         ;
+;                                              -[INT]    .IParam1                                                                                                         ;
+;                                              -[REAL]   .RParam1                                                                                                         ;
+;                                              -[CHAR]   .SParam1[26]                                                                                                     ;
+;                                      -[PARAM2](EXOR param only one type alowed)                                                                                         ;
+;                                              -[BOOL]   .BParam2                                                                                                         ;
+;                                              -[INT]    .IParam2                                                                                                         ;
+;                                              -[REAL]   .RParam2                                                                                                         ;
+;                                              -[CHAR]   .SParam2[26]                                                                                                     ;
+;                                      -[PARAM3](EXOR param only one type alowed)                                                                                         ;
+;                                              -[BOOL]   .BParam3                                                                                                         ;
+;                                              -[INT]    .IParam3                                                                                                         ;
+;                                              -[REAL]   .RParam3                                                                                                         ;
+;                                              -[CHAR]   .SParam3[26]                                                                                                     ;
+;                      [2] ENUM...............Message Type:                                                                                                               ;   
+;                                             -#NOTIFY                                                                                                                    ;   
+;                                             -#STATE                                                                                                                     ;   
+;                                             -#QUIT                                                                                                                      ;   
+;                                             -#WAITING                                                                                                                   ;
+;Example:                                                                                                                                                                 ;
+;  ArcHmiMsg({TXT[] "Test1"})                                                                                                                                             ;
+;  ArcHmiMsg({TXT[] "Test2",Modul[] "Test2"})                                                                                                                             ;
+;  ArcHmiMsg({TXT[] "Test3",Modul[] "Test3",Nr 3})                                                                                                                        ;
+;  ArcHmiMsg({TXT[] "Test3 %1"      ,Modul[] "Test3",Nr 3,BParam1 FALSE})                                                                                                 ;
+;  ArcHmiMsg({TXT[] "Test3 %1 %2"   ,Modul[] "Test3",Nr 3,BParam1 FALSE,IParam2 0})                                                                                       ;
+;  ArcHmiMsg({TXT[] "Test3 %1 %2 %3",Modul[] "Test3",Nr 3,BParam1 FALSE,IParam2 0,SParam3[] "ParamTest"})                                                                 ;
+;  ArcHmiMsg({TXT[] "Test3 %1 %2 %3" ,SParam[] "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}                                          ;
+;                                                                                                                                                                         ;                                                                                                                                                ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+GLOBAL DEF ArcHmiMsg(tMsg :IN,tHandle :OUT, tMsgType:IN)
+DECL BOOL tB
+DECL BOOL Param[3]
+DECL INT tHandle
+DECL INT tI
+DECL INT tMsgType
+DECL stArcMsgWrite_T tMsg
+DECL KRLMSG_T tKrlMsg
+DECL KRLMSGPAR_T tKrlMsgPar[3]
+DECL KRLMSGOPT_T tKrlMsgOpt
+tKrlMsgOpt = ArcHmiGetMsgType(tMsgType)
+IF (ArcVarExistS(tMsg.Modul[]," ") == FALSE) THEN
+  tB = STRCOPY(tMsg.Modul[],"MissingModulName")
+ENDIF
+IF (ArcVarExistS(tMsg.Txt[]," ") == FALSE) THEN
+  tB = STRCOPY(tMsg.Txt[],"MissingMessageText")
+ENDIF
+tB = ArcVarExistI(tMsg.Nr,1)
+tB = STRCOPY(tKrlMsg.MODUL[],tMsg.Modul[])
+tB = STRCOPY(tKrlMsg.MSG_TXT[],tMsg.Txt[])
+tKrlMsg.NR = tMsg.Nr
+ON_ERROR_PROCEED
+tMsg.Type = tMsg.Type
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  tMsg.Type = #NOTIFY
+ENDIF
+FOR tI = 1 to 3
+  Param[tI] = FALSE
+  tKrlMsgPar[tI].PAR_TYPE = #EMPTY
+ENDFOR
+IF (ArcVarExistS(tMsg.SParam[]," ")) THEN
+  FOR tI = 1 TO 26
+    ON_ERROR_PROCEED
+    tKrlMsgPar[1].PAR_TXT[tI] = tMsg.SParam1[tI]
+  ENDFOR
+  FOR tI = 27 TO 52
+    ON_ERROR_PROCEED
+    tKrlMsgPar[2].PAR_TXT[tI] = tMsg.SParam1[tI]
+  ENDFOR
+  FOR tI = 53 TO 78
+    ON_ERROR_PROCEED
+    tKrlMsgPar[3].PAR_TXT[tI] = tMsg.SParam1[tI]
+  ENDFOR
+  FOR tI = 1 to 3
+    Param[tI] = TRUE
+    tKrlMsgPar[tI].PAR_TYPE = #VALUE
+  ENDFOR  
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+  ENDIF
+ENDIF
+;Param 1
+IF (ArcVarExistB(tMsg.BParam1) AND (Param[1] == FALSE)) THEN 
+  tKrlMsgPar[1].PAR_TYPE = #VALUE
+  tKrlMsgPar[1].PAR_BOOL = tMsg.BParam1 
+  Param[1] = TRUE
+ENDIF 
+IF (ArcVarExistI(tMsg.IParam1) AND (Param[1] == FALSE)) THEN 
+  tKrlMsgPar[1].PAR_TYPE = #VALUE
+  tKrlMsgPar[1].PAR_INT = tMsg.IParam1 
+  Param[1] = TRUE
+ENDIF
+IF (ArcVarExistR(tMsg.RParam1) AND (Param[1] == FALSE)) THEN 
+  tKrlMsgPar[1].PAR_TYPE = #VALUE
+  tKrlMsgPar[1].PAR_REAL = tMsg.RParam1
+  Param[1] = TRUE
+ENDIF
+IF (ArcVarExistS(tMsg.SParam1[]," ") AND (Param[1] == FALSE)) THEN
+  tKrlMsgPar[1].PAR_TYPE = #VALUE  
+  tB = STRCOPY(tKrlMsgPar[1].PAR_TXT[],tMsg.SParam1[])
+  IF (tMsg.SParam1[1] == "#") THEN      
+    tKrlMsgPar[1].PAR_TYPE = #KEY   
+    tB = STRCOPY(tKrlMsgPar[1].PAR_TXT[],ArcStrRemoveLeft(tMsg.SParam1[],"#")) 
+  ENDIF
+  Param[1] = TRUE
+ENDIF
+;Param 2
+IF (ArcVarExistB(tMsg.BParam2) AND (Param[2] == FALSE)) THEN 
+  tKrlMsgPar[2].PAR_TYPE = #VALUE
+  tKrlMsgPar[2].PAR_BOOL = tMsg.BParam2
+  Param[2] = TRUE
+ENDIF 
+IF (ArcVarExistI(tMsg.IParam2) AND (Param[2] == FALSE)) THEN 
+  tKrlMsgPar[2].PAR_TYPE = #VALUE
+  tKrlMsgPar[2].PAR_INT = tMsg.IParam2
+  Param[2] = TRUE
+ENDIF
+IF (ArcVarExistR(tMsg.RParam2) AND (Param[2] == FALSE)) THEN 
+  tKrlMsgPar[2].PAR_TYPE = #VALUE
+  tKrlMsgPar[2].PAR_REAL = tMsg.RParam2
+  Param[2] = TRUE
+ENDIF
+IF (ArcVarExistS(tMsg.SParam2[]," ") AND (Param[2] == FALSE)) THEN 
+  tKrlMsgPar[2].PAR_TYPE = #VALUE
+  tB = STRCOPY(tKrlMsgPar[2].PAR_TXT[],tMsg.SParam2[])
+  IF (tMsg.SParam2[1] == "#") THEN      
+    tKrlMsgPar[2].PAR_TYPE = #KEY   
+    tB = STRCOPY(tKrlMsgPar[2].PAR_TXT[],ArcStrRemoveLeft(tMsg.SParam2[],"#")) 
+  ENDIF  
+  Param[2] = TRUE
+ENDIF
+;Param 3
+Param[3] = FALSE
+tKrlMsgPar[3].PAR_TYPE = #EMPTY
+IF (ArcVarExistB(tMsg.BParam3) AND (Param[3] == FALSE)) THEN 
+  tKrlMsgPar[3].PAR_TYPE = #VALUE
+  tKrlMsgPar[3].PAR_BOOL = tMsg.BParam3
+  Param[3] = TRUE
+ENDIF 
+IF (ArcVarExistI(tMsg.IParam3) AND (Param[3] == FALSE)) THEN 
+  tKrlMsgPar[3].PAR_TYPE = #VALUE
+  tKrlMsgPar[3].PAR_INT = tMsg.IParam3
+  Param[3] = TRUE
+ENDIF
+IF (ArcVarExistR(tMsg.RParam3) AND (Param[3] == FALSE)) THEN 
+  tKrlMsgPar[3].PAR_TYPE = #VALUE
+  tKrlMsgPar[3].PAR_REAL = tMsg.RParam3
+  Param[3] = TRUE
+ENDIF
+IF (ArcVarExistS(tMsg.SParam3[]," ") AND (Param[3] == FALSE)) THEN 
+  tKrlMsgPar[3].PAR_TYPE = #VALUE 
+  tB = STRCOPY(tKrlMsgPar[3].PAR_TXT[],tMsg.SParam3[])
+  IF (tMsg.SParam3[1] == "#") THEN      
+    tKrlMsgPar[3].PAR_TYPE = #KEY   
+    tB = STRCOPY(tKrlMsgPar[3].PAR_TXT[],ArcStrRemoveLeft(tMsg.SParam3[],"#")) 
+  ENDIF   
+  Param[3] = TRUE
+ENDIF
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlMsg(tMsg.Type, tKrlMsg, tKrlMsgPar[], tKrlMsgOpt)
+  IF (tMsg.Type <> #NOTIFY) THEN
+    tHandle = ArcCheckMsgHandle(tHandle,mHandle)
+  ENDIF
+ENDIF  
+END
+;******************************************************************************
+;[Message TYpe Routine]
+;******************************************************************************
+DEFFCT KRLMSGOPT_T ArcHmiGetMsgType(tMsgType:IN)
+DECL INT tMsgType
+DECL KRLMSGOPT_T tKrlMsgOpt
+tKrlMsgOpt = {VL_STOP FALSE,CLEAR_P_RESET FALSE,LOG_TO_DB FALSE}
+ON_ERROR_PROCEED
+tMsgType = tMsgType
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN tKrlMsgOpt
+ENDIF
+;TODO
+RETURN tKrlMsgOpt
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Print on KRL message
+;******************************************************************************
+GLOBAL DEF ArcMsgWrite(tHandle :OUT,tMsgType :IN,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN)
+DECL INT tHandle,tMsgNr
+DECL CHAR tMsgText[],tMsgModul[]
+DECL enArcMessageType_T tMsgType
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+IF (tMsgType <> #NONE) THEN
+  IF (gArcIsOnSimEnvironment == TRUE) THEN
+    ;@PRINT {$DATE.HOUR}:{$DATE.MIN}:{$DATE.SEC} [{$COOP_KRC[1].NAME[]}]-[{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr}
+    RETURN
+  ENDIF
+  tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+  IF (ArcCheckInitHandle(tHandle)) THEN
+    mHandle = Set_KrlMsg(ArcGetMsgType(tMsgType), tKRLMSG_T, tKRLMSGPAR_T[], tMsgOpt)
+    IF (tMsgType <> #NOTIFY) THEN
+      tHandle = ArcCheckMsgHandle(tHandle,mHandle)
+    ENDIF
+  ENDIF
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Print on KRL message with parameter Boolean
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteB(tHandle :OUT,tMsgType :IN,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL INT tHandle,tMsgNr
+DECL BOOL MsgPara1,MsgPara2,MsgPara3
+DECL CHAR tMsgText[],tMsgModul[]
+DECL enArcMessageType_T tMsgType
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+IF (tMsgType <> #NONE) THEN
+  IF (gArcIsOnSimEnvironment == TRUE) THEN
+    ;@PRINT {$DATE.HOUR}:{$DATE.MIN}:{$DATE.SEC} [{$COOP_KRC[1].NAME[]}]-[{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+    RETURN
+  ENDIF
+  tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+  tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(MsgPara1)
+  tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(MsgPara2)
+  tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(MsgPara3)
+  IF (ArcCheckInitHandle(tHandle)) THEN
+    mHandle = Set_KrlMsg(ArcGetMsgType(tMsgType), tKRLMSG_T, tKRLMSGPAR_T[], tMsgOpt)
+    IF (tMsgType <> #NOTIFY) THEN
+      tHandle = ArcCheckMsgHandle(tHandle,mHandle)   
+    ENDIF
+  ENDIF
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Print on KRL message with parameter Integer
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteI(tHandle :OUT,tMsgType :IN,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL INT tHandle,tMsgNr
+DECL INT MsgPara1,MsgPara2,MsgPara3
+DECL CHAR tMsgText[],tMsgModul[]
+DECL enArcMessageType_T tMsgType
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+IF (tMsgType <> #NONE) THEN
+  IF (gArcIsOnSimEnvironment == TRUE) THEN
+    ;@PRINT {$DATE.HOUR}:{$DATE.MIN}:{$DATE.SEC} [{$COOP_KRC[1].NAME[]}]-[{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+    RETURN
+  ENDIF
+  tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+  tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,MsgPara1)
+  tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,MsgPara2)
+  tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,MsgPara3)
+  IF (ArcCheckInitHandle(tHandle)) THEN
+    mHandle = Set_KrlMsg(ArcGetMsgType(tMsgType), tKRLMSG_T, tKRLMSGPAR_T[], tMsgOpt)
+    IF (tMsgType <> #NOTIFY) THEN
+      tHandle = ArcCheckMsgHandle(tHandle,mHandle)     
+    ENDIF
+  ENDIF
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Print on KRL message with parameter Real
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteR(tHandle :OUT,tMsgType :IN,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL INT tHandle,tMsgNr
+DECL REAL MsgPara1,MsgPara2,MsgPara3
+DECL CHAR tMsgText[],tMsgModul[]
+DECL enArcMessageType_T tMsgType
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+IF (tMsgType <> #NONE) THEN
+  IF (gArcIsOnSimEnvironment == TRUE) THEN
+    ;@PRINT {$DATE.HOUR}:{$DATE.MIN}:{$DATE.SEC} [{$COOP_KRC[1].NAME[]}]-[{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+    RETURN
+  ENDIF
+  tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+  tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,,MsgPara1)
+  tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,,MsgPara2)
+  tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,,MsgPara3)
+  IF (ArcCheckInitHandle(tHandle)) THEN
+    mHandle = Set_KrlMsg(ArcGetMsgType(tMsgType), tKRLMSG_T, tKRLMSGPAR_T[], tMsgOpt)
+    IF (tMsgType <> #NOTIFY) THEN
+      tHandle = ArcCheckMsgHandle(tHandle,mHandle)   
+    ENDIF
+  ENDIF
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Print on KRL message with parameter String
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteS(tHandle :OUT,tMsgType :IN,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,MsgPara1[] :IN,MsgPara2[] :IN,MsgPara3[] :IN)
+DECL INT tHandle,tMsgNr
+DECL CHAR MsgPara1[],MsgPara2[],MsgPara3[]
+DECL CHAR tMsgText[],tMsgModul[]
+DECL enArcMessageType_T tMsgType
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+IF (tMsgType <> #NONE) THEN
+  IF (gArcIsOnSimEnvironment == TRUE) THEN
+    ;@PRINT {$DATE.HOUR}:{$DATE.MIN}:{$DATE.SEC} [{$COOP_KRC[1].NAME[]}]-[{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1[]} {MsgPara2[]} {MsgPara3[]}
+    RETURN
+  ENDIF
+  tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+  tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,,,MsgPara1[])
+  tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,,,MsgPara2[])
+  tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,,,MsgPara3[])
+  IF (ArcCheckInitHandle(tHandle)) THEN
+    mHandle = Set_KrlMsg(ArcGetMsgType(tMsgType), tKRLMSG_T, tKRLMSGPAR_T[], tMsgOpt)
+    IF (tMsgType <> #NOTIFY) THEN
+      tHandle = ArcCheckMsgHandle(tHandle,mHandle)     
+    ENDIF
+  ENDIF
+ENDIF
+END
+;##############################################################################################################
+;Dialogue message
+;##############################################################################################################
+;******************************************************************************
+;[Global Message Routine] Print on KRL Dialogue message
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialog(tHandle :OUT,tMsgText[] :IN, tMsgModul[] :IN, tMsgNr :IN, tMsgOpt :IN, sSK1[] :IN, sSK2[] :IN, sSK3[] :IN, sSK4[] :IN, sSK5[] :IN, sSK6[] :IN, sSK7[] :IN)
+DECL INT tHandle,tMsgNr
+DECL CHAR tMsgText[],tMsgModul[],sSK1[],sSK2[],sSK3[],sSK4[],sSK5[],sSK6[],sSK7[]
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[7]
+DECL CHAR tChar[24]
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ;@PRINT KRL_DIALOG [{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr}
+  ;@PRINT KRL_DIALOG SK: {sSK1} {sSK2} {sSK3} {sSK4} {sSK5} {sSK6} {sSK7}
+  RETURN 0
+ENDIF
+tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,,,tChar[])
+tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,,,tChar[])
+tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,,,tChar[])
+tKrlMsgDlgSK_T[1]=ArcMakeDialogSK(sSK1[])
+tKrlMsgDlgSK_T[2]=ArcMakeDialogSK(sSK2[])
+tKrlMsgDlgSK_T[3]=ArcMakeDialogSK(sSK3[])
+tKrlMsgDlgSK_T[4]=ArcMakeDialogSK(sSK4[])
+tKrlMsgDlgSK_T[5]=ArcMakeDialogSK(sSK5[])
+tKrlMsgDlgSK_T[6]=ArcMakeDialogSK(sSK6[])
+tKrlMsgDlgSK_T[7]=ArcMakeDialogSK(sSK7[])
+mNumberOfDlgSK = ArcNuberOffDlgSk(tKrlMsgDlgSK_T[])
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlDlg(tKRLMSG_T, tKRLMSGPAR_T[],tKrlMsgDlgSK_T[], tMsgOpt)
+ENDIF
+IF (ArcVarExistI(tHandle) == TRUE) THEN
+  tHandle = mHandle
+  RETURN -1
+ELSE
+  RETURN ArcMsgDialogHandle(mHandle)
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Print on KRL Dialogue message with parameter Boolean
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialogB(tHandle :OUT,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,sSK1[] :IN,sSK2[] :IN,sSK3[] :IN,sSK4[] :IN,sSK5[] :IN,sSK6[] :IN,sSK7[] :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL INT tHandle,tMsgNr
+DECL BOOL MsgPara1,MsgPara2,MsgPara3,tRemoteEna
+DECL CHAR tMsgText[],tMsgModul[],sSK1[],sSK2[],sSK3[],sSK4[],sSK5[],sSK6[],sSK7[]
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[7]
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ;@PRINT KRL_DIALOG [{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+  ;@PRINT KRL_DIALOG SK: {sSK1} {sSK2} {sSK3} {sSK4} {sSK5} {sSK6} {sSK7}
+  RETURN 0
+ENDIF
+tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(MsgPara1)
+tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(MsgPara2)
+tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(MsgPara3)
+tKrlMsgDlgSK_T[1]=ArcMakeDialogSK(sSK1[])
+tKrlMsgDlgSK_T[2]=ArcMakeDialogSK(sSK2[])
+tKrlMsgDlgSK_T[3]=ArcMakeDialogSK(sSK3[])
+tKrlMsgDlgSK_T[4]=ArcMakeDialogSK(sSK4[])
+tKrlMsgDlgSK_T[5]=ArcMakeDialogSK(sSK5[])
+tKrlMsgDlgSK_T[6]=ArcMakeDialogSK(sSK6[])
+tKrlMsgDlgSK_T[7]=ArcMakeDialogSK(sSK7[])
+mNumberOfDlgSK = ArcNuberOffDlgSk(tKrlMsgDlgSK_T[])
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlDlg(tKRLMSG_T, tKRLMSGPAR_T[],tKrlMsgDlgSK_T[], tMsgOpt)
+ENDIF
+IF (ArcVarExistI(tHandle) == TRUE) THEN
+  tHandle = mHandle
+  RETURN -1
+ELSE
+  RETURN ArcMsgDialogHandle(mHandle)
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Print on KRL Dialogue message with parameter Integer
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialogI(tHandle :OUT,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,sSK1[] :IN,sSK2[] :IN,sSK3[] :IN,sSK4[] :IN,sSK5[] :IN,sSK6[] :IN,sSK7[] :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL BOOL tRemoteEna
+DECL INT tHandle,tMsgNr
+DECL INT MsgPara1,MsgPara2,MsgPara3
+DECL CHAR tMsgText[],tMsgModul[],sSK1[],sSK2[],sSK3[],sSK4[],sSK5[],sSK6[],sSK7[]
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[7]
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ;@PRINT KRL_DIALOG [{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+  ;@PRINT KRL_DIALOG SK: {sSK1} {sSK2} {sSK3} {sSK4} {sSK5} {sSK6} {sSK7}
+  RETURN 0
+ENDIF
+tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,MsgPara1)
+tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,MsgPara2)
+tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,MsgPara3)
+tKrlMsgDlgSK_T[1]=ArcMakeDialogSK(sSK1[])
+tKrlMsgDlgSK_T[2]=ArcMakeDialogSK(sSK2[])
+tKrlMsgDlgSK_T[3]=ArcMakeDialogSK(sSK3[])
+tKrlMsgDlgSK_T[4]=ArcMakeDialogSK(sSK4[])
+tKrlMsgDlgSK_T[5]=ArcMakeDialogSK(sSK5[])
+tKrlMsgDlgSK_T[6]=ArcMakeDialogSK(sSK6[])
+tKrlMsgDlgSK_T[7]=ArcMakeDialogSK(sSK7[])
+mNumberOfDlgSK = ArcNuberOffDlgSk(tKrlMsgDlgSK_T[])
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlDlg(tKRLMSG_T, tKRLMSGPAR_T[],tKrlMsgDlgSK_T[], tMsgOpt)
+ENDIF
+IF (ArcVarExistI(tHandle) == TRUE) THEN
+  tHandle = mHandle
+  RETURN -1
+ELSE
+  RETURN ArcMsgDialogHandle(mHandle)
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Print on KRL Dialogue message with parameter Real
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialogR(tHandle :OUT,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,sSK1[] :IN,sSK2[] :IN,sSK3[] :IN,sSK4[] :IN,sSK5[] :IN,sSK6[] :IN,sSK7[] :IN,MsgPara1 :IN,MsgPara2 :IN,MsgPara3 :IN)
+DECL BOOL tRemoteEna
+DECL INT tHandle,tMsgNr
+DECL REAL MsgPara1,MsgPara2,MsgPara3
+DECL CHAR tMsgText[],tMsgModul[],sSK1[],sSK2[],sSK3[],sSK4[],sSK5[],sSK6[],sSK7[]
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[7]
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ;@PRINT KRL_DIALOG [{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1} {MsgPara2} {MsgPara3}
+  ;@PRINT KRL_DIALOG SK: {sSK1} {sSK2} {sSK3} {sSK4} {sSK5} {sSK6} {sSK7}
+  RETURN 0
+ENDIF
+tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,,MsgPara1)
+tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,,MsgPara2)
+tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,,MsgPara3)
+tKrlMsgDlgSK_T[1]=ArcMakeDialogSK(sSK1[])
+tKrlMsgDlgSK_T[2]=ArcMakeDialogSK(sSK2[])
+tKrlMsgDlgSK_T[3]=ArcMakeDialogSK(sSK3[])
+tKrlMsgDlgSK_T[4]=ArcMakeDialogSK(sSK4[])
+tKrlMsgDlgSK_T[5]=ArcMakeDialogSK(sSK5[])
+tKrlMsgDlgSK_T[6]=ArcMakeDialogSK(sSK6[])
+tKrlMsgDlgSK_T[7]=ArcMakeDialogSK(sSK7[])
+mNumberOfDlgSK = ArcNuberOffDlgSk(tKrlMsgDlgSK_T[])
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlDlg(tKRLMSG_T, tKRLMSGPAR_T[],tKrlMsgDlgSK_T[], tMsgOpt)
+ENDIF
+IF (ArcVarExistI(tHandle) == TRUE) THEN
+  tHandle = mHandle
+  RETURN -1
+ELSE
+  RETURN ArcMsgDialogHandle(mHandle)
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Print on KRL Dialogue message with parameter Real
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialogS(tHandle :OUT,tMsgText[] :IN,tMsgModul[] :IN,tMsgNr :IN,tMsgOpt :IN,sSK1[] :IN,sSK2[] :IN,sSK3[] :IN,sSK4[] :IN,sSK5[] :IN,sSK6[] :IN,sSK7[] :IN,MsgPara1[] :IN,MsgPara2[] :IN,MsgPara3[] :IN)
+DECL BOOL tRemoteEna
+DECL INT tHandle,tMsgNr
+DECL CHAR MsgPara1[],MsgPara2[],MsgPara3[]
+DECL CHAR tMsgText[],tMsgModul[],sSK1[],sSK2[],sSK3[],sSK4[],sSK5[],sSK6[],sSK7[]
+DECL KrlMsgOpt_T tMsgOpt
+DECL KRLMSG_T tKRLMSG_T
+DECL KRLMSGPAR_T tKRLMSGPAR_T[3]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[7]
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ;@PRINT KRL_DIALOG [{tMsgType}] {tMsgText[]} {tMsgModul[]} {tMsgNr} {MsgPara1[]} {MsgPara2[]} {MsgPara3[]}
+  ;@PRINT KRL_DIALOG SK: {sSK1} {sSK2} {sSK3} {sSK4} {sSK5} {sSK6} {sSK7}
+  RETURN 0
+ENDIF
+tKRLMSG_T = ArcChkKRLMSG_T(tMsgModul[], tMsgNr, tMsgText[])
+tKRLMSGPAR_T[1] = ArcChkKRLMSGPAR_T(,,,MsgPara1[])
+tKRLMSGPAR_T[2] = ArcChkKRLMSGPAR_T(,,,MsgPara2[])
+tKRLMSGPAR_T[3] = ArcChkKRLMSGPAR_T(,,,MsgPara3[])
+tKrlMsgDlgSK_T[1]=ArcMakeDialogSK(sSK1[])
+tKrlMsgDlgSK_T[2]=ArcMakeDialogSK(sSK2[])
+tKrlMsgDlgSK_T[3]=ArcMakeDialogSK(sSK3[])
+tKrlMsgDlgSK_T[4]=ArcMakeDialogSK(sSK4[])
+tKrlMsgDlgSK_T[5]=ArcMakeDialogSK(sSK5[])
+tKrlMsgDlgSK_T[6]=ArcMakeDialogSK(sSK6[])
+tKrlMsgDlgSK_T[7]=ArcMakeDialogSK(sSK7[])
+mNumberOfDlgSK = ArcNuberOffDlgSk(tKrlMsgDlgSK_T[])
+IF (ArcCheckInitHandle(tHandle)) THEN
+  mHandle = Set_KrlDlg(tKRLMSG_T, tKRLMSGPAR_T[],tKrlMsgDlgSK_T[], tMsgOpt)
+ENDIF
+IF (ArcVarExistI(tHandle) == TRUE) THEN
+  tHandle = mHandle
+  RETURN -1
+ELSE
+  RETURN ArcMsgDialogHandle(mHandle)
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine Message Options
+;******************************************************************************
+DEFFCT KrlMsgOpt_T ArcMsgWriteOp(tMsgOption[] :IN)
+DECL CHAR tMsgOption[]
+DECL KrlMsgOpt_T KrlMsgOpt
+KrlMsgOpt={VL_STOP FALSE,CLEAR_P_RESET FALSE,CLEAR_P_SAW FALSE,LOG_TO_DB FALSE}
+IF ArcChkString(tMsgOption[],4) THEN
+  IF (tMsgOption[1]=="1") THEN
+    KrlMsgOpt.VL_STOP=TRUE
+  ENDIF
+  IF (tMsgOption[2]=="1") THEN
+    KrlMsgOpt.CLEAR_P_RESET=TRUE
+  ENDIF
+  IF (tMsgOption[3]=="1") THEN
+    KrlMsgOpt.CLEAR_P_SAW=TRUE
+  ENDIF
+  IF (tMsgOption[4]=="1") THEN
+    KrlMsgOpt.LOG_TO_DB=TRUE
+  ENDIF
+ENDIF
+RETURN KrlMsgOpt
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine on Dialog Set Dialog Answer
+;******************************************************************************
+GLOBAL DEFFCT INT ArcGetDialogNrSK()
+RETURN mNumberOfDlgSK
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine on Dialog Set Dialog Answer
+;******************************************************************************
+GLOBAL DEF ArcSetMsgDialogAnswer(tSKNr :IN)
+DECL INT tSKNr
+IF (ArcCheckRangeValue(tSKNr,1,7) == 1) THEN
+   mArcMsgInputDialogAnswer = tSKNr
+ENDIF
+END
+;******************************************************************************
+;[Message Routine] Routine Wait for Dialogue return Answer
+;******************************************************************************
+DEFFCT INT ArcMsgDialogHandle(tHandle :IN)
+DECL BOOL tRemoteEna,tBool,tInt
+DECL INT tHandle,tAnswer,tMsgNumber,tI
+WHILE (EXISTS_KRLDLG(tHandle,tAnswer))
+  WAIT SEC 0.5
+ENDWHILE
+IF ((tAnswer == 0) AND (gArcRemoteDialogAnswer == 0) AND (mArcMsgInputDialogAnswer == 0)) THEN
+  WAIT FOR FALSE
+ENDIF
+IF ((tAnswer == 0) AND (gArcRemoteDialogAnswer == 0)) THEN
+  tAnswer = mArcMsgInputDialogAnswer
+ENDIF
+mArcMsgInputDialogAnswer = 0
+mNumberOfDlgSK = 0
+RETURN tAnswer
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine check if return Handle exist
+;******************************************************************************
+DEFFCT INT ArcCheckMsgHandle(tHandle :OUT,Handle :IN)
+DECL BOOL tRemoteEna,tBool
+DECL INT tI,tHandle,Handle,tMsgNumber
+ERR_CLEAR($ERR)
+ON_ERROR_PROCEED
+tHandle = tHandle
+tBool =($ERR.NUMBER == 0)
+ERR_CLEAR($ERR)
+IF (tBool == TRUE) THEN
+  RETURN Handle
+ELSE
+  WHILE (Exists_KrlMsg(Handle) == TRUE)
+    WAIT SEC 0.1
+  ENDWHILE
+  RETURN -1
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine check init Handle
+;******************************************************************************
+DEFFCT BOOL ArcCheckInitHandle(tHandle :OUT)
+DECL BOOL tInt
+DECL INT tHandle
+ERR_CLEAR($ERR)
+ON_ERROR_PROCEED
+tHandle = tHandle
+tInt =($ERR.NUMBER == 0)
+ERR_CLEAR($ERR)
+IF (tInt == TRUE) THEN
+  RETURN (tHandle <= 0)
+ELSE
+  RETURN TRUE
+ENDIF
+ENDFCT
+;******************************************************************************
+;[Message Routine] Convert Enum ArcUser to EKRLMSGTYPE
+;******************************************************************************
+DEFFCT EKRLMSGTYPE ArcGetMsgType(tMsgType :IN)
+DECL enArcMessageType_T tMsgType
+SWITCH tMsgType
+  CASE #NOTIFY
+    RETURN #NOTIFY
+  CASE #STATE
+    RETURN #STATE
+  CASE #QUIT
+    RETURN #QUIT
+  CASE #WAITING
+    RETURN #WAITING
+  DEFAULT
+    RETURN #NOTIFY
+ENDSWITCH
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine check Len String
+;******************************************************************************
+DEFFCT BOOL ArcChkString(tStr[] :IN, tMaxLen :IN)
+DECL CHAR tStr[]
+DECL INT MsgLen, tMaxLen
+MsgLen = STRLEN(tStr[])
+IF (MsgLen > tMaxLen) THEN
+  RETURN FALSE
+ELSE
+  RETURN TRUE
+ENDIF
+ENDFCT
+;******************************************************************************
+;Routine Message
+;STRUC KRLMSG_T CHAR MODUL[24],  INT NR,  CHAR MSG_TXT[80]
+;******************************************************************************
+DEFFCT KRLMSG_T ArcChkKRLMSG_T(tMsgModul[] :OUT, tMsgNr :OUT, tMsgText[] :OUT)
+DECL INT tMsgNr
+DECL CHAR tMsgModul[],tMsgText[]
+DECL KRLMSG_T returnKRLMSG_T
+returnKRLMSG_T={MODUL[] " ",NR 1, MSG_TXT[] " "}
+IF (StrLen(tMsgText[]) < 1) THEN
+  tMsgText[] ="Message text empty"
+ENDIF
+IF (StrLen(tMsgModul[]) <= 1) THEN
+  tMsgModul[] = "*"
+ENDIF
+ERR_CLEAR($ERR)
+ON_ERROR_PROCEED
+tMsgNr = tMsgNr
+IF ($ERR.NUMBER > 0) THEN
+  tMsgNr = 1
+ENDIF
+ERR_CLEAR($ERR)
+IF (tMsgNr <= 0) THEN
+  tMsgNr = 1
+ENDIF
+IF (StrLen(tMsgModul[]) <= 24) THEN
+  IF (StrLen(tMsgText[]) <= 80) THEN
+    returnKRLMSG_T.MODUL[]=tMsgModul[]
+    returnKRLMSG_T.MSG_TXT[]=tMsgText[]
+    returnKRLMSG_T.NR=tMsgNr
+    RETURN returnKRLMSG_T
+  ELSE
+    ;ArcMsg("Diag Error on value KRLMSG_T.MSG_TXT[]")
+  ENDIF
+ELSE
+  ;ArcMsg("Diag Error on value KRLMSG_T.MODUL[]")
+ENDIF
+RETURN returnKRLMSG_T
+ENDFCT
+;******************************************************************************
+;Routine Parameter
+;ENUM KRLMSGPARTYPE_T  VALUE, KEY, EMPTY
+;STRUC KRLMSGPAR_T KRLMSGPARTYPE_T PAR_TYPE,  CHAR PAR_TXT[26],  INT PAR_INT,  REAL PAR_REAL,  BOOL PAR_BOOL
+;******************************************************************************
+DEFFCT KRLMSGPAR_T ArcChkKRLMSGPAR_T(bMsgPara :OUT,iMsgPara :OUT,rMsgPara :OUT,sMsgPara[] :OUT)
+DECL BOOL tB
+DECL BOOL bMsgPara
+DECL INT  iMsgPara
+DECL REAL rMsgPara
+DECL CHAR sMsgPara[]
+DECL KRLMSGPAR_T returnKRLMSGPAR_T
+returnKRLMSGPAR_T.PAR_TYPE = #EMPTY
+ON_ERROR_PROCEED
+bMsgPara = bMsgPara
+IF ($ERR.NUMBER == 0) THEN
+  returnKRLMSGPAR_T.PAR_TYPE = #VALUE
+  returnKRLMSGPAR_T.PAR_BOOL = bMsgPara
+  RETURN returnKRLMSGPAR_T
+ENDIF
+ERR_CLEAR($ERR)
+ON_ERROR_PROCEED
+iMsgPara = iMsgPara
+IF ($ERR.NUMBER == 0) THEN
+  returnKRLMSGPAR_T.PAR_TYPE = #VALUE
+  returnKRLMSGPAR_T.PAR_INT = iMsgPara
+  RETURN returnKRLMSGPAR_T
+ENDIF
+ERR_CLEAR($ERR)
+ON_ERROR_PROCEED
+rMsgPara = rMsgPara
+IF ($ERR.NUMBER == 0) THEN
+  returnKRLMSGPAR_T.PAR_TYPE = #VALUE
+  returnKRLMSGPAR_T.PAR_REAL = rMsgPara
+  RETURN returnKRLMSGPAR_T
+ENDIF
+ERR_CLEAR($ERR)
+IF (StrLen(sMsgPara[]) >= 1) THEN
+  returnKRLMSGPAR_T.PAR_TYPE = #VALUE
+  IF (StrLen(sMsgPara[]) <= 26) THEN
+    IF (sMsgPara[1] == "#") THEN      
+      tB = STRCOPY(sMsgPara[],ArcStrRemoveLeft(sMsgPara[],"#")) 
+      returnKRLMSGPAR_T.PAR_TYPE = #KEY   
+    ENDIF
+    returnKRLMSGPAR_T.PAR_TXT[] = sMsgPara[]
+  ELSE
+    returnKRLMSGPAR_T.PAR_TXT[] = "*Wrong Parameter>26Char*"
+  ENDIF
+  RETURN returnKRLMSGPAR_T  
+ENDIF
+returnKRLMSGPAR_T.PAR_TYPE = #VALUE
+returnKRLMSGPAR_T.PAR_TXT[] = " "
+RETURN returnKRLMSGPAR_T
+ENDFCT
+;******************************************************************************
+;Routine HMI Dialogue
+;STRUC KRLMSGDLGSK_T KRLMSGPARTYPE_T SK_TYPE,  CHAR SK_TXT[10]
+;******************************************************************************
+DEFFCT KrlMsgDlgSK_T ArcMakeDialogSK(SK[] :OUT)
+DECL CHAR SK[]
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T
+tKrlMsgDlgSK_T.SK_TYPE = #KEY
+IF (StrLen(SK[]) > 0 ) THEN 
+  IF (StrLen(SK[]) <= 10 ) THEN
+    tKrlMsgDlgSK_T.SK_TXT[] = SK[]
+  ELSE
+    tKrlMsgDlgSK_T.SK_TXT[] = "Char>10"
+  ENDIF
+ELSE
+  tKrlMsgDlgSK_T.SK_TXT[] = " "
+ENDIF
+RETURN tKrlMsgDlgSK_T
+ENDFCT
+;******************************************************************************
+;[Message Routine] Number of Sk on Dialog
+;******************************************************************************
+DEFFCT INT ArcNuberOffDlgSk(tKrlMsgDlgSK_T[] :OUT)
+DECL INT tI,NrSk
+DECL KrlMsgDlgSK_T tKrlMsgDlgSK_T[]
+NrSk = 0
+FOR tI = 1 TO 7
+  IF (STRCOMP(tKrlMsgDlgSK_T[tI].SK_TXT[]," ",#Not_CASE_Sens) == FALSE) THEN
+    IF (STRLEN(tKrlMsgDlgSK_T[tI].SK_TXT[])>=1) THEN
+      NrSk = NrSk +1
+    ENDIF
+  ENDIF
+ENDFOR
+RETURN NrSk
+ENDFCT
+;******************************************************************************
+;[Global Message Routine] Clear specific KRL message from Handle
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteClearHandle(NrHandle :OUT)
+DECL INT NrHandle
+DECL BOOL ClearMsg
+ON_ERROR_PROCEED
+NrHandle = NrHandle
+IF ($ERR.NUMBER > 0) THEN
+  NrHandle = 0
+  ERR_CLEAR($ERR)
+  RETURN
+ENDIF
+IF (NrHandle > 0) THEN
+  IF EXISTS_KRLMSG(NrHandle) THEN
+    ClearMsg = CLEAR_KRLMSG(NrHandle)
+  ENDIF
+  NrHandle=0
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Clear specific KRL message from Message number #QUIT
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteClearNumber(MsgNumber :IN)
+DECL BOOL tBool
+DECL INT tI,tNumMessage,MsgNumber
+DECL MSGBUF_T tArcMsgBuffer[100]
+tNumMessage = GET_MSGBUFFER (tArcMsgBuffer[])
+FOR tI = 1 TO tNumMessage
+  SWITCH tArcMsgBuffer[tI].TYPE
+    CASE #USR_QUIT
+      IF (MsgNumber == tArcMsgBuffer[tI].NR) THEN
+        tBool = CLEAR_KRLMSG(tArcMsgBuffer[tI].HANDLE)
+        EXIT
+      ENDIF
+  ENDSWITCH
+ENDFOR
+END
+;******************************************************************************
+;[Global Message Routine] Clear specific KRL message from Message number #QUIT
+;******************************************************************************
+GLOBAL DEF ArcMsgWriteAnswerNumber(MsgNumber :IN)
+DECL BOOL tBool
+DECL INT tI,tNumMessage,MsgNumber
+DECL MSGBUF_T tArcMsgBuffer[100]
+IF ABS(MsgNumber) > 0 THEN
+  tNumMessage = GET_MSGBUFFER (tArcMsgBuffer[])
+  FOR tI = 1 TO tNumMessage
+    SWITCH tArcMsgBuffer[tI].TYPE
+      CASE #USR_DLG
+        IF (MsgNumber == tArcMsgBuffer[tI].NR) THEN
+          tBool = CLEAR_KRLMSG(tArcMsgBuffer[tI].HANDLE)
+          EXIT
+        ENDIF
+    ENDSWITCH
+  ENDFOR
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Clear specific one KRL message
+;******************************************************************************
+GLOBAL DEFFCT BOOL ArcMsgWriteExist(MsgNr :OUT)
+DECL INT MsgNr
+IF (ArcVarExistI(MsgNr) == TRUE) THEN
+  IF (EXISTS_KRLMSG(MsgNr) == TRUE) THEN
+    RETURN TRUE
+  ELSE
+    MsgNr=0
+    RETURN FALSE
+  ENDIF
+ENDIF
+RETURN FALSE
+ENDFCT
+;******************************************************************************
+;[Message Routine] Routine Wait for Message absent
+;******************************************************************************
+GLOBAL DEF ArcMsgWaitForAbsent(tHandle :IN)
+DECL INT tHandle
+IF (EXISTS_KRLMSG(tHandle) == TRUE) THEN
+  WHILE (EXISTS_KRLMSG(tHandle) == TRUE)
+    WAIT SEC 0.1
+  ENDWHILE
+ENDIF
+END
+;******************************************************************************
+;[Dialog Routine] Get Dialog Present
+;******************************************************************************
+GLOBAL DEFFCT BOOL ArcMsgWriteDialogPresent(tHandle :IN)
+DECL INT tHandle,iAnswer
+RETURN EXISTS_KRLDLG(tHandle,iAnswer)
+ENDFCT 
+;******************************************************************************
+;[Dialog Routine] Get Dialog Answer
+;******************************************************************************
+GLOBAL DEFFCT INT ArcMsgWriteDialogAnswer(tHandle :IN)
+DECL INT tHandle,iAnswer
+iAnswer = 0
+IF EXISTS_KRLDLG(tHandle,iAnswer) == FALSE THEN
+  RETURN iAnswer
+ENDIF
+RETURN -1
+ENDFCT
+;******************************************************************************
+;[Dialog Routine] Clear Dialog
+;******************************************************************************
+GLOBAL DEF ArcClearMsgWriteDialog(tHandle :IN)
+DECL BOOL tBool
+DECL INT tHandle,iAnswer
+IF EXISTS_KRLDLG(tHandle,iAnswer) THEN
+  tBool = CLEAR_KRLMSG(tHandle)
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Programmer Message
+;******************************************************************************
+GLOBAL DEF ArcMsg(tMsgText[] :IN)
+DECL CHAR tMsgText[]
+ArcMsgWrite(,#NOTIFY,tMsgText[],"ArcDiag")
+END
+;******************************************************************************
+;[Global Message Routine] Programmer Message Write Boolean Value
+;******************************************************************************
+GLOBAL DEF ArcMsgB(tBool1 :IN,tBool2 :IN,tBool3 :IN)
+DECL BOOL tBool1,tBool2,tBool3
+ArcMsgWriteB(,#NOTIFY,"Variable Bool = %1 %2 %3","ArcDiag",,,tBool1,tBool2,tBool3)
+END
+;******************************************************************************
+;[Global Message Routine] Programmer Message Write Integer Value
+;******************************************************************************
+GLOBAL DEF ArcMsgI(tInt1 :IN,tInt2 :IN,tInt3 :IN)
+DECL INT tInt1,tInt2,tInt3
+ArcMsgWriteI(,#NOTIFY,"Variable Integer = %1 %2 %3","ArcDiag",,,tInt1,tInt2,tInt3)
+END
+;******************************************************************************
+;[Global Message Routine] Programmer Message Write Real Value
+;******************************************************************************
+GLOBAL DEF ArcMsgR(tReal1 :IN,tReal2 :IN,tReal3 :IN)
+DECL REAL tReal1,tReal2,tReal3
+ArcMsgWriteR(,#NOTIFY,"Variable Real = %1 %2 %3","ArcDiag",,,tReal1,tReal2,tReal3)
+END
+;*****************************************************************************************
+;[GLOBAL Message Routine] Split parameter string max char 26
+;*****************************************************************************************
+GLOBAL DEF ArcStrParam(tStr[] :IN,tParam1[] :OUT,tParam2[] :OUT)
+DECL BOOL tB
+DECL INT tI,tII,tIII,tLenNr
+DECL CHAR tStr[],tParam1[],tParam2[]
+tLenNr = StrLen(tStr[])
+tII = 1
+tIII = 1
+tB = STRCOPY(tParam1[]," ")
+tB = STRCOPY(tParam2[]," ")
+tParam1[]=" "
+tParam2[]=" "
+FOR tI = 1 TO (tLenNr)
+  IF (tI > 0) AND (tI <= 26) THEN
+    tParam1[tII] = tStr[tI]
+    tII = tII + 1
+  ENDIF
+  IF (tI > 26) AND (tI <= 52) THEN
+    tParam2[tIII] = tStr[tI]
+    tIII = tIII + 1
+  ENDIF
+ENDFOR
+END
+

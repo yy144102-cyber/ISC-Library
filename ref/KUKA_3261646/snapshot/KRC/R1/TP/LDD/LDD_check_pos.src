@@ -1,0 +1,140 @@
+&ACCESS RO1
+&REL 3
+&COMMENT LDD package (KSS 8.6.7 or higher)
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+&PARAM DISKPATH = KRC:\R1\TP\LDD
+DEFFCT INT  LDD_check_pos (  )
+   INT AXIS_NO, I2
+   DECL REAL START__POS[6]
+   DECL REAL DeltaRange[6]
+   DECL REAL DeltaLim_l[6]
+   DECL REAL DeltaLim_u[6]
+   DECL BOOL CheckRange[6]
+   DECL BOOL CheckLim_l[6]
+   DECL BOOL CheckLim_u[6]
+   REAL DeltaA2A3, help
+   BOOL CheckA2A3
+   LDD_InitPosToRanges ( $AXIS_ACT )
+   FOR AXIS_NO = 1 TO 6
+      I2 = 2 * AXIS_NO
+      START__POS[AXIS_NO] = ( LDD_IDF[I2] + LDD_IDF[I2 - 1] ) / 2.0
+      DeltaRange[AXIS_NO] = LDD_IDF[I2] - LDD_IDF[I2 - 1]
+      DeltaLim_l[AXIS_NO] = LDD_IDF[I2 - 1] - $SOFTN_END[AXIS_NO]
+      DeltaLim_u[AXIS_NO] = $SOFTP_END[AXIS_NO] - LDD_IDF[I2]
+      help = DeltaRange[AXIS_NO] - LDD_RANGES[AXIS_NO]
+      help = ABS(help)
+      CheckRange[AXIS_NO] = help < 0.1
+      CheckLim_l[AXIS_NO] = DeltaLim_l[AXIS_NO] > 0.0
+      CheckLim_u[AXIS_NO] = DeltaLim_u[AXIS_NO] > 0.0
+   ENDFOR
+   DeltaA2A3 = START__POS[2] + START__POS[3]
+   DeltaA2A3 = ABS(DeltaA2A3)
+   CHECKA2A3 = DeltaA2A3 < 0.1
+   IF ( CHECKA2A3==FALSE ) THEN
+      DeltaA2A3 = START__POS[2] + START__POS[3]
+      DeltaA2A3 = DeltaA2A3 + 180.0
+      DeltaA2A3 = ABS(DeltaA2A3)
+      CHECKA2A3 = DeltaA2A3 < 0.1
+   ENDIF
+   IF ( CHECKA2A3==FALSE ) THEN
+      LDD_CHECKPOS_STATE = 102
+      LDD_MessageHelper("SilentLDDAxisRangesNotValidA2A3", , LDD_CHECKPOS_STATE)
+      LDD_CHECKPOS_OK = FALSE
+      LDD_INIT_OK = FALSE
+      RETURN(-LDD_CHECKPOS_STATE)
+   ENDIF
+   FOR AXIS_NO = 1 TO 6
+      SWITCH AXIS_NO
+      CASE 1,2
+         IF ( CheckLim_l[AXIS_NO]==FALSE ) THEN
+            LDD_CHECKPOS_STATE = 110 + AXIS_NO
+            LDD_MessageHelper("SilentLDDAxisRangesNotValidneg", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF ( CheckLim_u[AXIS_NO]==FALSE ) THEN
+            LDD_CHECKPOS_STATE = 120 + AXIS_NO
+            LDD_MessageHelper("SilentLDDAxisRangesNotValidpos", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+      CASE 4
+         IF ( $AXIS_ACT.A4 < -0.01 ) THEN
+            LDD_CHECKPOS_STATE = 45
+            LDD_MessageHelper("SilentLDDA4neg", , LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF ( $AXIS_ACT.A4 > 0.01 ) THEN
+            LDD_CHECKPOS_STATE = 46
+            LDD_MessageHelper("SilentLDDA4pos", , LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF NOT ( LDD_IDF[8] == 0.0 ) OR NOT ( ABS($AXIS_ACT.A4) < 0.1 ) THEN
+            LDD_CHECKPOS_STATE = 100 + AXIS_NO
+            LDD_MessageHelper("SilentLDDA4PositionNotValid", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF NOT ( LDD_IDF[7] == 0.0 ) OR NOT ( ABS($AXIS_ACT.A4) < 0.1 ) THEN
+            LDD_CHECKPOS_STATE = 100 + AXIS_NO
+            LDD_MessageHelper("SilentLDDA4PositionNotValid", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+      CASE 3,5,6
+         IF ( CheckRange[AXIS_NO]==FALSE ) THEN
+            LDD_CHECKPOS_STATE = 100 + AXIS_NO
+            LDD_MessageHelper("SilentLDDAxisRangesNotValid", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF ( CheckLim_l[AXIS_NO]==FALSE ) THEN
+            LDD_CHECKPOS_STATE = 110 + AXIS_NO
+            LDD_MessageHelper("SilentLDDAxisRangesNotValidneg", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+         IF ( CheckLim_u[AXIS_NO]==FALSE ) THEN
+            LDD_CHECKPOS_STATE = 120 + AXIS_NO
+            LDD_MessageHelper("SilentLDDAxisRangesNotValidpos", AXIS_NO, LDD_CHECKPOS_STATE)
+            LDD_CHECKPOS_OK = FALSE
+            LDD_INIT_OK = FALSE
+            RETURN(-LDD_CHECKPOS_STATE)
+         ENDIF
+      DEFAULT
+      ENDSWITCH   
+   ENDFOR
+   LDD_CHECKPOS_STATE = 0
+   LDD_CHECKPOS_OK = TRUE
+   RETURN(0)
+ENDFCT
+; FOLD LDD_MessageHelper ; %{H}%
+GLOBAL DEF  LDD_MessageHelper(sKey[]:IN, nNumPar:IN, nMsgNr:IN)
+   DECL CHAR sKey[]
+   DECL INT nNumPar, nMsgNr
+   IF NOT ( VARSTATE("nNumPar") == #INITIALIZED ) THEN
+   IF (($MODE_OP == #EX) OR ($MODE_OP == #AUT)) THEN
+         MsgNotify(sKey[], "LoadDataDetermination", , , nMsgNr)
+      ELSE
+         MsgQuit(sKey[], "LoadDataDetermination", , , nMsgNr)
+      ENDIF
+      RETURN;
+   ENDIF
+   IF (($MODE_OP == #EX) OR ($MODE_OP == #AUT)) THEN
+      MsgNotify(sKey[], "LoadDataDetermination", nNumPar, , nMsgNr)
+   ELSE
+      MsgQuit(sKey[], "LoadDataDetermination", nNumPar, , nMsgNr)
+   ENDIF
+END
+; ENDFOLD (LDD_MessageHelper)

@@ -1,0 +1,5 @@
+&ACCESS R2
+&COMMENT ArcTech User sub routines module
+DEFDAT UserArcSubRoutines
+DECL BOOL ATAu_Test = FALSE
+ENDDAT

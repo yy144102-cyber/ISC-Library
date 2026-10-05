@@ -1,0 +1,83 @@
+&ACCESS RO
+&REL 8
+&COMMENT LDD package (KSS 8.6.7 or higher)
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+&PARAM DISKPATH = KRC:\R1\TP\LDD
+DEFFCT INT  LDD_start ( TOOLNO :IN, LDDTEST :IN )
+   INT TOOLNO
+   INT LDDTEST
+   IF ( LDD_INIT_OK == FALSE ) THEN
+      LDD_ERROR = LDD_config(2,-1.0,FALSE)
+      MsgNotify("SilentLDDDefaultSettingsError", "LoadDataDetermination",LDD_ERROR,,5)
+      IF NOT ( LDD_ERROR == 0 ) THEN
+         RETURN(LDD_ERROR)
+      ENDIF
+   ENDIF
+   IF NOT ( VARSTATE("TOOLNO") == #INITIALIZED ) THEN
+      TOOLNO = -1
+   ENDIF
+   IF ( VARSTATE("LDDTEST") == #INITIALIZED ) THEN
+      LDD_TEST = LDDTEST
+   ELSE
+      LDD_TEST=-1
+      MsgNotify("SilentLDDDefaultSettingsLDDTESTEND", "LoadDataDetermination")
+   ENDIF
+   IF ( LDD_INIT_OK == True ) THEN
+      $xx_IDENT( )
+      IF ( LDD_TO_BE_RESTORED == TRUE) THEN
+         LDD_RESETKRLVAR( )
+      ENDIF
+      IF ( LDD_SIMULATE == TRUE ) THEN
+         RETURN(0)
+      ENDIF
+      IF ( LDD_MASSISZERO == TRUE ) THEN
+         LDD_OK = TRUE
+      ENDIF
+   ELSE
+      MsgNotify("SilentLDDConfigNotValid", "LoadDataDetermination")
+      RETURN(-4)
+   ENDIF
+   IF ( LDD_OK == TRUE ) THEN
+      LDD_TRIGGER = 10
+      WAIT FOR ( LDD_TRIGGER == 0 )
+   ELSE
+      MsgNotify("SilentLDDNotCorrectlyFinished", "LoadDataDetermination")
+      RETURN(-5)
+   ENDIF
+   IF NOT ( LDD_ERROR == 0 ) THEN
+      MsgNotify("SilentLDDErrorInternal", "LoadDataDetermination",LDD_ERROR,,10)
+      RETURN(LDD_ERROR)
+   ENDIF
+   IF ( LDD_KUKALOAD == FALSE ) THEN
+      MsgNotify("SilentLDDKukaLoad5Error", "LoadDataDetermination")
+      RETURN(-12)
+   ENDIF
+   SWITCH  LDD_LOAD_RESULT
+      CASE #NONE
+         MsgNotify("SilentLDDKukaLoadResultNONE", "LoadDataDetermination")
+      CASE #APP
+         MsgNotify("SilentLDDKukaLoadResultAPP", "LoadDataDetermination")
+      CASE #CTCHCK
+         MsgNotify("SilentLDDKukaLoadResultCTCHCK", "LoadDataDetermination")
+      CASE #APPSLOOR
+         MsgNotify("SilentLDDKukaLoadResultAPPSLOOR", "LoadDataDetermination")
+      CASE #STATOVL
+         LDD_MessageHelper("SilentLDDKukaLoadResultBadSTATOVL", , 1)
+         RETURN(1)
+      CASE #DYNOVL
+         LDD_MessageHelper("SilentLDDKukaLoadResultBadDYNOVL", , 2)
+         RETURN(2)
+      CASE #OVL
+         LDD_MessageHelper("SilentLDDKukaLoadResultBadOVL", , 3)
+         RETURN(3)
+      CASE #SLOOR
+         LDD_MessageHelper("SilentLDDKukaLoadResultBadSLOOR", , 4)
+         RETURN(4)
+      DEFAULT
+         MsgNotify("SilentLDDKukaLoadResultUnknown", "LoadDataDetermination")
+         RETURN(-6)
+   ENDSWITCH
+   LDD_ERROR = LDD_write_load ( TOOLNO )
+   RETURN(LDD_ERROR)
+ENDFCT

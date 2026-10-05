@@ -1,0 +1,36 @@
+&ACCESS RVO
+&REL 17
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF HmiEasyLibExamples( )
+;Wait for any Hmi Easy View is open
+WAIT FOR HmiEasyAnyViewIsOpen() 
+
+;Close the current HmiEasy View
+HmiEasyCloseActView()
+
+;Open the Hmi Easy View "MyView"
+HmiEasyOpenView("MyView")
+
+;If the Hmi Easy View "MyView" is not open set a message to the user to open the view and wait for opening the view "MyView"
+IF NOT (HmiEasyViewIsOpen("MyView")) THEN
+  MsgNotify("Please open the Hmi Easy View MyView")
+  WAIT FOR HmiEasyViewIsOpen("MyView")
+ENDIF
+
+;Close the View MyView if it is open
+HmiEasyCloseView("MyView")
+
+;Open the View MyView with TabNr
+HmiEasyOpenViewWithTab("MyView", 2)
+
+;Show the 2nd Tab of the actual Hmi Easy View (MyView)
+HmiEasyOpenTab(2)
+
+;WAIT FOR TabNr 2 is opened
+WAIT FOR HmiEasyTabIsOpen(2)
+
+;Set PictureVar[] string variable to "Bild1"
+;HmiEasy_SetString(PictureVar[], "Bild1")
+
+END

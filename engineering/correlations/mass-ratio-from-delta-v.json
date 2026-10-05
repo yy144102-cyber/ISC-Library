@@ -1,0 +1,57 @@
+{
+  "key": "mass-ratio-from-delta-v",
+  "form": "R = exp( Δv / (g0 · Isp) )",
+  "variables": {
+    "R": "質量比 m0/mf [-]",
+    "Δv": "その段に配分された速度増分 [m/s]",
+    "g0": "標準重力加速度 9.80665 [m/s^2]",
+    "Isp": "代表比推力 [s]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "81,85",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "41",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    },
+    {
+      "id": "gate",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "46",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "validity_gate"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "exponent_guard": "x = Δv/(g0·Isp) ≤ 50。超える場合は算出せず不成立として返す（rocket.py:82-84）",
+    "isp_model": "一定Isp（rocket.py:5）",
+    "units": "SI。Isp のみ秒 [s]（rocket.py:11）"
+  },
+  "validity_gate": "軌道3DOF積分・質量マージン方針・eps根拠データの3点が揃うまで高忠実度化に進まない（06_adversarial_review_v2.md:46）",
+  "validity_gate_ref": "gate",
+  "limitations": "Isp一定近似の下でのみ成立する質量比である。初段の海面→真空でのIsp変化を平均Ispで代表しているため、平均Ispの代表性が悪いと質量比が系統的にずれる。相対比較・クロージャループ骨格には妥当だが、要求確定や機体コミットに単独使用してはならない。",
+  "limitations_ref": "lim",
+  "limitations_basis": "inferred",
+  "limitations_inference": "P-1 は Isp一定近似をモデル全体の限界として述べている（06:41）が、質量比 R を名指ししていない。本式は推進系性能に Isp のみを通じて依存するため、その限界がそのまま R に及ぶと対応づけた。",
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "導出の記載は rocket.py:77（docstring）。ここは限界の記載ではなく導出の記載であるため limitations_basis は explicit にしていない。"
+}

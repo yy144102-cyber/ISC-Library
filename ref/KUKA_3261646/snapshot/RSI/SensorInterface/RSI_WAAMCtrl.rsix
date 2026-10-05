@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not change! The content of this file is generated. -->
+<!-- Generated with RSIVisual WorkVisual plugin. -->
+<!-- RobotSensorInterface 4.0 B3190 -->
+<RsiContext xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="0.1.0">
+  <RsiObjects>
+    <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="Ethernet_1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="o01" OutIdx="0" />
+        <Input InIdx="1" OutObjId="o02" OutIdx="0" />
+        <Input InIdx="2" OutObjId="o03" OutIdx="0" />
+        <Input InIdx="3" OutObjId="o04" OutIdx="0" />
+        <Input InIdx="4" OutObjId="o05" OutIdx="0" />
+        <Input InIdx="5" OutObjId="o06" OutIdx="0" />
+        <Input InIdx="6" OutObjId="o07" OutIdx="0" />
+        <Input InIdx="7" OutObjId="iCurrentFlows" OutIdx="0" />
+        <Input InIdx="8" OutObjId="iReadyForWelding" OutIdx="0" />
+        <Input InIdx="9" OutObjId="iWireSticking" OutIdx="0" />
+        <Input InIdx="10" OutObjId="iGeneralError" OutIdx="0" />
+        <Input InIdx="11" OutObjId="iRobotCollision" OutIdx="0" />
+        <Input InIdx="12" OutObjId="o13" OutIdx="0" />
+        <Input InIdx="13" OutObjId="iAuxProcess" OutIdx="0" />
+        <Input InIdx="14" OutObjId="iErrorNumber" OutIdx="0" />
+        <Input InIdx="15" OutObjId="iGasOK" OutIdx="0" />
+        <Input InIdx="16" OutObjId="iCoolantOK" OutIdx="0" />
+        <Input InIdx="19" OutObjId="iMainCurrent" OutIdx="0" />
+        <Input InIdx="22" OutObjId="nCurrentLayer" OutIdx="0" />
+        <Input InIdx="17" OutObjId="iVoltage" OutIdx="0" />
+        <Input InIdx="18" OutObjId="iCurrent" OutIdx="0" />
+        <Input InIdx="20" OutObjId="oMainCurrent" OutIdx="0" />
+        <Input InIdx="21" OutObjId="oWirefeedSpeed" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsRuntime="false" Name="ConfigFile" ParamId="0" ParamValue="RSI_WAAMCtrlConfig.xml" />
+        <Parameter Name="Timeout" ParamId="0" ParamValue="100" />
+        <Parameter Name="Flag" ParamId="3" ParamValue="1" />
+        <Parameter Name="Precision" ParamId="7" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o01">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o02">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o04">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o05">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o06">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o07">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iCurrentFlows">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="513" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iReadyForWelding">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="514" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iWireSticking">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="515" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iGeneralError">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="516" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iRobotCollision">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="7" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o13">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iAuxProcess">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="520" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iErrorNumber">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="521" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iGasOK">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="543" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iCoolantOK">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="544" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="iMainCurrent">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="518" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="o03">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1026" />
+        <Parameter Name="DataType" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="nCurrentLayer">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="iVoltage">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="3" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="iCurrent">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="2" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="oMainCurrent">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="5" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="oWirefeedSpeed">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="6" />
+      </Parameters>
+    </RsiObject>
+  </RsiObjects>
+  <Editor>
+    <Comments>
+      <Comment Location="-372,-96" Name="Comment_1" Text="TO WAAM CTRL" />
+    </Comments>
+    <Connectors />
+    <FunctionBlocks />
+    <Groups />
+    <Links>
+      <Link From="o01" FromPort="Out1" Points="-195.92,-34.5;-187.92,-34.5;-179.92,-34.5;-179.92,-34.5;-58,-34.5;-42,-34.5" To="Ethernet_1" ToPort="In1" />
+      <Link From="o02" FromPort="Out1" Points="-195.92,85.5;-183.92,85.5;-171.92,85.5;-171.92,-4.5;-58,-4.5;-42,-4.5" To="Ethernet_1" ToPort="In2" />
+      <Link From="o03" FromPort="Out1" Points="-195.92,205.5;-183.92,205.5;-171.92,205.5;-171.92,25.5;-58,25.5;-42,25.5" To="Ethernet_1" ToPort="In3" />
+      <Link From="o04" FromPort="Out1" Points="-195.92,325.5;-183.92,325.5;-171.92,325.5;-171.92,55.5;-58,55.5;-42,55.5" To="Ethernet_1" ToPort="In4" />
+      <Link From="o05" FromPort="Out1" Points="-195.92,445.5;-183.92,445.5;-171.92,445.5;-171.92,85.5;-58,85.5;-42,85.5" To="Ethernet_1" ToPort="In5" />
+      <Link From="o06" FromPort="Out1" Points="-195.92,565.5;-183.92,565.5;-171.92,565.5;-171.92,115.5;-58,115.5;-42,115.5" To="Ethernet_1" ToPort="In6" />
+      <Link From="o07" FromPort="Out1" Points="-195.92,685.5;-183.92,685.5;-171.92,685.5;-171.92,145.5;-58,145.5;-42,145.5" To="Ethernet_1" ToPort="In7" />
+      <Link From="iCurrentFlows" FromPort="Out1" Points="-195.92,805.5;-183.92,805.5;-171.92,805.5;-171.92,175.5;-58,175.5;-42,175.5" To="Ethernet_1" ToPort="In8" />
+      <Link From="iReadyForWelding" FromPort="Out1" Points="-195.92,925.5;-183.92,925.5;-171.92,925.5;-171.92,205.5;-58,205.5;-42,205.5" To="Ethernet_1" ToPort="In9" />
+      <Link From="iWireSticking" FromPort="Out1" Points="-195.92,1045.5;-183.92,1045.5;-171.92,1045.5;-171.92,235.5;-58,235.5;-42,235.5" To="Ethernet_1" ToPort="In10" />
+      <Link From="iGeneralError" FromPort="Out1" Points="-195.92,1165.5;-183.92,1165.5;-171.92,1165.5;-171.92,265.5;-58,265.5;-42,265.5" To="Ethernet_1" ToPort="In11" />
+      <Link From="iRobotCollision" FromPort="Out1" Points="-195.92,1285.5;-183.92,1285.5;-171.92,1285.5;-171.92,295.5;-58,295.5;-42,295.5" To="Ethernet_1" ToPort="In12" />
+      <Link From="o13" FromPort="Out1" Points="-195.92,1405.5;-183.92,1405.5;-171.92,1405.5;-171.92,325.5;-58,325.5;-42,325.5" To="Ethernet_1" ToPort="In13" />
+      <Link From="iAuxProcess" FromPort="Out1" Points="-195.92,1525.5;-183.92,1525.5;-171.92,1525.5;-171.92,355.5;-58,355.5;-42,355.5" To="Ethernet_1" ToPort="In14" />
+      <Link From="iErrorNumber" FromPort="Out1" Points="-195.92,1645.5;-183.92,1645.5;-171.92,1645.5;-171.92,385.5;-58,385.5;-42,385.5" To="Ethernet_1" ToPort="In15" />
+      <Link From="iGasOK" FromPort="Out1" Points="-195.92,1765.5;-183.92,1765.5;-171.92,1765.5;-171.92,415.5;-58,415.5;-42,415.5" To="Ethernet_1" ToPort="In16" />
+      <Link From="iCoolantOK" FromPort="Out1" Points="-195.92,1885.5;-183.92,1885.5;-171.92,1885.5;-171.92,445.5;-58,445.5;-42,445.5" To="Ethernet_1" ToPort="In17" />
+      <Link From="iMainCurrent" FromPort="Out1" Points="-195.92,2197.5;-183.92,2197.5;-155.92,2197.5;-155.92,535.5;-58,535.5;-42,535.5" To="Ethernet_1" ToPort="In20" />
+      <Link From="nCurrentLayer" FromPort="Out1" Points="-216.09,2509.5;-204.09,2509.5;-160.09,2509.5;-160.09,530;-129.14,530;-129.14,625.5;-58,625.5;-42,625.5" To="Ethernet_1" ToPort="In23" />
+      <Link From="iVoltage" FromPort="Out1" Points="-216.09,2005.5;-204.09,2005.5;-192.09,2005.5;-192.09,410;-161.14,410;-161.14,475.5;-58,475.5;-42,475.5" To="Ethernet_1" ToPort="In18" />
+      <Link From="iCurrent" FromPort="Out1" Points="-216.09,2101.5;-204.09,2101.5;-160.09,2101.5;-160.09,410;-129.14,410;-129.14,505.5;-58,505.5;-42,505.5" To="Ethernet_1" ToPort="In19" />
+      <Link From="oMainCurrent" FromPort="Out1" Points="-216.09,2317.5;-204.09,2317.5;-176.09,2317.5;-176.09,530;-145.14,530;-145.14,565.5;-58,565.5;-42,565.5" To="Ethernet_1" ToPort="In21" />
+      <Link From="oWirefeedSpeed" FromPort="Out1" Points="-216.09,2413.5;-204.09,2413.5;-160.09,2413.5;-160.09,530;-129.14,530;-129.14,595.5;-58,595.5;-42,595.5" To="Ethernet_1" ToPort="In22" />
+    </Links>
+    <Nodes>
+      <Node Location="-24,-54" Name="Ethernet_1" NumberOfInputs="24" NumberOfOutputs="18" Type="Ethernet" />
+      <Node Location="-372,-54" Name="o01" Type="DigIn" />
+      <Node Location="-372,66" Name="o02" Type="DigIn" />
+      <Node Location="-372,306" Name="o04" Type="DigIn" />
+      <Node Location="-372,426" Name="o05" Type="DigIn" />
+      <Node Location="-372,546" Name="o06" Type="DigIn" />
+      <Node Location="-372,666" Name="o07" Type="DigIn" />
+      <Node Location="-372,786" Name="iCurrentFlows" Type="DigIn" />
+      <Node Location="-372,906" Name="iReadyForWelding" Type="DigIn" />
+      <Node Location="-372,1026" Name="iWireSticking" Type="DigIn" />
+      <Node Location="-372,1146" Name="iGeneralError" Type="DigIn" />
+      <Node Location="-372,1266" Name="iRobotCollision" Type="DigIn" />
+      <Node Location="-372,1386" Name="o13" Type="DigIn" />
+      <Node Location="-372,1506" Name="iAuxProcess" Type="DigIn" />
+      <Node Location="-372,1626" Name="iErrorNumber" Type="DigIn" />
+      <Node Location="-372,1746" Name="iGasOK" Type="DigIn" />
+      <Node Location="-372,1866" Name="iCoolantOK" Type="DigIn" />
+      <Node Location="-372,2178" Name="iMainCurrent" Type="DigIn" />
+      <Node Location="-372,186" Name="o03" Type="DigIn" />
+      <Node Location="-372,2490" Name="nCurrentLayer" Type="Sen_PInt" />
+      <Node Location="-372,1986" Name="iVoltage" Type="Sen_PInt" />
+      <Node Location="-372,2082" Name="iCurrent" Type="Sen_PInt" />
+      <Node Location="-372,2298" Name="oMainCurrent" Type="Sen_PInt" />
+      <Node Location="-372,2394" Name="oWirefeedSpeed" Type="Sen_PInt" />
+    </Nodes>
+    <Toolboxes>
+      <Toolbox Name="RSI" Version="1.3.1" />
+    </Toolboxes>
+  </Editor>
+</RsiContext>

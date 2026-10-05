@@ -1,0 +1,64 @@
+﻿<ROOT>
+	<!-- Copyright (c) WAAM3D Limited. -->
+	<!-- All rights reserved. -->
+  <CONFIG>
+    <IP_NUMBER>192.168.1.200</IP_NUMBER>
+    <!-- IP-number of the external socket -->
+    <PORT>59152</PORT>
+    <!-- Port-number of the external socket -->
+    <SENTYPE>WAAMCtrl</SENTYPE>
+    <!-- The name of your system send in <Sen Type="" > -->
+    <ONLYSEND>FALSE</ONLYSEND>
+    <!-- TRUE means the client don't expect answers. Do not send anything to robot -->
+  </CONFIG>
+  <!-- RSI Data: TYPE=  "BOOL", "STRING", "LONG", "DOUBLE" -->
+  <!-- INDX= "INTERNAL" switch on internal read values. Needed by DEF_... -->
+  <!-- INDX= "nmb" Input/Output index of RSI-Object / Maximum of RSI Channels: 64  -->
+  <!-- HOLDON="1", set this output index of RSI Object to the last value  -->
+  <!-- DEF_Delay count the late packages and send it back to server  -->
+  <!-- DEF_Tech: .T = advance .C = main run / .T1 advance set function generator 1 -->
+  <SEND>
+    <ELEMENTS>
+      <ELEMENT TAG="DEF_RIst" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_EIPos" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_RSol" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_Delay" TYPE="LONG" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_Tech.C1" TYPE="DOUBLE" INDX="INTERNAL" />
+      
+      <ELEMENT TAG="Digin.CurrentFlow" TYPE="BOOL" INDX="1" />
+      <ELEMENT TAG="Digin.WeldingVoltage" TYPE="LONG" INDX="2" />
+      <ELEMENT TAG="Digin.WeldingCurrent" TYPE="LONG" INDX="3" />
+      <ELEMENT TAG="Digin.WeldingCurrentSetpoint" TYPE="LONG" INDX="4" />
+      <ELEMENT TAG="Digin.CurrentWireFeedSpeed" TYPE="DOUBLE" INDX="5" />
+      <ELEMENT TAG="Digin.WireFeedSpeedSetpoint" TYPE="DOUBLE" INDX="6" />
+      <ELEMENT TAG="Digin.ColdWireFeedSpeed" TYPE="DOUBLE" INDX="7" />
+      <ELEMENT TAG="Digin.ColdWireFeedSpeedSetpoint" TYPE="DOUBLE" INDX="8" />
+      <ELEMENT TAG="Digin.Sticking" TYPE="BOOL" INDX="9" />
+      
+      <ELEMENT TAG="LayerNumber" TYPE="LONG" INDX="10" />
+      <ELEMENT TAG="TravelSpeed" TYPE="LONG" INDX="11" />
+      <ELEMENT TAG="SideNumber" TYPE="LONG" INDX="12" />
+      <ELEMENT TAG="LeadPyro" TYPE="DOUBLE" INDX="13" />
+      <ELEMENT TAG="TrailingPyro" TYPE="DOUBLE" INDX="14" />
+      <ELEMENT TAG="EndOfLayer" TYPE="BOOL" INDX="15" />
+      <ELEMENT TAG="IsScanning" TYPE="BOOL" INDX="16" />
+      <ELEMENT TAG="LayerType" TYPE="LONG" INDX="17" />
+      <ELEMENT TAG="LayerIndex" TYPE="LONG" INDX="18" />
+      <ELEMENT TAG="IsPyroTempScanning" TYPE="BOOL" INDX="19" />
+      <ELEMENT TAG="DepositionType" TYPE="LONG" INDX="20" />
+      
+      <ELEMENT TAG="Digin.WireFeedAPrimaryMotorCurrentActual" TYPE="DOUBLE" INDX="21" />
+      <ELEMENT TAG="Digin.WireFeedASecondaryMotorCurrentActual" TYPE="DOUBLE" INDX="22" />
+      <ELEMENT TAG="Digin.WireFeedBPrimaryMotorCurrentActual" TYPE="DOUBLE" INDX="23" />
+      <ELEMENT TAG="Digin.WireFeedBSecondaryMotorCurrentActual" TYPE="DOUBLE" INDX="24" />
+      
+      
+    </ELEMENTS>
+  </SEND>
+  <RECEIVE>
+    <ELEMENTS>
+      <ELEMENT TAG="DEF_EStr" TYPE="STRING" INDX="INTERNAL" />
+      <ELEMENT TAG="TempAcceptable" TYPE="BOOL" INDX="1" />
+    </ELEMENTS>
+  </RECEIVE>
+</ROOT>

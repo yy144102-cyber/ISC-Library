@@ -1,0 +1,149 @@
+&ACCESS RO1
+&REL 1
+&COMMENT LDD package (KSS 8.6.7 or higher)
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+&PARAM DISKPATH = KRC:\R1\TP\LDD
+DEFFCT INT  LDD_config ( LoadA3Settings :IN, Mass :IN, WarmUp :IN )
+   INT LoadA3Settings
+   REAL Mass
+   BOOL WarmUp
+;FOLD Deklarations ; %{H}% Initialization
+   LDD_TRIGGER = 0
+   LDD_SILENT = TRUE
+   LDD_INIT_OK = FALSE
+   LDD_OK = FALSE
+   LDD_KUKALOAD = FALSE
+   LDD_LOAD_RESULT = #NONE
+   LDD_LOAD_MODE = #NONE
+   LDD_ERROR = 0
+   LDD_RANGE = 4 
+   LDD_TEST = -1 
+;ENDFOLD (Deklarations)   
+   IF ( $AXIS_ACT.A4 < -0.01 ) THEN
+      MsgNotify("SilentLDDA4neg", "LoadDataDetermination")
+      RETURN(-45)
+   ENDIF
+   IF ( $AXIS_ACT.A4 > 0.01 ) THEN
+      MsgNotify("SilentLDDA4pos", "LoadDataDetermination")
+      RETURN(-46)
+   ENDIF
+   IF ( LDD_CHECKPOS_OK == FALSE ) THEN
+      LDD_ERROR = -LDD_CHECKPOS_STATE
+      RETURN(LDD_ERROR)
+   ENDIF
+   IF ( VARSTATE("LoadA3Settings") == #INITIALIZED ) THEN
+      LDD_InitA3 ( LoadA3Settings )
+   ELSE
+      LDD_InitA3 ( 2 )
+   ENDIF
+   IF ( VARSTATE("Mass") == #INITIALIZED ) THEN
+      LDD_InitMassIdent ( Mass )
+   ELSE
+      LDD_InitMassIdent ( -1.0 )
+   ENDIF
+   IF ( VARSTATE("WarmUp") == #INITIALIZED ) THEN
+      LDD_InitWarmup ( WarmUp )
+   ELSE
+      LDD_InitWarmup ( FALSE )
+   ENDIF
+   LDD_TRIGGER = 3
+   WAIT FOR ( LDD_TRIGGER == 0 )
+   IF NOT ( LDD_ERROR == 0 ) THEN
+      MsgNotify("SilentLDDConfigFailed", "LoadDataDetermination")
+      RETURN(LDD_ERROR)
+   ENDIF
+   RETURN(LDD_ERROR)
+ENDFCT
+; FOLD Set A3 additional load data ; %{H}%
+DEF  LDD_InitA3 ( LoadA3Settings :IN )
+   INT LoadA3Settings
+   LDD_A3_DATA=0
+   LDD_IDF_A3LOAD[1]=0.0
+   LDD_IDF_A3LOAD[2]=0.0
+   LDD_IDF_A3LOAD[3]=0.0
+   LDD_IDF_A3LOAD[4]=0.0
+   LDD_IDF_A3LOAD[5]=0.0
+   LDD_IDF_A3LOAD[6]=0.0
+   LDD_IDF_A3LOAD[7]=0.0
+   LDD_IDF_A3LOAD[8]=0.0
+   LDD_IDF_A3LOAD[9]=0.0
+   LDD_IDF_A3LOAD[10]=0.0
+   SWITCH  LoadA3Settings
+   CASE 1; default values
+      LDD_A3_DATA=1
+      LDD_IDF_A3LOAD[1]=$DEF_LA3_M
+      LDD_IDF_A3LOAD[2]=$DEF_LA3_CM.X
+      LDD_IDF_A3LOAD[3]=$DEF_LA3_CM.Y
+      LDD_IDF_A3LOAD[4]=$DEF_LA3_CM.Z
+      LDD_IDF_A3LOAD[5]=$DEF_LA3_CM.A
+      LDD_IDF_A3LOAD[6]=$DEF_LA3_CM.B
+      LDD_IDF_A3LOAD[7]=$DEF_LA3_CM.C
+      LDD_IDF_A3LOAD[8]=$DEF_LA3_J.X
+      LDD_IDF_A3LOAD[9]=$DEF_LA3_J.Y
+      LDD_IDF_A3LOAD[10]=$DEF_LA3_J.Z
+      MsgNotify("SilentLDDLA3Setting1", "LoadDataDetermination")
+   CASE 2; values
+      LDD_A3_DATA=2
+      IF (LOAD_A3_DATA.M >= 0.0) THEN
+         LDD_IDF_A3LOAD[1]=LOAD_A3_DATA.M
+         LDD_IDF_A3LOAD[2]=LOAD_A3_DATA.CM.X
+         LDD_IDF_A3LOAD[3]=LOAD_A3_DATA.CM.Y
+         LDD_IDF_A3LOAD[4]=LOAD_A3_DATA.CM.Z
+         LDD_IDF_A3LOAD[5]=LOAD_A3_DATA.CM.A
+         LDD_IDF_A3LOAD[6]=LOAD_A3_DATA.CM.B
+         LDD_IDF_A3LOAD[7]=LOAD_A3_DATA.CM.C
+         LDD_IDF_A3LOAD[8]=LOAD_A3_DATA.J.X
+         LDD_IDF_A3LOAD[9]=LOAD_A3_DATA.J.Y
+         LDD_IDF_A3LOAD[10]=LOAD_A3_DATA.J.Z
+         MsgNotify("SilentLDDLA3Setting2", "LoadDataDetermination")
+      ELSE
+         MsgNotify("SilentLDDLA3Setting0", "LoadDataDetermination")
+      ENDIF
+   DEFAULT; none
+      MsgNotify("SilentLDDLA3Setting0", "LoadDataDetermination")
+   ENDSWITCH
+END
+; ENDFOLD (Set A3 additional load data)
+; FOLD Set LDD axis ranges ; %{H}%
+GLOBAL DEF  LDD_InitPosToRanges ( AxisAct :IN )
+   E6AXIS AxisAct
+   LDD_IDF[1]  = AxisAct.A1
+   LDD_IDF[2]  = LDD_IDF[1]
+   LDD_IDF[3]  = AxisAct.A2
+   LDD_IDF[4]  = LDD_IDF[3]
+   LDD_IDF[5]  = AxisAct.A3 - (LDD_RANGES[3] / 2)
+   LDD_IDF[6]  = LDD_IDF[5] + LDD_RANGES[3]
+   LDD_IDF[7]  = 0.0
+   LDD_IDF[8]  = LDD_IDF[7]
+   LDD_IDF[9]  = AxisAct.A5 - (LDD_RANGES[5] / 2)
+   LDD_IDF[10] = LDD_IDF[9] + LDD_RANGES[5]
+   LDD_IDF[11] = AxisAct.A6 - (LDD_RANGES[6] / 2)
+   LDD_IDF[12] = LDD_IDF[11] + LDD_RANGES[6]
+END
+; ENDFOLD (Set LDD axis ranges)
+; FOLD Set LDD Warm-up ; %{H}%
+GLOBAL DEF  LDD_InitWarmUp ( WarmUp :IN )
+   BOOL WarmUp
+   IF ( Warmup ) THEN
+      LDD_IDF[18] = 1
+   ELSE
+      LDD_IDF[18] = 0
+   ENDIF
+END
+; ENDFOLD (Set LDD Warm-up)
+; FOLD Set LDD MassIdent ; %{H}%
+GLOBAL DEF  LDD_InitMassIdent ( Mass :IN )
+   REAL Mass
+   IF ( Mass < 0.0 ) THEN
+      LDD_IDF[17] = 1
+   ELSE
+      LDD_IDF[13] = Mass
+      LDD_IDF[17] = 0
+   ENDIF
+   LDD_MASSISZERO = FALSE
+   IF ( Mass == 0.0 ) THEN
+      LDD_MASSISZERO = TRUE
+   ENDIF
+END
+; ENDFOLD (Set LDD MassIdent)

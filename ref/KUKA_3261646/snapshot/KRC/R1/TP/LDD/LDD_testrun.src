@@ -1,0 +1,27 @@
+&ACCESS RO
+&REL 7
+&COMMENT LDD package (KSS 8.6.7 or higher)
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+&PARAM DISKPATH = KRC:\R1\TP\LDD
+DEFFCT INT  LDD_testrun (  )
+   LDD_TEST_RUN = FALSE
+   IF ( LDD_INIT_OK == TRUE ) THEN
+      $tt_IDENT( )
+      IF ( LDD_TO_BE_RESTORED == TRUE) THEN
+         LDD_RESETKRLVAR( )
+      ENDIF
+   ELSE
+      MsgNotify("SilentLDDConfigNotValid", "LoadDataDetermination");
+      RETURN(-4)
+   ENDIF
+   IF ( LDD_TEST_RUN == TRUE ) THEN
+      MsgNotify("SilentLDDTestRunFinished", "LoadDataDetermination");
+      LDD_ERROR = 0
+   ELSE
+      MsgNotify("SilentLDDTestRunCancelled", "LoadDataDetermination");
+      LDD_ERROR = -7
+   ENDIF
+   LDD_TEST_RUN = FALSE
+   RETURN(LDD_ERROR)
+ENDFCT

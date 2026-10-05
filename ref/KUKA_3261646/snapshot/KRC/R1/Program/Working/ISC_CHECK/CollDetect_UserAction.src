@@ -1,0 +1,5 @@
+&ACCESS R2
+DEF CollDetect_UserAction( )
+
+
+END

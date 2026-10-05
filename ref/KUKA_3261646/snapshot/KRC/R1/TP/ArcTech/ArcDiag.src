@@ -1,0 +1,463 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcDiag( )
+END
+;*************************************************************************
+;[GLOBAL Routine] Write diagnostic information
+;tArcDebugMsgTyp DebugTwpe
+;tTextIn1 Text1
+;tTextIn1 Text2
+;tTextIn1 Text3
+;*************************************************************************
+GLOBAL DEF ArcWriteDiag(tArcDebugMsgTyp :IN, tTextIn1[] :IN,tTextIn2[] :IN,tTextIn3[] :IN)
+DECL INT tI
+DECL INT tIAdd
+DECL INT tArcDebugMsgTyp
+DECL INT tCallFrom
+DECl INT tPosDiag
+DECL CHAR tTextIn1[]
+DECL CHAR tTextIn2[]
+DECL CHAR tTextIn3[]
+DECL CHAR tText[80]
+DECL CHAR tText1[80]
+DECL CHAR tStr[256]
+DECL CHAR tProName[40]
+DECL T_CS tTcs
+IF (gArcDiagOn == FALSE) THEN
+ RETURN
+ENDIF
+tText[] = "                                                                                "
+tText1[] = tTextIn1[]
+IF (STRLEN(tTextIn2[]) > 2) THEN
+  tIAdd = STRADD(tText1[]," ")
+  tIAdd = STRADD(tText1[],tTextIn2[])
+ENDIF
+IF (STRLEN(tTextIn3[]) > 2) THEN
+  tIAdd = STRADD(tText1[]," ")
+  tIAdd = STRADD(tText1[],tTextIn3[])
+ENDIF
+IF (STRLEN(tText1[]) <= 80) THEN
+  tText[] = tText1[]
+ENDIF
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Write Msg on HMI if Enable Option
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IF ((gArcDebugMsgEnable B_AND tArcDebugMsgTyp) > 0) THEN
+  ArcMsgWrite(,#NOTIFY,tText[],"ArcDiag",1,Opt_NOVLSTOP_LOG)
+ENDIF  
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ;Update array ArcDiag.dat
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  IF ((gPosDiag >= cMaxDiagNr) OR (gPosDiag < 1)) THEN
+    gPosDiag = 1
+  ELSE
+    gPosDiag = gPosDiag + 1
+  ENDIF
+  tPosDiag = gPosDiag + 1
+  IF (tPosDiag > cMaxDiagNr) THEN
+    tPosDiag = 1
+  ENDIF
+  gArcLog[tPosDiag] = {RTime 0,Text[] "Last"} 
+  tCallFrom = ArcCallFromRoutine()  
+  SWITCH tCallFrom
+    CASE 1 ;Call from Robot
+      tStr[] = "Rob  :"
+    CASE 2 ;Call from Robot Trigger
+      tStr[] = "RobT :"
+    CASE 3 ;Call from SubMit
+      tStr[] = "Sub  :"
+    CASE 4 ;Call from SubMit Trigger
+      tStr[] = "SubT :"
+    DEFAULT
+      tStr[] = " "
+  ENDSWITCH
+  IF (gArcDiagCallEnable == TRUE) THEN
+    SWITCH tCallFrom
+      CASE 1,2 ;Call from Robot or Robot Trigger
+        tTcs = $PRO_IP_EXT[1]
+        tIAdd = STRADD(tStr[],tTcs.UP_NAME[])
+        FOR tI = 2 TO 20
+          tTcs = $PRO_IP_EXT[tI]
+          IF (STRLEN(tTcs.UP_NAME[]) < 3) THEN
+            EXIT
+          ENDIF
+          tIAdd = STRADD(tStr[],", ")
+          tIAdd = STRADD(tStr[],tTcs.UP_NAME[])        
+        ENDFOR
+    ENDSWITCH 
+  ELSE
+    ON_ERROR_PROCEED
+    tProName[] = $PRO_IP.NAME[]
+    IF ($ERR.Number > 0) THEN
+      ERR_CLEAR($ERR)
+      tProName[]="Error: ReadVar $PRO_IP.NAME[]"      
+    ENDIF
+    tIAdd = STRADD(tStr[],tProName[])
+  ENDIF 
+  gArcLog[gPosDiag].IlfWelder = gArcActIlfWelder
+  gArcLog[gPosDiag].SkWelder  = gArcActSkWelder
+  gArcLog[gPosDiag].Dis       = $DISTANCE
+  gArcLog[gPosDiag].RTime     = $ROB_TIMER
+  gArcLog[gPosDiag].Text[]    = tText[]
+  gArcLog[gPosDiag].Call[]    = tStr[]  
+  gArcLog[gPosDiag].Seam[]    = "*"
+  gArcLog[gPosDiag].Point[]   = "*"
+  SWITCH tCallFrom
+    CASE 1,2 ;Call from Robot or Robot Trigger
+      gArcLog[gPosDiag].Seam[]   = gArcSeamName[]
+      gArcLog[gPosDiag].Point[]  = gArcWeldPointName[]
+  ENDSWITCH
+END
+;*****************************************************************************************
+;ArcStartTrace 
+;*****************************************************************************************
+GLOBAL DEF ArcStartTrace()
+DECL INT tIntRes
+DECL CHAR tStr[64]
+IF (gArcTraceOn == TRUE) THEN
+  $TRACE.MODE = #T_STOP
+  WAIT FOR $TRACE.STATE == #T_END
+  $TRACE.CONFIG[]   = gArcTraceDef[]
+  tIntRes = STRADD(tStr[],gArcTraceName[])
+  tIntRes = STRADD(tStr[],gArcSeamName[]) 
+  $TRACE.NAME[]     = tStr[]
+  $TRACE.MODE       = #T_START
+  WAIT FOR $TRACE.STATE <> #T_END
+  WAIT SEC 0.012
+ENDIF
+END
+;*****************************************************************************************
+;ArcStopTrace
+;*****************************************************************************************
+GLOBAL DEF ArcStopTrace()
+IF (gArcTraceOn == TRUE) THEN
+  WAIT SEC 0.012
+  $TRACE.MODE = #T_STOP
+  WAIT FOR $TRACE.STATE == #T_END
+ENDIF
+END
+;*************************************************************************
+;[Global Routine] Call from Robot Save diagnostic to File
+;*************************************************************************
+GLOBAL DEF ArcDiagSaveToFile()
+DECL BOOL tB
+DECL INT tI
+DECL DATE tDate
+DECL CHAR tModeOp[8]
+DECL CHAR tStrHead[90]
+DECL CHAR tStrLine[90]
+DECL REAL tTimeStamp
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Set Variable to execute routine
+;Save to specific file
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IF (gArcDiagSaveToFile == FALSE) THEN
+  RETURN
+ENDIF
+gArcDiagSaveToFile = FALSE
+IF (enArcCurrentState == #Welding) THEN
+  RETURN
+ENDIF
+tTimeStamp = $ROB_TIMER
+tDate = $DATE
+tStrLine[] = "**********;**********;**********;**********;**********;**********;**********;**********"
+tStrHead[] = "Index;ILFWelder;SKWelder;Description;PointName;SeamName;Call;Distance;RobTime"
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Set Maximum number of files
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFunc(#NumberOfFiles)
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Close All file open
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFunc(#CloseAllFiles)
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Make Directory
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFunc(#MkDir)
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Make File
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFunc(#OpenFileToWrite)
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SWITCH $MODE_OP
+    CASE #T1
+      tB = STRCOPY(tModeOp[],"T1")
+    CASE #T2
+      tB = STRCOPY(tModeOp[],"T2")
+    CASE #AUT
+      tB = STRCOPY(tModeOp[],"AUT")
+    CASE #EX
+      tB = STRCOPY(tModeOp[],"EX")
+  ENDSWITCH
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Write to File Robot Information
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFuncStr(#VarToBuffer2,"%s'h0a'%s'h0a'","ArcTech Diagnostic",tStrLine[])
+  ArcFileFuncInt(#VarToBuffer6,"Date;%d/%d/%d'h0a'Time;%d:%d:%d'h0a'",tDate.YEAR,tDate.MONTH,tDate.DAY,tDate.HOUR,tDate.MIN,tDate.SEC)
+  ArcFileFuncStr(#VarToBuffer3,"Robot Type;%s'h0a'Prog;%s'h0a'$MODE_OP;%s'h0a'",$TRAFONAME[],$PROG_INFO[1].SEL_NAME[],tModeOp[])
+  ArcFileFuncInt(#VarToBuffer4,"$OV_PRO;%d'h0a'$OV_APPL;%d'h0a'$ACT_TOOL;%d'h0a'$ACT_BASE;%d'h0a'",$OV_PRO,$OV_APPL,$ACT_TOOL,$ACT_BASE)
+  ArcFileFuncStr(#VarToBuffer1,"Motion Type;%s'h0a'",ArcMotionEnumToStr(stArcCallState.MoveType))
+  ArcFileFuncStr(#VarToBuffer1,"%s'h0a'",tStrLine[])
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Write Diagnostic Information
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ArcFileFuncStr(#VarToBuffer3,"%s'h0a'%s'h0a'%s'h0a'","Diagnostic",tStrLine[],tStrHead[])
+  FOR tI = 1 TO cMaxDiagNr
+    ArcDiagnostic(tI,gArcLog[tI])
+    gArcLog[tI] = {RTime 0}
+  ENDFOR
+  gPosDiag = 1
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;Close File
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  tTimeStamp = $ROB_TIMER - tTimeStamp
+  ArcFileFuncInt(#VarToBuffer1,"'h0a'TimeStamp;%d",tTimeStamp)
+  ArcFileFunc(#BufferToFile)
+  ArcFileFunc(#CloseFile)
+END
+;*************************************************************************
+;[Routine] Get Diagnostic
+;*************************************************************************
+DEF ArcDiagnostic(tI :IN,tgArcLog :IN)
+DECL INT tI
+DECL stgArcLog tgArcLog
+IF (tgArcLog.RTime == 0) THEN
+  tgArcLog = {Text[] "- - - - -",Point[] "- - - - -",IlfWelder 0,SkWelder 0,Dis 0,RTime 0.0,Call[] "- - - - -",Seam[] "- - - - -"}
+ENDIF
+ArcFileFuncInt(#VarToBuffer3,"%d;%d;%d;",tI,tgArcLog.IlfWelder,tgArcLog.SkWelder)
+ArcFileFuncStr(#VarToBuffer4,"%s;%s;%s;%s;",tgArcLog.Text[],tgArcLog.Point[],tgArcLog.Seam[],tgArcLog.Call[])
+ArcFileFuncReal(#VarToBuffer1,"%f;",tgArcLog.Dis)
+ArcFileFuncInt(#VarToBuffer1,"%d'h0a'",tgArcLog.RTime)
+END
+;*************************************************************************
+;[Routine] Convert Motion Enum to String
+;*************************************************************************
+DEFFCT CHAR[10] ArcMotionEnumToStr(tenArcMoveState :IN)
+DECL enArcMoveState_T tenArcMoveState
+SWITCH tenArcMoveState
+  CASE #Std
+    RETURN "Std"
+  CASE #SplBlock
+    RETURN "SplBlock"
+  CASE #SplSingle
+    RETURN "SplSingle"
+ENDSWITCH
+RETURN "???"
+ENDFCT
+;*************************************************************************
+;[Routine] File Function
+;*************************************************************************
+DEF ArcFileFunc(tFileFunc :IN,tStr[] :IN)
+DECL BOOL tBool
+DECL INT tOffset
+DECL CHAR tStr[]
+DECL enFileFunc_T tFileFunc
+  mMode = #SYNC
+  SWITCH tFileFunc
+    CASE #NumberOfFiles
+      IF (mActDiagFiles < 1) THEN
+       mActDiagFiles = 1
+      ENDIF 
+      IF (mActDiagFiles >  cMaxDiagFiles) THEN
+       mActDiagFiles = 1
+      ENDIF 
+    CASE #CloseAllFiles
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose_all", -99)
+      ArcFileMsgError(mState.MSG_NO,"CloseAllFiles")
+      mFileHandle = 0
+    CASE #MkDir
+      CWRITE($FCT_CALL, mState, mMode, "krl_mkdir", mDirName[])
+      ArcFileMsgError(mState.MSG_NO,"MkDir")
+    CASE #OpenFileToWrite
+      tOffset = 0
+      tBool = STRCLEAR(mPathToFile[])
+      SWRITE(mPathToFile[],mState,tOffset,"%s/%s_%d.csv",mDirName[],mFileName[],mActDiagFiles)
+      mFileHandle = 0
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", mPathToFile[],"w",mFileHandle)
+      ArcFileMsgError(mState.MSG_NO,"OpenFileToWrite")
+    CASE #StrToBuffer
+      CWRITE($FCT_CALL, mState, mMode, "krl_fputs", mFileHandle, tStr[])
+      ArcFileMsgError(mState.MSG_NO,"StrToBuffer")
+    CASE #NlStrToBuffer
+      CWRITE($FCT_CALL, mState, mMode, "krl_fwriteln", mFileHandle, tStr[])
+      ArcFileMsgError(mState.MSG_NO,"NlStrToBuffer")
+    CASE #BufferToFile
+      CWRITE($FCT_CALL, mState, mMode, "krl_fflush", mFileHandle)
+      ArcFileMsgError(mState.MSG_NO,"BufferToFile")
+    CASE #CloseFile
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose", mFileHandle)
+      ArcMsgWriteS(,#NOTIFY,"SaveDiagFileTo:'h0a'C:\KRC\ROBOTER\UserFiles\%1","ARC",1,Opt_NOVLSTOP_NOLOG,mPathToFile[])
+      mActDiagFiles = mActDiagFiles + 1
+      ArcFileMsgError(mState.MSG_NO,"CloseFile")
+  ENDSWITCH
+END
+;*************************************************************************
+;[Routine] Write Integer To Bufer
+;*************************************************************************
+DEF ArcFileFuncInt(tFileFunc :IN,tConvStr[] :IN,tVar1 :IN,tVar2 :IN,tVar3 :IN,tVar4 :IN,tVar5 :IN,tVar6 :IN,tVar7 :IN,tVar8 :IN)
+DECL INT tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7,tVar8
+DECL CHAR tConvStr[]
+DECL enFileFunc_T tFileFunc
+  mMode = #SYNC
+  SWITCH tFileFunc
+    CASE #VarToBuffer1
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1)
+      ArcFileMsgError(mState.MSG_NO,"IntVar1")
+    CASE #VarToBuffer2
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2)
+      ArcFileMsgError(mState.MSG_NO,"IntVar2")
+    CASE #VarToBuffer3
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3)
+      ArcFileMsgError(mState.MSG_NO,"IntVar3")
+    CASE #VarToBuffer4
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4)
+      ArcFileMsgError(mState.MSG_NO,"IntVar4")
+    CASE #VarToBuffer5
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5)
+      ArcFileMsgError(mState.MSG_NO,"IntVar5")
+    CASE #VarToBuffer6
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6)
+      ArcFileMsgError(mState.MSG_NO,"IntVar6")
+    CASE #VarToBuffer7
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7)
+      ArcFileMsgError(mState.MSG_NO,"IntVar7")
+    CASE #VarToBuffer8
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7,tVar8)
+      ArcFileMsgError(mState.MSG_NO,"IntVar8")
+  ENDSWITCH
+END
+;*************************************************************************
+;[Routine] Write Real To Bufer
+;*************************************************************************
+DEF ArcFileFuncReal(tFileFunc :IN,tConvStr[] :IN,tVar1 :IN,tVar2 :IN,tVar3 :IN,tVar4 :IN,tVar5 :IN,tVar6 :IN,tVar7 :IN,tVar8 :IN)
+DECL REAL tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7,tVar8
+DECL CHAR tConvStr[]
+DECL enFileFunc_T tFileFunc
+  mMode = #SYNC
+  SWITCH tFileFunc
+    CASE #VarToBuffer1
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1)
+      ArcFileMsgError(mState.MSG_NO,"RealVar1")
+    CASE #VarToBuffer2
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2)
+      ArcFileMsgError(mState.MSG_NO,"RealVar2")
+    CASE #VarToBuffer3
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3)
+      ArcFileMsgError(mState.MSG_NO,"RealVar3")
+    CASE #VarToBuffer4
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4)
+      ArcFileMsgError(mState.MSG_NO,"RealVar4")
+    CASE #VarToBuffer5
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5)
+      ArcFileMsgError(mState.MSG_NO,"RealVar5")
+    CASE #VarToBuffer6
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6)
+      ArcFileMsgError(mState.MSG_NO,"RealVar6")
+    CASE #VarToBuffer7
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7)
+      ArcFileMsgError(mState.MSG_NO,"RealVar7")
+    CASE #VarToBuffer8
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1,tVar2,tVar3,tVar4,tVar5,tVar6,tVar7,tVar8)
+      ArcFileMsgError(mState.MSG_NO,"RealVar8")
+  ENDSWITCH
+END
+;*************************************************************************
+;[Routine] Write String To Bufer
+;*************************************************************************
+DEF ArcFileFuncStr(tFileFunc :IN,tConvStr[] :IN,tVar1[] :IN,tVar2[] :IN,tVar3[] :IN,tVar4[] :IN,tVar5[] :IN,tVar6[] :IN,tVar7[] :IN,tVar8[] :IN)
+DECL CHAR tVar1[],tVar2[],tVar3[],tVar4[],tVar5[],tVar6[],tVar7[],tVar8[]
+DECL CHAR tConvStr[]
+DECL enFileFunc_T tFileFunc
+  mMode = #SYNC
+  SWITCH tFileFunc
+    CASE #VarToBuffer1
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar1")
+    CASE #VarToBuffer2
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar2")
+    CASE #VarToBuffer3
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar3")
+    CASE #VarToBuffer4
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[],tVar4[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar4")
+    CASE #VarToBuffer5
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[],tVar4[],tVar5[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar5")
+    CASE #VarToBuffer6
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[],tVar4[],tVar5[],tVar6[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar6")
+    CASE #VarToBuffer7
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[],tVar4[],tVar5[],tVar6[],tVar7[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar7")
+    CASE #VarToBuffer8
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", mFileHandle,tConvStr[],tVar1[],tVar2[],tVar3[],tVar4[],tVar5[],tVar6[],tVar7[],tVar8[])
+      ArcFileMsgError(mState.MSG_NO,"StrVar8")
+  ENDSWITCH
+END
+;*************************************************************************
+;[Routine] Write error message
+;*************************************************************************
+DEF ArcFileMsgError(tNr :IN,tStr[] :IN)
+DECL int tInt
+DECL INT tNR
+DECL INT tMsgNR
+DECL CHAR tStr[]
+IF (tNr >= 0) THEN
+  RETURN
+ENDIF
+tMsgNR = tNr * (-1)
+tInt = 0
+SWITCH tNr
+  CASE -1
+    ArcMsgWriteS(tInt,#QUIT,"Internal error",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -2
+    ArcMsgWriteS(tInt,#QUIT,"Operation failed,because the file was opened outside a KRL or does not exist",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -3
+    ArcMsgWriteS(tInt,#QUIT,"There is no file open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -4
+    ArcMsgWriteS(tInt,#QUIT,"End of file has been reached",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -5
+    ;ArcMsgWriteS(tInt,#QUIT,"Maximum size of directory C:\KRC\ROBOTER\UserFiles has been reached",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -6
+    ArcMsgWriteS(tInt,#QUIT,"File already open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -7
+    ArcMsgWriteS(tInt,#QUIT,"Positioning of the file pointer outside the limits of the file",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -8
+    ArcMsgWriteS(tInt,#QUIT,"File system not available: error in specification of target directory",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -10
+    ArcMsgWriteS(tInt,#QUIT,"Invalid number of function parameters transferred",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -11
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter has an invalid value",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -12
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter has an incorrect data type",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -13
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter is not a variable although a variable is expected",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -14
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter string is blank",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -15
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter string is too long",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -16
+    ArcMsgWriteS(tInt,#QUIT,"At least one function parameter string contains invalid characters",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -30
+    ArcMsgWriteS(tInt,#QUIT,"Direct access to the ROBOTER directory is not permissible",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -31
+    ArcMsgWriteS(tInt,#QUIT,"Invalid absolute path",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -32
+    ArcMsgWriteS(tInt,#QUIT,"Mount point not found",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -40
+    ArcMsgWriteS(tInt,#QUIT,"File cannot be opened because 11 files are already open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -41
+    ArcMsgWriteS(tInt,#QUIT,"One value could not be read. The values before this value were read correctly",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -42
+    ArcMsgWriteS(tInt,#QUIT,"The format string contains an invalid format statement",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -43
+    ArcMsgWriteS(tInt,#QUIT,"The number of values does not correspond to the number of transferred parameters",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -44
+    ArcMsgWriteS(tInt,#QUIT,"An invalid format was specified for one parameter",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  DEFAULT
+    ArcMsgWriteS(tInt,#QUIT,"No Message",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+ENDSWITCH
+END

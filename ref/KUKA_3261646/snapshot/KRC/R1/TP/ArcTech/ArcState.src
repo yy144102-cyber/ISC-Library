@@ -1,0 +1,1083 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF  ArcState( )
+END
+;*****************************************************************************************
+;PreStart State
+;*****************************************************************************************
+GLOBAL DEFFCT enArcState_T SetStatePreStart(tActstate :IN)
+DECL INT tI
+DECL INT tError
+DECL enArcState_T tActState
+DECL enArcState_T nextState
+SWITCH tActState
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] Init")
+  gArcNoErrorRestart = FALSE
+  ArcResetState()
+  stArcProcessState.ProcessEnabled = ArcWeldCondition(gArcActIlfWelder)
+  IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+    gArcActModeOn = ArcCheckModeId(gArcActIlfWelder,stArcActStartSet.JobModeId[], #NOTIFY)
+    nextState = #CheckPowerSource
+  ELSE
+    nextState = #PreStartNotDone
+  ENDIF
+  IF ((stMoveScratch.Enable == TRUE) AND (stMoveScratch.BeforeArcOn == TRUE)) THEN
+    nextState = #PreStartNotDone
+  ENDIF
+  IF (stArcProcessState.PreDefDone == FALSE) THEN
+    ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,ArcIntToStr(gArcActIlfWelder),"Prestart time to high")
+    nextState = #PreStartNotDone
+  ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckPowerSource
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] CheckPowerSource")
+    ArcReceiptWelder()
+
+    ;ToDo Check if needed
+    IF (wArcWelder[gArcActIlfWelder].Type == #ARCLINKXT) THEN
+      FOR tI = 1 TO 8
+        tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeOn,tI,0)
+      ENDFOR
+    ENDIF
+    SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIRdyWeldSource[,],0)
+      CASE 0
+        nextState = #PreStartNotDone
+      CASE -1,1
+        nextState = #CheckRobotReady
+    ENDSWITCH
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckRobotReady
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] CheckRobotReady")
+    IF RobotReadyForWeld(#NONE) == TRUE THEN
+      nextState = #CheckPeriphery
+    ELSE
+      nextState = #PreStartNotDone
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckPeriphery
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] CheckPeriphery")
+    SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldPeriphery[,],0)
+      CASE 0
+        nextState = #PreStartNotDone
+      CASE -1,1
+        nextState = #PrepIgnition
+    ENDSWITCH
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PrepIgnition
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcOnSeamBegin == TRUE) THEN
+      ArcTimeInit()
+      stArcWeldTime.TimeStamps.Preflow = $ROB_TIMER
+    ENDIF
+    ArcOutputSpecAllInit(gArcActIlfWelder,FALSE)
+    ArcSetArcMode(gArcActIlfWelder,gArcActModeOn)
+    ArcSetStrikeValueChannel(gArcActIlfWelder,gArcActModeOn,stArcActStartSet) ;TODO Check
+    enArcErrorState = #Nothing
+    gArcWeldingActive = TRUE
+    stArcProcessState.ProzessActive = TRUE
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPreFlowStart[,])
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] PrepIgnition")
+    IF (ArcOutputCheckInGroup(gArcActIlfWelder,wArcOGasActive[],wArcOGasPreFlowStart[,]) == TRUE) THEN
+      ;Check Gas when Output GasActive is set
+      SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIGasFlowAvailable[],wArcGasFlowTimeout)
+        CASE 0
+          nextState = #PreStartNotDone
+        CASE -1,1
+          IF (gArcWaitWhenCold == TRUE) THEN
+            WAIT SEC stArcActStartSet.PreFlowTime
+          ENDIF
+          nextState = #Ignition
+      ENDSWITCH
+    ELSE
+      nextState = #Ignition
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Ignition
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcOnSeamBegin == TRUE) THEN
+      stArcWeldTime.TimeStamps.Ignition = $ROB_TIMER
+    ENDIF
+    gArcIgnoreError = FALSE
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] Ignition")
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldStart[,])
+    SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldStartMove[,],wArcCurrentTimeout,gArcInternalInErrorIgn)
+      CASE 0
+        nextState = #PreStartNotDone
+      CASE -1,1
+        IF (gArcWaitWhenCold == TRUE) THEN
+          WAIT SEC stArcActStartSet.StartTime
+        ENDIF
+        nextState = #PreStartDone
+    ENDSWITCH
+ENDSWITCH
+SWITCH nextState
+  CASE #PreStartNotDone
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] PreStartNotDone")
+  CASE #PreStartDone
+    ArcWriteDiag(gArcGeneralDebug,"[STATE PRESTART] PreStartDone")
+    enArcCurrentState = #PreStartDone
+ENDSWITCH 
+RETURN(nextState)
+ENDFCT
+;*****************************************************************************************
+;Sets the enArcState_T
+;*****************************************************************************************
+GLOBAL DEFFCT enArcState_T SetState(tActstate :IN)
+DECL BOOL tInError
+DECL INT tError
+DECL INT tState,tI,tBuffer,tHandle[6],tAnswer
+DECL REAL dPurgeTime, dBurnBackTime,tMemTime
+DECL CHAR tPara2[26],tPara3[26]
+DECL enArcState_T tActState
+DECL enArcState_T nextState
+DECL enArcErrorDecision_T retValue
+
+SWITCH tActState
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (stArcFeatureState.Act.PreStart == TRUE) THEN
+      tMemTime = ArcCalcTimeoutMilliSec(gArcPreStartTimeOut)
+      WHILE (enArcCurrentStatePre <> #PreStartNotDone) AND (enArcCurrentStatePre <> #PreStartDone)
+        WAIT SEC 0.012
+        IF ($ROB_TIMER > tMemTime) THEN
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] TimeOut on PreStart")
+          EXIT
+        ENDIF
+      ENDWHILE
+    ELSE
+      enArcCurrentStatePre = #Nothing
+    ENDIF
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] Init")
+    gArcIgnRestartCounter = 0
+    ArcRobotSysReady()
+    IF (gArcSensorActive == TRUE) THEN
+      WHILE (gArcNoErrorUntilSeamEnd == TRUE)
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] NoNoErrorUntilSeamEndPossible")
+        ArcMsgWriteS(,#QUIT ,"NoNoErrorUntilSeamEndPossible","ARC",10083,Opt_NOVLSTOP_NOLOG,$PRO_NAME[])
+        ArcRemoteSetClearMsg(10083)
+      ENDWHILE
+    ENDIF
+    IF (gArcOnSeam == TRUE) THEN
+      IF (enArcCurrentStatePre == #PreStartDone) THEN
+        nextState = #WaitArcStable
+      ELSE
+        ArcResetState()
+        nextState = #CheckPowerSource
+      ENDIF
+    ENDIF
+    IF (gArcOnSeam == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] BreakStateMachine - NOT gArcOnSeam")
+      nextState = #BreakStateMachine
+    ENDIF
+    IF (enArcActiveStrategy == #StartFromPos) THEN
+      ;Nothing
+    ELSE
+      IF (gArcMoveBackStd == TRUE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] Move gArcStdBackPos")
+        ArcMoveTo(gArcStdBackPos)
+      ELSE
+        IF ($ON_PATH == FALSE) THEN
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] Move to $POS_RET")
+          ArcMoveTo($POS_RET)  ;Robot was moved away from Path
+          WAIT FOR ($ON_PATH == TRUE)
+        ENDIF
+      ENDIF
+    ENDIF
+    enArcCurrentStatePre = #Nothing
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckPowerSource
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] CheckPowerSource")
+    stArcProcessState.ProcessEnabled = ArcWeldCondition(gArcActIlfWelder)
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      ArcReceiptWelder()
+    ENDIF
+    IF (($MODE_OP == #EX) OR ($MODE_OP == #AUT)) THEN
+      SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIKeySwitchProcess[],0)
+        CASE -1
+          IF (skArcStatusKeyHot == FALSE) THEN
+            ArcWriteDiag(gArcGeneralDebug,"[STATE] HotRequestButDisabledByKeySwitch")
+            ArcMsgWriteS(,#NOTIFY ,"HotRequestButDisabledByKeySwitch","ARC",10067,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+          ENDIF
+        CASE 0
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] HotRequestButDisabledByKeySwitch")
+          ArcMsgWriteS(,#NOTIFY ,"HotRequestButDisabledByKeySwitch","ARC",10067,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+      ENDSWITCH
+    ENDIF
+    ;ToDo Check if needed
+    IF (wArcWelder[gArcActIlfWelder].Type == #ARCLINKXT) THEN
+      FOR tI = 1 TO 8
+        tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeOn,tI,0)
+      ENDFOR
+    ENDIF
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIRdyWeldSource[,],wArcCurrentTimeout)
+        CASE 0
+          nextState = #PowerSourceNotRdy
+        CASE -1,1
+          nextState = #CheckRobotReady
+      ENDSWITCH
+    ELSE
+      nextState = #CheckRobotReady
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckRobotReady
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] CheckRobotReady")
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      IF RobotReadyForWeld(#NONE) == TRUE THEN
+        nextState = #CheckPeriphery
+      ELSE
+        nextState = #RobotNotRdy
+      ENDIF
+    ELSE
+      nextState = #CheckPeriphery
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #CheckPeriphery
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] CheckPeriphery")
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldPeriphery[,],0)
+        CASE 0
+          nextState = #PeriNotRdy
+        CASE -1,1
+          nextState = #PrepIgnition
+      ENDSWITCH
+    ELSE
+      nextState = #PrepIgnition
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PrepIgnition
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcOnSeamBegin == TRUE) THEN
+      ArcTimeInit()
+      stArcWeldTime.TimeStamps.Preflow = $ROB_TIMER
+    ENDIF
+    ArcOutputSpecAllInit(gArcActIlfWelder,FALSE)
+    ArcSetArcMode(gArcActIlfWelder,gArcActModeOn)
+    ArcSetStrikeValueChannel(gArcActIlfWelder,gArcActModeOn,stArcActStartSet) ;TODO Check
+    enArcErrorState = #Nothing
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      gArcWeldingActive = TRUE
+      stArcProcessState.ProzessActive = TRUE
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPreFlowStart[,])
+      IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] PrepIgnition")
+        IF (gArcGasPreTargetTime > 0) THEN
+          WAIT FOR ($ROB_TIMER > gArcGasPreTargetTime)
+        ENDIF
+        WAIT SEC stArcActStartSet.PreFlowTime
+      ELSE
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] PrepIgnition_OnTheFly - No Preflow time")
+      ENDIF
+      gArcGasPreTargetTime = 0
+      IF (ArcOutputCheckInGroup(gArcActIlfWelder,wArcOGasActive[],wArcOGasPreFlowStart[,]) == TRUE) THEN
+        ;Check Gas when Output GasActive is set
+        SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIGasFlowAvailable[],wArcGasFlowTimeout)
+          CASE 0
+            nextState = #NoGasFlow
+          CASE -1,1
+            IF stArcActStartSet.PurgeTime > 0.0 THEN
+              IF ((gArcIgnRestartCounter > 0) OR (gArcIgnErrorCounter > 0) OR (gArcSeamErrorCounter > 0)) THEN
+                IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+                  WAIT SEC stArcActStartSet.PurgeTime
+                ELSE
+                  ArcWriteDiag(gArcGeneralDebug,"[STATE] PrepIgnition_OnTheFly - No PurgeTime")
+                ENDIF
+              ENDIF
+            ENDIF
+            WAIT FOR (enArcCurrentState <> #Error) ;Important for Restart after Stopmess
+            nextState = #Ignition
+        ENDSWITCH
+      ELSE
+        nextState = #Ignition
+      ENDIF
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] PrepIgnition_Cold")
+      IF (gArcWaitWhenCold == TRUE) THEN
+        WAIT SEC stArcActStartSet.PreFlowTime
+      ENDIF
+      nextState = #Ignition
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Ignition
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcOnSeamBegin == TRUE) THEN
+      stArcWeldTime.TimeStamps.Ignition = $ROB_TIMER
+    ENDIF
+    gArcIgnoreError = FALSE
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      IF (gArcDebugC1ToAnalog10 == TRUE) THEN
+        $ANOUT[11] = 1 ;Debug Welding
+      ENDIF
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] Ignition")
+      ;To Check WaitRemoteDiffIgnitTime()
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldStart[,])
+      gArcIgnRestartCounter=gArcIgnRestartCounter+1
+      gArcSyncIgnitionTimeout = (wArcCurrentTimeout + stArcActStartSet.StartTime + cArcSyncWaitTime)
+      gArcSyncIgnitionStamp = ArcCalcTimeoutSec(gArcSyncIgnitionTimeout)
+      gArcSyncIgnitionEnable = TRUE
+      SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldStartMove[,],wArcCurrentTimeout,gArcInternalInErrorIgn)
+        CASE 0
+          gArcMyIgnitionError = TRUE
+          ArcMsgWriteS(,#NOTIFY ,"TimeOutIgnitionRetry","ARC",10131,Opt_NOVLSTOP_LOG,gArcSeamName[], ArcStrAdd4("  N:",ArcIntToStr(gArcIgnRestartCounter),"/",ArcIntToStr(stArcIgnErrSet.MaxRestart)))  
+          IF (gArcIgnRestartCounter <= stArcIgnErrSet.MaxRestart - 1) THEN
+            nextState = #IgnitionErrorRestart
+          ELSE
+            nextState = #IgnitionErrorStrategy
+          ENDIF
+        CASE -1,1
+          IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+            WAIT SEC stArcActStartSet.StartTime
+          ELSE
+            ArcWriteDiag(gArcGeneralDebug,"[STATE] Ignition_OnTheFly - No start time")
+          ENDIF
+          WAIT FOR (enArcCurrentState <> #Error) ;Important for Restart after Stopmess
+          nextState = #WaitArcStable
+        ENDSWITCH
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] Ignition_Cold")
+      IF (gArcWaitWhenCold == TRUE) THEN
+        WAIT SEC stArcActStartSet.StartTime
+      ENDIF
+      nextState = #WaitArcStable
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #WaitArcStable
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gArcIgnErrorCounter = 0
+    gArcMyIgnitionError = FALSE
+    IF (wArcInputGroupTimeout > 0.05) THEN
+      $TIMER[ctArcWeldingOnTimeout] = wArcInputGroupTimeout*(-1000)
+    ELSE
+      $TIMER[ctArcWeldingOnTimeout] = (-50)
+    ENDIF    
+    $TIMER_STOP[ctArcWeldingOnTimeout] = FALSE
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] WaitArcStable")
+      stArcProcessState.WeldingActive = TRUE
+      IF (gArcMoveBackStd == FALSE) THEN
+        gArcMotionForwardEnable = TRUE
+      ENDIF
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] WaitArcStable_Cold")
+      IF (gArcDebugC1ToAnalog10 == TRUE) THEN
+        $ANOUT[11] = -1 ;Debug Welding
+      ENDIF
+    ENDIF
+    enArcActiveStrategy = #None
+    enArcSaveState = #Nothing
+    ForceRealWeldSpeedIfHot()
+    WAIT FOR (enArcCurrentState <> #Error) ;Important for Restart after Stopmess
+    gArcSyncIgnitionEnable = FALSE
+    nextState = #Welding 
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Welding
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcOnSeamBegin == TRUE) THEN
+      stArcWeldTime.TimeStamps.FirstWeld = $ROB_TIMER
+    ENDIF
+    stArcWeldTime.TimeStamps.Weld = $ROB_TIMER
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] Welding")
+    IF (gArcErrorRestartActive == FALSE) THEN
+      ArcInitErrorDistance()
+    ENDIF
+    gArcBlockArcOff = FALSE
+    ArcOutputSpecAllInit(gArcActIlfWelder,FALSE)
+    ArcSetArcMode(gArcActIlfWelder,gArcActModeSwi);Switch to Weld Param
+    ArcSetWeldValueChannel(gArcActIlfWelder,gArcActModeSwi,stArcActWeldSet) ;TODO Check
+    WAIT FOR (enArcCurrentState <> #Error) ;Important for Restart after Stopmess
+    gArcOnStopConditionOn = FALSE
+    gArcOnSeamBegin = FALSE
+    nextState = #BreakStateMachine
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #RobotNotRdy
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] RobotNotRdy")
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE <> #TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    IF (RobotReadyForWeld(#QUIT) == FALSE) THEN
+      WAIT SEC 0.3
+    ENDIF
+    nextState = #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PowerSourceNotRdy
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    tInError = FALSE
+    FOR tI = 1 TO 6
+      tHandle[tI] = 0
+      IF (wArcIRdyWeldSource[gArcActIlfWelder,tI].Active == TRUE) THEN
+        IF ($IN[wArcIRdyWeldSource[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIRdyWeldSource[gArcActIlfWelder,tI].State) THEN
+          ArcStrParam(wArcIRdyWeldSource[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] PowerSourceNotRdy")
+          ArcMsgWriteS(tHandle[tI],#QUIT,"ArcWeldingSourceNotReady","ARC",10107,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[])
+          tInError = TRUE
+        ENDIF
+      ENDIF
+    ENDFOR
+    ArcRemoteWriteMsg(tInError,"PowerSourceNotRdy",10107)
+    tInError = FALSE
+    ArcMsgWaitForAbsent(tHandle[1])
+    ArcMsgWaitForAbsent(tHandle[2])
+    ArcMsgWaitForAbsent(tHandle[3])
+    ArcMsgWaitForAbsent(tHandle[4])
+    ArcMsgWaitForAbsent(tHandle[5])
+    ArcMsgWaitForAbsent(tHandle[6])
+    ArcRemoteSetClearMsg(10107)
+    nextState = #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PeriNotRdy
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    tInError = FALSE
+    FOR tI = 1 TO 6
+      tHandle[tI] = 0
+      IF (wArcIWeldPeriphery[gArcActIlfWelder,tI].Active == TRUE) THEN
+        IF ($IN[wArcIWeldPeriphery[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIWeldPeriphery[gArcActIlfWelder,tI].State) THEN
+          ArcStrParam(wArcIWeldPeriphery[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] PeriNotRdy")
+          ArcMsgWriteS(tHandle[tI],#QUIT,"ArcPeripheryNotReady","ARC",10108,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[])
+          tInError = TRUE
+        ENDIF
+      ENDIF
+    ENDFOR  
+    ArcRemoteWriteMsg(tInError,"PeriNotRdy",10108)
+    tInError = FALSE
+    ArcMsgWaitForAbsent(tHandle[1])
+    ArcMsgWaitForAbsent(tHandle[2])
+    ArcMsgWaitForAbsent(tHandle[3])
+    ArcMsgWaitForAbsent(tHandle[4])
+    ArcMsgWaitForAbsent(tHandle[5])
+    ArcMsgWaitForAbsent(tHandle[6]) 
+    ArcRemoteSetClearMsg(10108)
+    nextState = #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #NoGasFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+    ArcRemoteWriteMsg(TRUE,"NoGasFlow",10217)
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] NoGasFlow")
+    ArcStrParam(wArcIGasFlowAvailable[gArcActIlfWelder].Description[],tPara2[],tPara3[])
+    ArcMsgWriteS(,#QUIT,"NoGasFlow","ARC",10037,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[])
+    ArcRemoteSetClearMsg(10217)
+    nextState = #Init
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #IgnitionErrorRestart
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] IgnitionErrorRestart")
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    
+    SetBurnBackArcLinkXt(gArcActIlfWelder)
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOIgnitProblem[,])
+    WAIT SEC  stArcIgnErrSet.RecoveryTime
+    BurnBackEndArcLinkXt(gArcActIlfWelder)
+    
+    tInError = FALSE 
+    FOR tI = 1 TO 6
+      tHandle[tI] = 0
+      IF (wArcIWeldStartMove[gArcActIlfWelder,tI].Active == TRUE) THEN
+        IF ($IN[wArcIWeldStartMove[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIWeldStartMove[gArcActIlfWelder,tI].State) THEN
+          ArcStrParam(wArcIWeldStartMove[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] IgnitionErrorRestart")
+          ArcMsgWriteS(tHandle[tI],stArcIgnErrSet.MsgType,"ArcMissingSignalOnIgnition","ARC",10109,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[]) 
+          tInError = TRUE
+        ENDIF      
+      ENDIF
+    ENDFOR
+    ArcRemoteWriteMsg(((stArcIgnErrSet.MsgType <> #NONE) AND tInError == TRUE),"IgnitionErrorRestart",10109)
+    tInError = FALSE
+    ArcMsgWaitForAbsent(tHandle[1])
+    ArcMsgWaitForAbsent(tHandle[2])
+    ArcMsgWaitForAbsent(tHandle[3])
+    ArcMsgWaitForAbsent(tHandle[4])
+    ArcMsgWaitForAbsent(tHandle[5])
+    ArcMsgWaitForAbsent(tHandle[6]) 
+    ArcRemoteSetClearMsg(10109)
+    ArcReceiptWelder()
+    nextState = #CheckPowerSource
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #IgnitionErrorStrategy
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] IgnitionErrorStrategy")
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    
+    SetBurnBackArcLinkXt(gArcActIlfWelder)
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOIgnitProblem[,])
+    BurnBackEndArcLinkXt(gArcActIlfWelder)
+    
+    tInError = FALSE
+    FOR tI = 1 TO 6
+      tHandle[tI] = 0
+      IF (wArcIWeldStartMove[gArcActIlfWelder,tI].Active == TRUE) THEN
+        IF ($IN[wArcIWeldStartMove[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIWeldStartMove[gArcActIlfWelder,tI].State) THEN
+          ArcStrParam(wArcIWeldStartMove[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] IgnitionErrorStrategy $IN[X]")
+          ArcMsgWriteS(tHandle[tI],stArcIgnErrSet.IgnitionFailureMsgType,"ArcTooMuchIgnitions","ARC",10106,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[])                                
+          tInError = TRUE
+        ENDIF
+      ENDIF
+    ENDFOR
+    ArcRemoteWriteMsg(((stArcIgnErrSet.IgnitionFailureMsgType <> #NONE) AND tInError == TRUE),"IgnitionErrorStrategy",10106)
+    tInError = FALSE
+    ArcMsgWaitForAbsent(tHandle[1])
+    ArcMsgWaitForAbsent(tHandle[2])
+    ArcMsgWaitForAbsent(tHandle[3])
+    ArcMsgWaitForAbsent(tHandle[4])
+    ArcMsgWaitForAbsent(tHandle[5])
+    ArcMsgWaitForAbsent(tHandle[6]) 
+    ArcRemoteSetClearMsg(10106)
+    WAIT SEC stArcIgnErrSet.RecoveryTime
+    gArcIgnRestartCounter = 0
+    gArcIgnErrorCounter = gArcIgnErrorCounter + 1
+    IF (gArcIgnErrorCounter > (stArcIgnErrSet.MaxErrStrategies)) THEN
+      nextState = #IgnitionFailed
+    ELSE
+      ArcErrorOnIgnition(stArcIgnErrSet)
+      ArcReceiptWelder()
+      nextState = #CheckPowerSource
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #IgnitionFailed
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;ArcMsg("Diag IgnitionFailed")
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] IgnitionFailed")
+    ArcResetState()
+    IF ($ERR.TRIGGER_TYPE<>#TRG_NONE) THEN 
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    
+    SetBurnBackArcLinkXt(gArcActIlfWelder)
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOIgnitProblem[,])
+    BurnBackEndArcLinkXt(gArcActIlfWelder)
+    
+    IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+      ArcSaveDatas(TRUE)
+      retValue = #Abort
+      ArcOutputSet(gArcActIlfWelder,wArcOCriticalIgnitError[])
+      ArcAtaUserCalls(#AdvErrIgnition)
+    ELSE
+      retValue = MaxErrorDecision()
+    ENDIF
+    SWITCH retValue
+    CASE #Retry
+      ArcReceiptWelder()
+      ArcAtaUserCalls(#MaxIgnErrRetry)
+      nextState = #Init
+    CASE #Abort
+      ArcAbortSeam(#IgnitionError)
+      nextState = #BreakStateMachine
+    DEFAULT
+      nextState = #Nothing
+  ENDSWITCH
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StopWelding
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcDebugC1ToAnalog10 == TRUE) THEN
+      $ANOUT[11] = 0 ;Debug Welding
+    ENDIF
+    stArcWeldTime.TimeStamps.StopWelding = $ROB_TIMER
+    gArcIgnoreError = FALSE
+    gArcSyncIgnitionEnable = FALSE
+    gArcMotionForwardEnable = FALSE
+    ArcSlopeOptionOff(stArcActAdvancedSet)
+    IF (stArcOffSlope.Option == #None) THEN
+      ArcSetArcMode(gArcActIlfWelder,gArcActModeOff)
+      ArcSetCraterValueChannel(gArcActIlfWelder,gArcActModeOff,stArcActCraterSet) ;TODO Check
+    ENDIF
+    ArcOffStrategy(#AtArcOff,stArcDatAct)
+    stArcProcessState.WeldingActive = FALSE
+    IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+      IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] StopWelding")
+        WAIT SEC stArcActCraterSet.CraterTime
+        SetBurnBackArcLinkXt(gArcActIlfWelder)
+        ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+        BurnBackEndArcLinkXt(gArcActIlfWelder)
+      ELSE
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] StopWelding_Cold")
+        IF (gArcWaitWhenCold == TRUE) THEN
+          WAIT SEC stArcActCraterSet.CraterTime
+        ENDIF
+      ENDIF
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] StopWelding_OnTheFly - No Cratertime")
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+    ENDIF
+    nextState = #GasPostFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #GasPostFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    stArcWeldTime.TimeStamps.PostFlow = $ROB_TIMER
+    IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+      IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] GasPostFlow")
+        WAIT SEC stArcActCraterSet.PostflowTime
+      ELSE
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] GasPostFlow_Cold")
+        IF (gArcWaitWhenCold == TRUE) THEN
+          WAIT SEC stArcActCraterSet.PostflowTime
+        ENDIF
+      ENDIF
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] GasPostFlow_OnTheFly - No Postflowtime")
+    ENDIF
+    nextState = #StopGasFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StopGasFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] StopGasFlow")
+    tInError = FALSE
+    IF (stArcProcessState.ProcessEnabled == TRUE) THEN
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+      SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIGasFlowAvailable[],wArcGasTimeoutOver)
+      CASE 0
+        IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+          BRAKE
+          ArcWriteDiag(gArcGeneralDebug,"[STATE] StopGasFlow_OnTheFly - BRAKE GasTimeoutOver")
+        ENDIF
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: StopGasFlow")
+        ArcRemoteWriteMsg(TRUE,"ArcNoGasFlowOver",10112)
+        ArcStrParam(wArcIGasFlowAvailable[gArcActIlfWelder].Description[],tPara2[],tPara3[])
+        IF (gArcSyncList == 1) THEN
+          ArcMsgWriteS(,#QUIT,"ArcNoGasFlowOver","ARC",10112,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[]) 
+        ELSE
+          ArcMsgWriteS(,#NOTIFY,"ArcNoGasFlowOver","ARC",10112,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[]) 
+        ENDIF
+      ENDSWITCH
+
+      SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldSeamEnd[,],wArcCurrentOverTimeout)
+        CASE 0
+          IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+            BRAKE
+            ArcWriteDiag(gArcGeneralDebug,"[STATE] StopGasFlow_OnTheFly - BRAKE CurrentOverTimeout")
+          ENDIF
+          ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+          FOR tI = 1 TO 6
+            tHandle[tI] = 0
+            IF (wArcIWeldSeamEnd[gArcActIlfWelder,tI].Active == TRUE) THEN
+              IF ($IN[wArcIWeldSeamEnd[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIWeldSeamEnd[gArcActIlfWelder,tI].State) THEN
+                tInError = TRUE
+                ArcStrParam(wArcIWeldSeamEnd[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+                IF (gArcSyncList == 1) THEN
+                  ArcMsgWriteS(,#QUIT,"ArcNoProcessEnd","ARC",10111,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[]) 
+                ELSE
+                  ArcMsgWriteS(,#NOTIFY,"ArcNoProcessEnd","ARC",10111,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[]) 
+                ENDIF         
+                ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: wArcIWeldSeamEnd")
+              ENDIF            
+            ENDIF
+          ENDFOR  
+          ArcRemoteWriteMsg(tInError,"ArcNoProcessEnd",10111)
+          tInError = FALSE
+          ArcMsgWaitForAbsent(tHandle[1])
+          ArcMsgWaitForAbsent(tHandle[2])
+          ArcMsgWaitForAbsent(tHandle[3])
+          ArcMsgWaitForAbsent(tHandle[4])
+          ArcMsgWaitForAbsent(tHandle[5])
+          ArcMsgWaitForAbsent(tHandle[6])
+          ArcRemoteSetClearMsg(10111)
+      ENDSWITCH
+    ENDIF
+    nextState = #WeldingDone
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #WeldingDone
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    stArcWeldTime.TimeStamps.WeldingDone = $ROB_TIMER
+    ArcTimeEvaluation()
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] WeldingDone")
+    ArcResetState()
+    enArcErrorState = #Nothing
+    gArcOffStopConditionOn = FALSE
+    ;ToDo Check if needed
+    IF (wArcWelder[gArcActIlfWelder].Type == #ARCLINKXT) THEN
+      FOR tI = 1 TO 8
+        tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeOn,tI,0)
+      ENDFOR
+    ENDIF
+    nextState = #BreakStateMachine
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #RestartAfterError
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: RestartAfterError")
+    ArcResetState()
+    IF (gArcSeamErrorCounter <= stArcWeldErrSet.MaxBreaksOnSeam) THEN
+      ArcReceiptWelder()
+    ENDIF
+    SWITCH enArcSaveState
+    CASE #PrepIgnition, #Ignition, #Welding
+      gArcCanRestartIgnition = (gArcSeamErrorCounter <= stArcWeldErrSet.MaxBreaksOnSeam) AND (gArcNoErrorRestart == FALSE)
+      IF (gArcCanRestartIgnition == TRUE) THEN
+        IF ((wArcStrategyAfterTStop == FALSE) AND (enArcErrorState == #Techstop)) THEN
+          nextState = #Init
+          enArcErrorState = #Nothing
+        ELSE
+          IF (enArcSaveState == #Welding) THEN
+            ArcErrorOnMovement(stArcWeldErrSet)
+          ELSE
+            ArcErrorOnIgnition(stArcIgnErrSet)
+          ENDIF
+          nextState = #Init
+          SWITCH enArcActiveStrategy
+            CASE #ContinueWithoutRetry
+              ArcAbortSeam(#None)
+          ENDSWITCH
+        ENDIF
+      ELSE
+        IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+          enArcCurrentState = #Welding
+          INTERRUPT OFF irtArcResumeOnError
+          gArcNoErrorUntilSeamEnd = FALSE ;Do ErrorRecovery, No ErrorUntilSeamEnd
+          ArcSaveDatas(TRUE)
+          retValue = #Abort
+          ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+          ArcAtaUserCalls(#AdvErrWeld)
+        ELSE
+          retValue = MaxErrorDecision()
+        ENDIF
+        SWITCH retValue
+          CASE #Retry
+            nextState = #Init
+            ArcAtaUserCalls(#MaxWeldErrRetry)
+          CASE #Abort
+            ArcFeatureSelect(#BeforeErrorStrategie)
+            ArcAbortSeam(#WeldingError)
+            nextState = #BreakStateMachine
+          DEFAULT
+            nextState = #Nothing
+        ENDSWITCH
+      ENDIF
+    ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    CASE #StopWelding,#GasPostFlow,#StopGasFlow,#WeldingDone
+    ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      nextState = #WeldingDone
+    ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    DEFAULT
+    ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      nextState = #Init
+  ENDSWITCH
+DEFAULT
+  ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"enArcState_T not found")
+  ArcRemoteSetClearMsg(10094)
+ENDSWITCH
+
+RETURN(nextState)
+ENDFCT
+;*****************************************************************************************
+;Sets the enArcErrorState_T
+;*****************************************************************************************
+GLOBAL DEF SetErrorState(ErrorState :IN)
+DECL BOOL IsRemoteError
+DECL INT tI
+DECL enArcErrorState_T ErrorState
+IF (gArcDebugC1ToAnalog10 == TRUE) THEN
+  $ANOUT[11] = 0 ;Debug Welding
+ENDIF
+;Default Error from other Option
+IF (enArcCurrentState == #Nothing) THEN
+  RETURN
+ENDIF
+enArcErrorState = ErrorState
+;ArcMsg("Diag SetErrorState")
+stArcWeldTime.TimeStamps.Error = $ROB_TIMER
+stArcWeldTime.Error = stArcWeldTime.Error + ArcCalcRobTime($ROB_TIMER, stArcWeldTime.TimeStamps.Error)
+SWITCH enArcCurrentState
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PrepIgnition,#Ignition,#WaitArcStable,#PreStartDone
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: BeforeWelding PrepIgnition/Ignition/WaitArcStable")
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      SetBurnBackArcLinkXt(gArcActIlfWelder)
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOIgnitProblem[,])
+      BurnBackEndArcLinkXt(gArcActIlfWelder)
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Welding
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Block ArcOff if Backward ErrorStrategies is active
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: Welding")
+    IF ((IsAnySpline()) AND (gArcNoErrorUntilSeamEnd == FALSE)) THEN
+      IF (stArcIgnErrSet.IgnitionReaction == #BackToSplineStart) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: BlockArcOff1")
+        gArcBlockArcOff = TRUE
+      ENDIF
+      IF (stArcWeldErrSet.WeldErrReaction == #MoveBackward) AND (stArcWeldErrSet.MotionOnSeam > 0) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: BlockArcOff2")
+        gArcBlockArcOff = TRUE
+      ENDIF
+    ENDIF
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      gArcSeamErrorCounter = gArcSeamErrorCounter + 1
+      SetBurnBackArcLinkXt(gArcActIlfWelder)
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldProblem[,])
+      BurnBackEndArcLinkXt(gArcActIlfWelder)
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StopWelding
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: StopWelding")
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      ArcMsgWriteS(,#NOTIFY ,"CraterfillingInterrupted","ARC",10055,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+    ENDIF
+    gArcNoErrorRestart = TRUE
+    SetBurnBackArcLinkXt(gArcActIlfWelder)
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldProblem[,])
+    BurnBackEndArcLinkXt(gArcActIlfWelder)
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #GasPostFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: GasPostFlow")
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      ArcMsgWriteS(,#NOTIFY ,"CraterfillingInterrupted","ARC",10055,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+    ENDIF
+    gArcNoErrorRestart = TRUE
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StopGasFlow
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: StopGasFlow")
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      ArcMsgWriteS(,#NOTIFY ,"CraterfillingInterrupted","ARC",10055,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+    ENDIF
+    gArcNoErrorRestart = TRUE
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+    ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #IgnitionFailed,#IgnitionErrorStrategy,#WeldingDone
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: IgnitionFailed/IgnitionErrorStrategy/WeldingDone")
+    IF (gArcBurnFreeActive == TRUE) THEN
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldEnd[,])
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPostFlowEnd[,])
+      gArcBurnFreeActive=FALSE
+    ENDIF
+ENDSWITCH
+ArcAtaUserCalls(#ErrorHandle)
+SWITCH ErrorState
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #DefaultError
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: DefaultError")
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #IRStopMess
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: IRStopMess")
+    SWITCH enArcCurrentState
+    CASE #Ignition,#PrepIgnition
+      IF (stArcProcessState.ProzessActive == TRUE) THEN
+        ArcMsgWriteS(,#NOTIFY ,"IgnInterruptedByStopMess","ARC",10039,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+      ENDIF
+    CASE #Welding
+      IF (stArcProcessState.ProzessActive == TRUE) THEN
+        ArcMsgWriteS(,#NOTIFY ,"SeamInterruptedByRobotStopReaction","ARC",10084,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+      ENDIF
+  ENDSWITCH
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #InputError
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #TechStop
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: TechStop")
+    IF (stArcProcessState.ProzessActive == TRUE) THEN
+      ArcMsgWriteS(,#NOTIFY ,"TechstopExecutedRestartByStartkey","ARC",10054,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #WatchdogCtrl
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: WatchdogCtrl")
+    ArcMsgWriteS(,#NOTIFY ,"WatchdogControlExecutedRestartByStartkey","ARC",10052,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #SyncIgnitionCrtl
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: SyncIgnitionCrtl")
+    ArcMsgWriteS(,#NOTIFY ,"SyncIgnitionCrtl","ARC",10116,Opt_NOVLSTOP_LOG,gArcSeamName[])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StillStandCtrl
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: StillStandCtrl")
+    ArcMsgWriteS(,#NOTIFY ,"StillStandCtrl","ARC",10115,Opt_NOVLSTOP_LOG,gArcSeamName[])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #ConfigurationCtrl
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: ConfigurationCtrl")
+    ArcMsgWriteS(,#NOTIFY ,"StopByWrongConfigurationDatas","ARC",10053,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+  CASE #PreStartError
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: PreStartError")
+    ArcMsgWriteS(,#NOTIFY ,"PreStartError","ARC",10149,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],$PRO_NAME[])
+    RETURN
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+  CASE #SttError ;Stt Error
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+    ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: SttError")
+  DEFAULT
+    ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"Unknown ErrorState")
+ENDSWITCH
+IF (enArcCurrentState <> #Error) THEN
+  enArcSaveState = enArcCurrentState
+ENDIF
+ArcResetState()
+enArcCurrentState = #Error
+END
+;*****************************************************************************************
+;StartIgnition
+;*****************************************************************************************
+GLOBAL DEF StartIgnition()
+DECL enArcState_T tArcStateResult
+INTERRUPT DECL irtArcResumeOnError WHEN enArcCurrentState == #Error  DO ArcRestartResume()
+INTERRUPT ON irtArcResumeOnError
+REPEAT
+  ;ArcMsg("Diag StartIgnition")
+  gArcNoErrorRestart = FALSE
+  tArcStateResult = #Nothing
+  IF (enArcCurrentState == #Error) THEN
+    tArcStateResult = SetArcState(#RestartAfterError)
+  ELSE
+    tArcStateResult = SetArcState(#Init)
+  ENDIF
+UNTIL (tArcStateResult == #BreakStateMachine)
+INTERRUPT OFF irtArcResumeOnError
+END
+;*****************************************************************************************
+;Method called by the ArcTech commands to set a state before ArcOn reached
+;*****************************************************************************************
+GLOBAL DEF SetArcStatePreStart()
+DECL enArcState_T nextState
+nextState = #Init
+LOOP
+  nextState = SetStatePreStart(nextState)
+  enArcCurrentStatePre = nextState
+  ;nextState = ArcAnalyseState(nextState) ;ToCheck
+  ;nextState = ArcSyncState(nextState) ;ToCheck
+  SWITCH enArcCurrentStatePre
+    CASE #Nothing,#PreStartNotDone,#PreStartDone
+      EXIT
+  ENDSWITCH
+ENDLOOP
+END
+;*****************************************************************************************
+;Method called by the ArcTech commands to set a state
+;*****************************************************************************************
+GLOBAL DEFFCT enArcState_T SetArcState(state :IN)
+DECL enArcState_T state
+DECL enArcState_T nextState
+nextState = state
+nextState = ArcCheckBreak(nextState)
+WHILE nextState <> #BreakStateMachine
+  enArcCurrentState = nextState
+  nextState = SetState(nextState)
+  nextState = ArcAnalyseState(nextState)
+  nextState = ArcSyncState(nextState)
+  nextState = ArcCheckBreak(nextState)
+  ArcStateSeamLength(nextState)
+ENDWHILE
+RETURN(nextstate)
+ENDFCT
+;*****************************************************************************************
+;Method check if state machine have to be broken
+;*****************************************************************************************
+DEFFCT enArcState_T ArcCheckBreak(tState:IN)
+DECL enArcState_T tState, tStateReturn
+DECL BOOL tBreak
+tStateReturn = tState
+tBreak = FALSE
+IF (stErrorDistance.BreakState == TRUE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[STATE] BreakStateMachine - BreakState")
+  INTERRUPT OFF irtArcResumeOnError ;No Restart. Problem with Resume Impermissible porgramm structure
+  stErrorDistance.BreakState  = FALSE
+  enArcCurrentState           = #Error
+  enArcErrorState             = #Nothing
+  tBreak                      = TRUE
+ENDIF
+IF ((enArcErrorState <> #Nothing) AND (gArcColdSeam == TRUE)) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[STATE] BreakStateMachine - gArcColdSeam")
+  tBreak = TRUE
+ENDIF
+IF (tBreak == TRUE) THEN
+  tStateReturn        = #BreakStateMachine
+  enArcCurrentState   = #Nothing
+ENDIF
+RETURN tStateReturn
+ENDFCT
+;*****************************************************************************************
+;Abort Seam
+;*****************************************************************************************
+DEF ArcAbortSeam(tError:IN)
+DECL enSeamStateError_T tError
+IF (tError <> #None) THEN
+  ArcCheckIfWireIsFree(gArcActIlfWelder,FALSE)
+ENDIF
+ArcAllConditionInit()
+gArcErrorStrategyActive = FALSE
+gArcOnStopConditionOn   = FALSE
+gArcBlockArcOff         = FALSE
+IF (ATAg_ER_ArcGroupEnabled == FALSE) THEN
+  gArcColdSeam = TRUE
+ENDIF
+IF ((gArcTechAdvancedOption == TRUE) AND (ATAg_ER_ArcGroupEnabled == FALSE)) THEN
+  SWITCH tError
+    CASE #None
+      ;Nothing
+    CASE #IgnitionError
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] AbortSeamIgnition")
+      ;IF Ignition Error was on Seam ArsOff At ArcOff
+      IF (enArcSaveState == #Nothing) THEN ;Ignition Error At ArcOn
+        ArsOff()
+      ENDIF
+      ArcAtaUserCalls(#MaxIgnErrAbort)
+    CASE #WeldingError
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] AbortSeam")
+      ArcAtaUserCalls(#MaxWeldErrAbort)
+  ENDSWITCH
+ENDIF
+END
+;*****************************************************************************************
+;Method called at Restart State Machine when error
+;*****************************************************************************************
+DEF ArcRestartResume()
+ArcWriteDiag(gArcGeneralDebug,"[STATE] ERROR: RESUME")
+;ArcMsg("Diag Resume StartIgnition")
+ArcResetState()
+RESUME
+END
+;*****************************************************************************************
+;Reset State Variables
+;*****************************************************************************************
+GLOBAL DEF ArcResetState()
+gArcIgnoreError                     = TRUE
+gArcMotionForwardEnable             = FALSE
+gArcSyncIgnitionEnable              = FALSE
+gArcWeldingActive                   = FALSE
+stArcProcessState.ProzessActive     = FALSE
+stArcProcessState.WeldingActive     = FALSE
+stArcProcessState.ProcessEnabled    = FALSE
+END

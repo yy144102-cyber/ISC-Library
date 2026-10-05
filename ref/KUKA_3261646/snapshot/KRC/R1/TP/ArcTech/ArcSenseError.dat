@@ -1,0 +1,6 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEFDAT ArcSenseError
+DECL BOOL mErrorMessage             = FALSE
+DECL BOOL mRestartRequested         = FALSE
+ENDDAT

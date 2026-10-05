@@ -1,0 +1,89 @@
+&ACCESS R2
+&REL 2
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcLib
+DEF ArcLibCommon( )
+END
+;*****************************************************************************************
+;[Global Routine] Initialize SUBMIT LoopTime
+;*****************************************************************************************
+GLOBAL DEF ArcInitSubmitLoopTime()
+mOverTimeNr     = 0
+mSubmitTimer    = 0
+mActSubmitTimer = 0
+mMinSubmitTimer = 0
+mMaxSubmitTimer = 0
+END
+;*****************************************************************************************
+;[Global Routine] Check SUBMIT LoopTime
+;*****************************************************************************************
+GLOBAL DEF ArcSubmitLoopTime()
+IF (mSubmitTimer > 0) THEN
+  IF ($ROB_TIMER > mSubmitTimer) THEN
+    mActSubmitTimer = $ROB_TIMER - mSubmitTimer
+    IF (mMinSubmitTimer > mActSubmitTimer)OR(mMinSubmitTimer == 0) THEN
+      mMinSubmitTimer = mActSubmitTimer
+    ENDIF
+    IF (mMaxSubmitTimer < mActSubmitTimer) THEN
+      mMaxSubmitTimer = mActSubmitTimer
+    ENDIF
+  ENDIF
+ENDIF
+mSubmitTimer=$ROB_TIMER
+END
+;*****************************************************************************************
+;[Global Routine] Is submit is outof cycle time
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcIsSubMitOverTime(tAllowTime:IN,tActTimer:OUT)
+DECL REAL tActTimer
+DECL REAL tAllowTime
+DECL INT tOverTimeNrMax
+tOverTimeNrMax = 3
+tActTimer = mActSubmitTimer
+IF (mActSubmitTimer > tAllowTime) THEN
+  mOverTimeNr = mOverTimeNr + 1
+  IF (mOverTimeNr > tOverTimeNrMax) THEN
+    mOverTimeNr = tOverTimeNrMax
+  ENDIF
+ELSE
+  mOverTimeNr = 0
+ENDIF
+RETURN mOverTimeNr >= tOverTimeNrMax 
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Robot Stop From SUBMIT
+;*****************************************************************************************
+GLOBAL DEF ArcRobotStopFromSubMit(tCondition :IN)
+DECL Modus_T Mode
+DECL State_T State
+DECL BOOL tCondition
+IF tCondition THEN
+  IF ($PRO_ACT == TRUE) THEN
+    CWRITE($CMD,State,Mode,"STOP 1")
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Global Routine] Get Call from
+;Info:
+;    0 -  Call Wrong
+;    1 -  Call from Robot
+;    2 -  Call from Robot Trigger
+;    3 -  Call from SubMit
+;    4 -  Call from SubMit Trigger
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArcCallFromRoutine()
+IF (($ERR.INTERPRETER == #R_INT) AND (($ERR.TRIGGER_TYPE == #TRG_NONE) AND ($ERR.INT_TYPE == #I_NORMAL))) THEN
+  RETURN 1
+ENDIF
+IF (($ERR.INTERPRETER == #R_INT) AND (($ERR.TRIGGER_TYPE <> #TRG_NONE) OR ($ERR.INT_TYPE <> #I_NORMAL))) THEN
+  RETURN 2
+ENDIF
+IF (($ERR.INTERPRETER <> #R_INT) AND (($ERR.TRIGGER_TYPE == #TRG_NONE) AND ($ERR.INT_TYPE == #I_NORMAL))) THEN
+  RETURN 3
+ENDIF
+IF (($ERR.INTERPRETER <> #R_INT) AND (($ERR.TRIGGER_TYPE <> #TRG_NONE) OR ($ERR.INT_TYPE <> #I_NORMAL))) THEN
+  RETURN 4
+ENDIF  
+RETURN 0
+ENDFCT

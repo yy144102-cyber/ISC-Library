@@ -1,0 +1,15 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF  ArcInterface()
+END
+GLOBAL DEF StopRequestExtProcess(ArcErrorStrategyName[]:IN, ErrorStrategyAllowed:OUT, MsgId[]:OUT, MsgSource[]:OUT, MsgNr:OUT)
+DECL CHAR ArcErrorStrategyName[]
+DECL BOOL ErrorStrategyAllowed
+DECL CHAR MsgId[]
+DECL CHAR MsgSource[]
+DECL INT MsgNr
+ErrorStrategyAllowed = TRUE
+END
+GLOBAL DEF RunRequestExtProcess(ArcErrorStrategyName[]:IN)
+DECL CHAR ArcErrorStrategyName[]
+END

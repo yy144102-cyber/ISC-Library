@@ -1,0 +1,539 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibConvert( )
+END
+;******************************************************************************
+;[Global Routine] Set from Integer Array[32] Boolean
+;******************************************************************************
+GLOBAL DEF ArcIntToBit(tSignal[] :OUT,tSignalGroup :IN,tValue :IN)
+DECL INT tStartBit
+DECL REAL tValue
+DECL INT tValue1
+DECL INT tI
+DECL INT tII
+DECL BOOL tSignal[]
+DECL BOOL tSignal1[32]
+DECL stArcSignal_T tSignalGroup
+IF (tSignalGroup.Active == FALSE) THEN
+  RETURN
+ENDIF
+FOR tI = 1 TO 32
+  tSignal1[tI] = FALSE
+ENDFOR
+FOR tI = 1 TO 32
+  tValue = tValue/2.0
+  tSignal1[tI] = ArcRestPresent(tValue)
+  IF (tValue < 1) THEN
+    EXIT
+  ENDIF
+  tValue1 = tValue
+  IF (tValue1 > tValue) THEN
+    tValue1 = tValue1 - 1
+  ENDIF
+  tValue = tValue1
+ENDFOR
+tII = 1 
+FOR tI = tSignalGroup.Offset.FromIndex TO tSignalGroup.Offset.ToIndex
+  tSignal[tI] = tSignal1[tII] 
+  tII = tII + 1
+ENDFOR
+END
+;******************************************************************************
+;[Global Routine] Set from Boolean Array[32] to Integer
+;******************************************************************************
+GLOBAL DEFFCT INT ArcBitToInt(tArray[] :OUT,tSignalGroup :IN)
+DECL BOOL tArray[]
+DECL INT tI
+DECL INT tII
+DECL stArcSignal_T tSignalGroup
+DECL INT tReturn
+tReturn = 0
+tII = 1
+IF (tSignalGroup.Active == FALSE) THEN
+  RETURN 0
+ENDIF
+FOR tI = tSignalGroup.Offset.FromIndex  TO tSignalGroup.Offset.ToIndex
+  IF (tArray[tI] == TRUE) THEN
+      tReturn = ArcExp(2,tII-1) + tReturn
+  ENDIF 
+  tII = tII + 1
+ENDFOR
+RETURN tReturn
+ENDFCT
+;******************************************************************************
+;[Global Routine] Set signal to Group
+;******************************************************************************
+GLOBAL DEF ArcOutSignalGroup(tSignalGroup:IN,Index1:IN,Index2:IN,Value:IN)
+DECL INT Index1
+DECL INT Index2
+DECL INT Value
+DECL stArcSignal_T tSignalGroup
+IF (tSignalGroup.Active == FALSE) THEN
+  RETURN
+ENDIF
+SWITCH tSignalGroup.VarName
+  CASE #wsArcOModiCoding
+    SWITCH Index1
+      CASE 1
+        wsArc1OModiCoding = Value
+      CASE 2
+        wsArc2OModiCoding = Value
+      CASE 3
+        wsArc3OModiCoding = Value
+      CASE 4
+        wsArc4OModiCoding = Value
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOModiCoding Missing Index1")       
+     ENDSWITCH    
+  CASE #wsArcOVelocity
+    SWITCH Index1
+      CASE 1
+        wsArc1OVelocity = Value
+      CASE 2
+        wsArc2OVelocity = Value
+      CASE 3
+        wsArc3OVelocity = Value
+      CASE 4
+        wsArc4OVelocity = Value
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOVelocity Missing Index1")
+     ENDSWITCH
+  CASE #wsArcOSeamNumberCode
+    SWITCH Index1
+      CASE 1
+        wsArc1OSeamNumberCode = Value
+      CASE 2
+        wsArc2OSeamNumberCode = Value
+      CASE 3
+        wsArc3OSeamNumberCode = Value
+      CASE 4
+        wsArc4OSeamNumberCode = Value
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOSeamNumberCode Missing Index1")      
+     ENDSWITCH  
+  CASE #wsArcOWeldSelect
+    SWITCH Index1
+      CASE 1
+        wsArc1OWeldSelect = Value
+      CASE 2
+        wsArc2OWeldSelect = Value
+      CASE 3
+        wsArc3OWeldSelect = Value
+      CASE 4
+        wsArc4OWeldSelect = Value
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOWeldSelect Missing Index1")          
+     ENDSWITCH   
+  CASE #wsArcOChannel
+    SWITCH Index1
+      CASE 1
+        SWITCH Index2
+          CASE 1
+            wsArc1OChannel1 = Value
+          CASE 2
+            wsArc1OChannel2 = Value
+          CASE 3
+            wsArc1OChannel3 = Value
+          CASE 4
+            wsArc1OChannel4 = Value
+          CASE 5
+            wsArc1OChannel5 = Value
+          CASE 6
+            wsArc1OChannel6 = Value
+          CASE 7
+            wsArc1OChannel7 = Value
+          CASE 8          
+            wsArc1OChannel8 = Value
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel1 Missing Index2")           
+        ENDSWITCH
+      CASE 2
+        SWITCH Index2
+          CASE 1
+            wsArc2OChannel1 = Value
+          CASE 2
+            wsArc2OChannel2 = Value
+          CASE 3
+            wsArc2OChannel3 = Value
+          CASE 4
+            wsArc2OChannel4 = Value
+          CASE 5
+            wsArc2OChannel5 = Value
+          CASE 6
+            wsArc2OChannel6 = Value
+          CASE 7
+            wsArc2OChannel7 = Value
+          CASE 8          
+            wsArc2OChannel8 = Value
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel2 Missing Index2")     
+        ENDSWITCH      
+      CASE 3
+        SWITCH Index2
+          CASE 1
+            wsArc3OChannel1 = Value
+          CASE 2
+            wsArc3OChannel2 = Value
+          CASE 3
+            wsArc3OChannel3 = Value
+          CASE 4
+            wsArc3OChannel4 = Value
+          CASE 5
+            wsArc3OChannel5 = Value
+          CASE 6
+            wsArc3OChannel6 = Value
+          CASE 7
+            wsArc3OChannel7 = Value
+          CASE 8          
+            wsArc3OChannel8 = Value
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel3 Missing Index2")  
+        ENDSWITCH       
+      CASE 4
+        SWITCH Index2
+          CASE 1
+            wsArc4OChannel1 = Value
+          CASE 2
+            wsArc4OChannel2 = Value
+          CASE 3
+            wsArc4OChannel3 = Value
+          CASE 4
+            wsArc4OChannel4 = Value
+          CASE 5
+            wsArc4OChannel5 = Value
+          CASE 6
+            wsArc4OChannel6 = Value
+          CASE 7
+            wsArc4OChannel7 = Value
+          CASE 8          
+            wsArc4OChannel8 = Value
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel4 Missing Index2")
+        ENDSWITCH  
+    ENDSWITCH        
+  CASE #wsArcOMsgPlc
+    wsArc0OMsgPlc = Value
+  CASE #wsArcOWelderId
+    wsArc0OWelderId = Value
+  CASE #wArcOSLErrorCode
+    wArc0OSLErrorCode = Value
+  CASE #wArcOSLSeamNum
+    wArc0OSLSeamNum = Value
+  DEFAULT
+    ArcMsg("ERROR: Missing ENUM Signal")
+    IF ($IS_OFFICE_LITE == TRUE) THEN
+      HALT 
+    ENDIF
+ENDSWITCH
+END
+;******************************************************************************
+;[Global Routine] Get signal from Group
+;******************************************************************************
+GLOBAL DEFFCT INT ArcInSignalGroup(tSignalGroup:IN,Index1:IN,Index2:IN)
+DECL INT Index1
+DECL INT Index2
+DECL stArcSignal_T tSignalGroup
+IF (tSignalGroup.Active == FALSE) THEN
+  RETURN 0
+ENDIF
+SWITCH tSignalGroup.VarName
+  CASE #wsArcOModiCoding
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1OModiCoding
+      CASE 2
+        RETURN wsArc2OModiCoding
+      CASE 3
+        RETURN wsArc3OModiCoding
+      CASE 4
+        RETURN wsArc4OModiCoding
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOModiCoding Missing Index1")
+     ENDSWITCH    
+  CASE #wsArcOVelocity
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1OVelocity
+      CASE 2
+        RETURN wsArc2OVelocity
+      CASE 3
+        RETURN wsArc3OVelocity
+      CASE 4
+        RETURN wsArc4OVelocity
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOVelocity Missing Index1")   
+     ENDSWITCH
+  CASE #wsArcOSeamNumberCode
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1OSeamNumberCode
+      CASE 2
+        RETURN wsArc2OSeamNumberCode
+      CASE 3
+        RETURN wsArc3OSeamNumberCode
+      CASE 4
+        RETURN wsArc4OSeamNumberCode
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOSeamNumberCode Missing Index1")    
+     ENDSWITCH  
+  CASE #wsArcOWeldSelect
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1OWeldSelect
+      CASE 2
+        RETURN wsArc2OWeldSelect
+      CASE 3
+        RETURN wsArc3OWeldSelect
+      CASE 4
+        RETURN wsArc4OWeldSelect
+      DEFAULT
+        ArcMsg("ERROR: #wsArcOWeldSelect Missing Index1")
+     ENDSWITCH   
+  CASE #wsArcOChannel
+    SWITCH Index1
+      CASE 1
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc1OChannel1
+          CASE 2
+            RETURN wsArc1OChannel2
+          CASE 3
+            RETURN wsArc1OChannel3
+          CASE 4
+            RETURN wsArc1OChannel4
+          CASE 5
+            RETURN wsArc1OChannel5
+          CASE 6
+            RETURN wsArc1OChannel6
+          CASE 7
+            RETURN wsArc1OChannel7
+          CASE 8          
+            RETURN wsArc1OChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel1 Missing Index2")        
+        ENDSWITCH
+      CASE 2
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc2OChannel1
+          CASE 2
+            RETURN wsArc2OChannel2
+          CASE 3
+            RETURN wsArc2OChannel3
+          CASE 4
+            RETURN wsArc2OChannel4
+          CASE 5
+            RETURN wsArc2OChannel5
+          CASE 6
+            RETURN wsArc2OChannel6
+          CASE 7
+            RETURN wsArc2OChannel7
+          CASE 8          
+            RETURN wsArc2OChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel2 Missing Index2")                      
+        ENDSWITCH      
+      CASE 3
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc3OChannel1
+          CASE 2
+            RETURN wsArc3OChannel2
+          CASE 3
+            RETURN wsArc3OChannel3
+          CASE 4
+            RETURN wsArc3OChannel4
+          CASE 5
+            RETURN wsArc3OChannel5
+          CASE 6
+            RETURN wsArc3OChannel6
+          CASE 7
+            RETURN wsArc3OChannel7
+          CASE 8          
+            RETURN wsArc3OChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel3 Missing Index2")                  
+        ENDSWITCH       
+      CASE 4
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc4OChannel1
+          CASE 2
+            RETURN wsArc4OChannel2
+          CASE 3
+            RETURN wsArc4OChannel3
+          CASE 4
+            RETURN wsArc4OChannel4
+          CASE 5
+            RETURN wsArc4OChannel5
+          CASE 6
+            RETURN wsArc4OChannel6
+          CASE 7
+            RETURN wsArc4OChannel7
+          CASE 8          
+            RETURN wsArc4OChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcOChannel4 Missing Index2")          
+        ENDSWITCH  
+    ENDSWITCH        
+  CASE #wsArcOMsgPlc
+    RETURN wsArc0OMsgPlc
+  CASE #wsArcOWelderId
+    RETURN wsArc0OWelderId
+  CASE #wArcOSLErrorCode
+    RETURN wArc0OSLErrorCode
+  CASE #wArcOSLSeamNum
+    RETURN wArc0OSLSeamNum
+  CASE #wsArcIPowerSourceMsg1  
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1IPowerSourceMsg1
+      CASE 2
+        RETURN wsArc2IPowerSourceMsg1
+      CASE 3
+        RETURN wsArc3IPowerSourceMsg1
+      CASE 4
+        RETURN wsArc4IPowerSourceMsg1
+      DEFAULT
+        ArcMsg("ERROR: #wsArcIPowerSourceMsg1 Missing Index1")
+     ENDSWITCH   
+  CASE #wsArcIPowerSourceMsg2
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1IPowerSourceMsg2
+      CASE 2
+        RETURN wsArc2IPowerSourceMsg2
+      CASE 3
+        RETURN wsArc3IPowerSourceMsg2
+      CASE 4
+        RETURN wsArc4IPowerSourceMsg2
+      DEFAULT
+        ArcMsg("ERROR: #wsArcIPowerSourceMsg2 Missing Index1")
+     ENDSWITCH   
+  CASE #wsArcISeamNumberCode
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1ISeamNumberCode
+      CASE 2
+        RETURN wsArc2ISeamNumberCode
+      CASE 3
+        RETURN wsArc3ISeamNumberCode
+      CASE 4
+        RETURN wsArc4ISeamNumberCode
+      DEFAULT
+        ArcMsg("ERROR: #wsArcISeamNumberCode Missing Index1")
+     ENDSWITCH   
+  CASE #wsArcIChannel
+   SWITCH Index1
+      CASE 1
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc1IChannel1
+          CASE 2
+            RETURN wsArc1IChannel2
+          CASE 3
+            RETURN wsArc1IChannel3
+          CASE 4
+            RETURN wsArc1IChannel4
+          CASE 5
+            RETURN wsArc1IChannel5
+          CASE 6
+            RETURN wsArc1IChannel6
+          CASE 7
+            RETURN wsArc1IChannel7
+          CASE 8          
+            RETURN wsArc1IChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcIChannel Missing Index2")    
+          ENDSWITCH
+      CASE 2
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc2IChannel1
+          CASE 2
+            RETURN wsArc2IChannel2
+          CASE 3
+            RETURN wsArc2IChannel3
+          CASE 4
+            RETURN wsArc2IChannel4
+          CASE 5
+            RETURN wsArc2IChannel5
+          CASE 6
+            RETURN wsArc2IChannel6
+          CASE 7
+            RETURN wsArc2IChannel7
+          CASE 8          
+            RETURN wsArc2IChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcIChanne2 Missing Index2")   
+        ENDSWITCH     
+      CASE 3
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc3IChannel1
+          CASE 2
+            RETURN wsArc3IChannel2
+          CASE 3
+            RETURN wsArc3IChannel3
+          CASE 4
+            RETURN wsArc3IChannel4
+          CASE 5
+            RETURN wsArc3IChannel5
+          CASE 6
+            RETURN wsArc3IChannel6
+          CASE 7
+            RETURN wsArc3IChannel7
+          CASE 8          
+            RETURN wsArc3IChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcIChanne3 Missing Index2") 
+        ENDSWITCH       
+      CASE 4
+        SWITCH Index2
+          CASE 1
+            RETURN wsArc4IChannel1
+          CASE 2
+            RETURN wsArc4IChannel2
+          CASE 3
+            RETURN wsArc4IChannel3
+          CASE 4
+            RETURN wsArc4IChannel4
+          CASE 5
+            RETURN wsArc4IChannel5
+          CASE 6
+            RETURN wsArc4IChannel6
+          CASE 7
+            RETURN wsArc4IChannel7
+          CASE 8          
+            RETURN wsArc4IChannel8
+          DEFAULT
+            ArcMsg("ERROR: #wsArcIChanne4 Missing Index2")  
+        ENDSWITCH  
+    ENDSWITCH          
+  CASE #wsArcIErrRecoveryPlcSign
+    RETURN wsArc0IErrRecoveryPlc
+  CASE #wsArcIMsgPlc
+    RETURN wsArc0IMsgPlc
+  CASE #wArcISLPartId
+    RETURN wArc0ISLPartId    
+  CASE #wsArcISenseSignals      
+    SWITCH Index1
+      CASE 1
+        RETURN wsArc1ISenseSignals
+      CASE 2
+        RETURN wsArc2ISenseSignals
+      CASE 3
+        RETURN wsArc3ISenseSignals
+      CASE 4
+        RETURN wsArc4ISenseSignals
+      DEFAULT
+        ArcMsg("ERROR: #wsArcISenseSignals Missing Index1")
+     ENDSWITCH      
+  DEFAULT
+    ArcMsg("ERROR: Missing ENUM Signal")
+    IF ($IS_OFFICE_LITE == TRUE) THEN
+      HALT 
+    ENDIF 
+ENDSWITCH
+RETURN 0
+ENDFCT

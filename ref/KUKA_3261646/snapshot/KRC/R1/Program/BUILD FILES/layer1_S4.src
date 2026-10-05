@@ -1,0 +1,2128 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF layer1_S4()
+;FOLD INI;%{PE}
+;FOLD BASISTECH INI
+GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+INTERRUPT ON 3
+BAS (#INITMOV,0 )
+;ENDFOLD (BASISTECH INI)
+;FOLD USER INI
+;Make your modifications here
+;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD Actual psition
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP $POS_ACT
+;ENDFOLD
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FWeld
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP Approach1
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerIndex = 1   ; Layer index is the stage number
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerType = 10
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerNum = 4
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oSideNum = 1
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO WAAM_RSI_ON() PRIO=-1
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerCompleted=False
+WAIT SEC 1.0
+
+; make sure arc start point is good
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS(0)
+LIN XP25
+WAIT SEC 1
+
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOnMoveStd, WDAT1, WPV) PRIO = -1
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WPV)
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, WDAT1.Weld.Velocity)
+SET_CD_PARAMS(0)
+LIN XP25
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WPV)
+
+;Layer 3
+CIRC XP26, XP27 C_Dis C_Dis
+
+;Layer 3
+CIRC XP28, XP29 C_Dis C_Dis
+
+;Layer 3
+CIRC XP30, XP31 C_Dis C_Dis
+
+;Layer 3
+CIRC XP32, XP33 C_Dis C_Dis
+
+;Layer 3
+CIRC XP34, XP35 C_Dis C_Dis
+
+;Layer 4
+CIRC XP36, XP37 C_Dis C_Dis
+
+;Layer 4
+CIRC XP38, XP39 C_Dis C_Dis
+
+;Layer 4
+CIRC XP40, XP41 C_Dis C_Dis
+
+;Layer 4
+CIRC XP42, XP43 C_Dis C_Dis
+
+;Layer 4
+CIRC XP44, XP45 C_Dis C_Dis
+
+;Layer 4
+CIRC XP46, XP47 C_Dis C_Dis
+
+;Layer 5
+CIRC XP48, XP49 C_Dis C_Dis
+
+;Layer 5
+CIRC XP50, XP51 C_Dis C_Dis
+
+;Layer 5
+CIRC XP52, XP53 C_Dis C_Dis
+
+;Layer 5
+CIRC XP54, XP55 C_Dis C_Dis
+
+;Layer 5
+CIRC XP56, XP57 C_Dis C_Dis
+
+;Layer 5
+CIRC XP58, XP59 C_Dis C_Dis
+
+;Layer 6
+CIRC XP60, XP61 C_Dis C_Dis
+
+;Layer 6
+CIRC XP62, XP63 C_Dis C_Dis
+
+;Layer 6
+CIRC XP64, XP65 C_Dis C_Dis
+
+;Layer 6
+CIRC XP66, XP67 C_Dis C_Dis
+
+;Layer 6
+CIRC XP68, XP69 C_Dis C_Dis
+
+;Layer 6
+CIRC XP70, XP71 C_Dis C_Dis
+
+;Layer 7
+CIRC XP72, XP73 C_Dis C_Dis
+
+;Layer 7
+CIRC XP74, XP75 C_Dis C_Dis
+
+;Layer 7
+CIRC XP76, XP77 C_Dis C_Dis
+
+;Layer 7
+CIRC XP78, XP79 C_Dis C_Dis
+
+;Layer 7
+CIRC XP80, XP81 C_Dis C_Dis
+
+;Layer 7
+CIRC XP82, XP83 C_Dis C_Dis
+
+;Layer 8
+CIRC XP84, XP85 C_Dis C_Dis
+
+;Layer 8
+CIRC XP86, XP87 C_Dis C_Dis
+
+;Layer 8
+CIRC XP88, XP89 C_Dis C_Dis
+
+;Layer 8
+CIRC XP90, XP91 C_Dis C_Dis
+
+;Layer 8
+CIRC XP92, XP93 C_Dis C_Dis
+
+;Layer 8
+CIRC XP94, XP95 C_Dis C_Dis
+
+;Layer 9
+CIRC XP96, XP97 C_Dis C_Dis
+
+;Layer 9
+CIRC XP98, XP99 C_Dis C_Dis
+
+;Layer 9
+CIRC XP100, XP101 C_Dis C_Dis
+
+;Layer 9
+CIRC XP102, XP103 C_Dis C_Dis
+
+;Layer 9
+CIRC XP104, XP105 C_Dis C_Dis
+
+;Layer 9
+CIRC XP106, XP107 C_Dis C_Dis
+
+;Layer 10
+CIRC XP108, XP109 C_Dis C_Dis
+
+;Layer 10
+CIRC XP110, XP111 C_Dis C_Dis
+
+;Layer 10
+CIRC XP112, XP113 C_Dis C_Dis
+
+;Layer 10
+CIRC XP114, XP115 C_Dis C_Dis
+
+;Layer 10
+CIRC XP116, XP117 C_Dis C_Dis
+
+;Layer 10
+CIRC XP118, XP119 C_Dis C_Dis
+
+;Layer 11
+CIRC XP120, XP121 C_Dis C_Dis
+
+;Layer 11
+CIRC XP122, XP123 C_Dis C_Dis
+
+;Layer 11
+CIRC XP124, XP125 C_Dis C_Dis
+
+;Layer 11
+CIRC XP126, XP127 C_Dis C_Dis
+
+;Layer 11
+CIRC XP128, XP129 C_Dis C_Dis
+
+;Layer 11
+CIRC XP130, XP131 C_Dis C_Dis
+
+;Layer 12
+CIRC XP132, XP133 C_Dis C_Dis
+
+;Layer 12
+CIRC XP134, XP135 C_Dis C_Dis
+
+;Layer 12
+CIRC XP136, XP137 C_Dis C_Dis
+
+;Layer 12
+CIRC XP138, XP139 C_Dis C_Dis
+
+;Layer 12
+CIRC XP140, XP141 C_Dis C_Dis
+
+;Layer 12
+CIRC XP142, XP143 C_Dis C_Dis
+
+;Layer 13
+CIRC XP144, XP145 C_Dis C_Dis
+
+;Layer 13
+CIRC XP146, XP147 C_Dis C_Dis
+
+;Layer 13
+CIRC XP148, XP149 C_Dis C_Dis
+
+;Layer 13
+CIRC XP150, XP151 C_Dis C_Dis
+
+;Layer 13
+CIRC XP152, XP153 C_Dis C_Dis
+
+;Layer 13
+CIRC XP154, XP155 C_Dis C_Dis
+
+;Layer 14
+CIRC XP156, XP157 C_Dis C_Dis
+
+;Layer 14
+CIRC XP158, XP159 C_Dis C_Dis
+
+;Layer 14
+CIRC XP160, XP161 C_Dis C_Dis
+
+;Layer 14
+CIRC XP162, XP163 C_Dis C_Dis
+
+;Layer 14
+CIRC XP164, XP165 C_Dis C_Dis
+
+;Layer 14
+CIRC XP166, XP167 C_Dis C_Dis
+
+;Layer 15
+CIRC XP168, XP169 C_Dis C_Dis
+
+;Layer 15
+CIRC XP170, XP171 C_Dis C_Dis
+
+;Layer 15
+CIRC XP172, XP173 C_Dis C_Dis
+
+;Layer 15
+CIRC XP174, XP175 C_Dis C_Dis
+
+;Layer 15
+CIRC XP176, XP177 C_Dis C_Dis
+
+;Layer 15
+CIRC XP178, XP179 C_Dis C_Dis
+
+;Layer 16
+CIRC XP180, XP181 C_Dis C_Dis
+
+;Layer 16
+CIRC XP182, XP183 C_Dis C_Dis
+
+;Layer 16
+CIRC XP184, XP185 C_Dis C_Dis
+
+;Layer 16
+CIRC XP186, XP187 C_Dis C_Dis
+
+;Layer 16
+CIRC XP188, XP189 C_Dis C_Dis
+
+;Layer 16
+CIRC XP190, XP191 C_Dis C_Dis
+
+;Layer 17
+CIRC XP192, XP193 C_Dis C_Dis
+
+;Layer 17
+CIRC XP194, XP195 C_Dis C_Dis
+
+;Layer 17
+CIRC XP196, XP197 C_Dis C_Dis
+
+;Layer 17
+CIRC XP198, XP199 C_Dis C_Dis
+
+;Layer 17
+CIRC XP200, XP201 C_Dis C_Dis
+
+;Layer 17
+CIRC XP202, XP203 C_Dis C_Dis
+
+;Layer 18
+CIRC XP204, XP205 C_Dis C_Dis
+
+;Layer 18
+CIRC XP206, XP207 C_Dis C_Dis
+
+;Layer 18
+CIRC XP208, XP209 C_Dis C_Dis
+
+;Layer 18
+CIRC XP210, XP211 C_Dis C_Dis
+
+;Layer 18
+CIRC XP212, XP213 C_Dis C_Dis
+
+;Layer 18
+CIRC XP214, XP215 C_Dis C_Dis
+
+;Layer 19
+CIRC XP216, XP217 C_Dis C_Dis
+
+;Layer 19
+CIRC XP218, XP219 C_Dis C_Dis
+
+;Layer 19
+CIRC XP220, XP221 C_Dis C_Dis
+
+;Layer 19
+CIRC XP222, XP223 C_Dis C_Dis
+
+;Layer 19
+CIRC XP224, XP225 C_Dis C_Dis
+
+;Layer 19
+CIRC XP226, XP227 C_Dis C_Dis
+
+;Layer 20
+CIRC XP228, XP229 C_Dis C_Dis
+
+;Layer 20
+CIRC XP230, XP231 C_Dis C_Dis
+
+;Layer 20
+CIRC XP232, XP233 C_Dis C_Dis
+
+;Layer 20
+CIRC XP234, XP235 C_Dis C_Dis
+
+;Layer 20
+CIRC XP236, XP237 C_Dis C_Dis
+
+;Layer 20
+CIRC XP238, XP239 C_Dis C_Dis
+
+;Layer 21
+CIRC XP240, XP241 C_Dis C_Dis
+
+;Layer 21
+CIRC XP242, XP243 C_Dis C_Dis
+
+;Layer 21
+CIRC XP244, XP245 C_Dis C_Dis
+
+;Layer 21
+CIRC XP246, XP247 C_Dis C_Dis
+
+;Layer 21
+CIRC XP248, XP249 C_Dis C_Dis
+
+;Layer 21
+CIRC XP250, XP251 C_Dis C_Dis
+
+;Layer 22
+CIRC XP252, XP253 C_Dis C_Dis
+
+;Layer 22
+CIRC XP254, XP255 C_Dis C_Dis
+
+;Layer 22
+CIRC XP256, XP257 C_Dis C_Dis
+
+;Layer 22
+CIRC XP258, XP259 C_Dis C_Dis
+
+;Layer 22
+CIRC XP260, XP261 C_Dis C_Dis
+
+;Layer 22
+CIRC XP262, XP263 C_Dis C_Dis
+
+;Layer 23
+CIRC XP264, XP265 C_Dis C_Dis
+
+;Layer 23
+CIRC XP266, XP267 C_Dis C_Dis
+
+;Layer 23
+CIRC XP268, XP269 C_Dis C_Dis
+
+;Layer 23
+CIRC XP270, XP271 C_Dis C_Dis
+
+;Layer 23
+CIRC XP272, XP273 C_Dis C_Dis
+
+;Layer 23
+CIRC XP274, XP275 C_Dis C_Dis
+
+;Layer 24
+CIRC XP276, XP277 C_Dis C_Dis
+
+;Layer 24
+CIRC XP278, XP279 C_Dis C_Dis
+
+;Layer 24
+CIRC XP280, XP281 C_Dis C_Dis
+
+;Layer 24
+CIRC XP282, XP283 C_Dis C_Dis
+
+;Layer 24
+CIRC XP284, XP285 C_Dis C_Dis
+
+;Layer 24
+CIRC XP286, XP287 C_Dis C_Dis
+
+;Layer 25
+CIRC XP288, XP289 C_Dis C_Dis
+
+;Layer 25
+CIRC XP290, XP291 C_Dis C_Dis
+
+;Layer 25
+CIRC XP292, XP293 C_Dis C_Dis
+
+;Layer 25
+CIRC XP294, XP295 C_Dis C_Dis
+
+;Layer 25
+CIRC XP296, XP297 C_Dis C_Dis
+
+;Layer 25
+CIRC XP298, XP299 C_Dis C_Dis
+
+;Layer 26
+CIRC XP300, XP301 C_Dis C_Dis
+
+;Layer 26
+CIRC XP302, XP303 C_Dis C_Dis
+
+;Layer 26
+CIRC XP304, XP305 C_Dis C_Dis
+
+;Layer 26
+CIRC XP306, XP307 C_Dis C_Dis
+
+;Layer 26
+CIRC XP308, XP309 C_Dis C_Dis
+
+;Layer 26
+CIRC XP310, XP311 C_Dis C_Dis
+
+;Layer 27
+CIRC XP312, XP313 C_Dis C_Dis
+
+;Layer 27
+CIRC XP314, XP315 C_Dis C_Dis
+
+;Layer 27
+CIRC XP316, XP317 C_Dis C_Dis
+
+;Layer 27
+CIRC XP318, XP319 C_Dis C_Dis
+
+;Layer 27
+CIRC XP320, XP321 C_Dis C_Dis
+
+;Layer 27
+CIRC XP322, XP323 C_Dis C_Dis
+
+;Layer 28
+CIRC XP324, XP325 C_Dis C_Dis
+
+;Layer 28
+CIRC XP326, XP327 C_Dis C_Dis
+
+;Layer 28
+CIRC XP328, XP329 C_Dis C_Dis
+
+;Layer 28
+CIRC XP330, XP331 C_Dis C_Dis
+
+;Layer 28
+CIRC XP332, XP333 C_Dis C_Dis
+
+;Layer 28
+CIRC XP334, XP335 C_Dis C_Dis
+
+;Layer 29
+CIRC XP336, XP337 C_Dis C_Dis
+
+;Layer 29
+CIRC XP338, XP339 C_Dis C_Dis
+
+;Layer 29
+CIRC XP340, XP341 C_Dis C_Dis
+
+;Layer 29
+CIRC XP342, XP343 C_Dis C_Dis
+
+;Layer 29
+CIRC XP344, XP345 C_Dis C_Dis
+
+;Layer 29
+CIRC XP346, XP347 C_Dis C_Dis
+
+;Layer 30
+CIRC XP348, XP349 C_Dis C_Dis
+
+;Layer 30
+CIRC XP350, XP351 C_Dis C_Dis
+
+;Layer 30
+CIRC XP352, XP353 C_Dis C_Dis
+
+;Layer 30
+CIRC XP354, XP355 C_Dis C_Dis
+
+;Layer 30
+CIRC XP356, XP357 C_Dis C_Dis
+
+;Layer 30
+CIRC XP358, XP359 C_Dis C_Dis
+
+;Layer 31
+CIRC XP360, XP361 C_Dis C_Dis
+
+;Layer 31
+CIRC XP362, XP363 C_Dis C_Dis
+
+;Layer 31
+CIRC XP364, XP365 C_Dis C_Dis
+
+;Layer 31
+CIRC XP366, XP367 C_Dis C_Dis
+
+;Layer 31
+CIRC XP368, XP369 C_Dis C_Dis
+
+;Layer 31
+CIRC XP370, XP371 C_Dis C_Dis
+
+;Layer 32
+CIRC XP372, XP373 C_Dis C_Dis
+
+;Layer 32
+CIRC XP374, XP375 C_Dis C_Dis
+
+;Layer 32
+CIRC XP376, XP377 C_Dis C_Dis
+
+;Layer 32
+CIRC XP378, XP379 C_Dis C_Dis
+
+;Layer 32
+CIRC XP380, XP381 C_Dis C_Dis
+
+;Layer 32
+CIRC XP382, XP383 C_Dis C_Dis
+
+;Layer 33
+CIRC XP384, XP385 C_Dis C_Dis
+
+;Layer 33
+CIRC XP386, XP387 C_Dis C_Dis
+
+;Layer 33
+CIRC XP388, XP389 C_Dis C_Dis
+
+;Layer 33
+CIRC XP390, XP391 C_Dis C_Dis
+
+;Layer 33
+CIRC XP392, XP393 C_Dis C_Dis
+
+;Layer 33
+CIRC XP394, XP395 C_Dis C_Dis
+
+;Layer 34
+CIRC XP396, XP397 C_Dis C_Dis
+
+;Layer 34
+CIRC XP398, XP399 C_Dis C_Dis
+
+;Layer 34
+CIRC XP400, XP401 C_Dis C_Dis
+
+;Layer 34
+CIRC XP402, XP403 C_Dis C_Dis
+
+;Layer 34
+CIRC XP404, XP405 C_Dis C_Dis
+
+;Layer 34
+CIRC XP406, XP407 C_Dis C_Dis
+
+;Layer 35
+CIRC XP408, XP409 C_Dis C_Dis
+
+;Layer 35
+CIRC XP410, XP411 C_Dis C_Dis
+
+;Layer 35
+CIRC XP412, XP413 C_Dis C_Dis
+
+;Layer 35
+CIRC XP414, XP415 C_Dis C_Dis
+
+;Layer 35
+CIRC XP416, XP417 C_Dis C_Dis
+
+;Layer 35
+CIRC XP418, XP419 C_Dis C_Dis
+
+;Layer 36
+CIRC XP420, XP421 C_Dis C_Dis
+
+;Layer 36
+CIRC XP422, XP423 C_Dis C_Dis
+
+;Layer 36
+CIRC XP424, XP425 C_Dis C_Dis
+
+;Layer 36
+CIRC XP426, XP427 C_Dis C_Dis
+
+;Layer 36
+CIRC XP428, XP429 C_Dis C_Dis
+
+;Layer 36
+CIRC XP430, XP431 C_Dis C_Dis
+
+;Layer 37
+CIRC XP432, XP433 C_Dis C_Dis
+
+;Layer 37
+CIRC XP434, XP435 C_Dis C_Dis
+
+;Layer 37
+CIRC XP436, XP437 C_Dis C_Dis
+
+;Layer 37
+CIRC XP438, XP439 C_Dis C_Dis
+
+;Layer 37
+CIRC XP440, XP441 C_Dis C_Dis
+
+;Layer 37
+CIRC XP442, XP443 C_Dis C_Dis
+
+;Layer 38
+CIRC XP444, XP445 C_Dis C_Dis
+
+;Layer 38
+CIRC XP446, XP447 C_Dis C_Dis
+
+;Layer 38
+CIRC XP448, XP449 C_Dis C_Dis
+
+;Layer 38
+CIRC XP450, XP451 C_Dis C_Dis
+
+;Layer 38
+CIRC XP452, XP453 C_Dis C_Dis
+
+;Layer 38
+CIRC XP454, XP455 C_Dis C_Dis
+
+;Layer 39
+CIRC XP456, XP457 C_Dis C_Dis
+
+;Layer 39
+CIRC XP458, XP459 C_Dis C_Dis
+
+;Layer 39
+CIRC XP460, XP461 C_Dis C_Dis
+
+;Layer 39
+CIRC XP462, XP463 C_Dis C_Dis
+
+;Layer 39
+CIRC XP464, XP465 C_Dis C_Dis
+
+;Layer 39
+CIRC XP466, XP467 C_Dis C_Dis
+
+;Layer 40
+CIRC XP468, XP469 C_Dis C_Dis
+
+;Layer 40
+CIRC XP470, XP471 C_Dis C_Dis
+
+;Layer 40
+CIRC XP472, XP473 C_Dis C_Dis
+
+;Layer 40
+CIRC XP474, XP475 C_Dis C_Dis
+
+;Layer 40
+CIRC XP476, XP477 C_Dis C_Dis
+
+;Layer 40
+CIRC XP478, XP479 C_Dis C_Dis
+
+;Layer 41
+CIRC XP480, XP481 C_Dis C_Dis
+
+;Layer 41
+CIRC XP482, XP483 C_Dis C_Dis
+
+;Layer 41
+CIRC XP484, XP485 C_Dis C_Dis
+
+;Layer 41
+CIRC XP486, XP487 C_Dis C_Dis
+
+;Layer 41
+CIRC XP488, XP489 C_Dis C_Dis
+
+;Layer 41
+CIRC XP490, XP491 C_Dis C_Dis
+
+;Layer 42
+CIRC XP492, XP493 C_Dis C_Dis
+
+;Layer 42
+CIRC XP494, XP495 C_Dis C_Dis
+
+;Layer 42
+CIRC XP496, XP497 C_Dis C_Dis
+
+;Layer 42
+CIRC XP498, XP499 C_Dis C_Dis
+
+;Layer 42
+CIRC XP500, XP501 C_Dis C_Dis
+
+;Layer 42
+CIRC XP502, XP503 C_Dis C_Dis
+
+;Layer 43
+CIRC XP504, XP505 C_Dis C_Dis
+
+;Layer 43
+CIRC XP506, XP507 C_Dis C_Dis
+
+;Layer 43
+CIRC XP508, XP509 C_Dis C_Dis
+
+;Layer 43
+CIRC XP510, XP511 C_Dis C_Dis
+
+;Layer 43
+CIRC XP512, XP513 C_Dis C_Dis
+
+;Layer 43
+CIRC XP514, XP515 C_Dis C_Dis
+
+;Layer 44
+CIRC XP516, XP517 C_Dis C_Dis
+
+;Layer 44
+CIRC XP518, XP519 C_Dis C_Dis
+
+;Layer 44
+CIRC XP520, XP521 C_Dis C_Dis
+
+;Layer 44
+CIRC XP522, XP523 C_Dis C_Dis
+
+;Layer 44
+CIRC XP524, XP525 C_Dis C_Dis
+
+;Layer 44
+CIRC XP526, XP527 C_Dis C_Dis
+
+;Layer 45
+CIRC XP528, XP529 C_Dis C_Dis
+
+;Layer 45
+CIRC XP530, XP531 C_Dis C_Dis
+
+;Layer 45
+CIRC XP532, XP533 C_Dis C_Dis
+
+;Layer 45
+CIRC XP534, XP535 C_Dis C_Dis
+
+;Layer 45
+CIRC XP536, XP537 C_Dis C_Dis
+
+;Layer 45
+CIRC XP538, XP539 C_Dis C_Dis
+
+;Layer 46
+CIRC XP540, XP541 C_Dis C_Dis
+
+;Layer 46
+CIRC XP542, XP543 C_Dis C_Dis
+
+;Layer 46
+CIRC XP544, XP545 C_Dis C_Dis
+
+;Layer 46
+CIRC XP546, XP547 C_Dis C_Dis
+
+;Layer 46
+CIRC XP548, XP549 C_Dis C_Dis
+
+;Layer 46
+CIRC XP550, XP551 C_Dis C_Dis
+
+;Layer 47
+CIRC XP552, XP553 C_Dis C_Dis
+
+;Layer 47
+CIRC XP554, XP555 C_Dis C_Dis
+
+;Layer 47
+CIRC XP556, XP557 C_Dis C_Dis
+
+;Layer 47
+CIRC XP558, XP559 C_Dis C_Dis
+
+;Layer 47
+CIRC XP560, XP561 C_Dis C_Dis
+
+;Layer 47
+CIRC XP562, XP563 C_Dis C_Dis
+
+;Layer 48
+CIRC XP564, XP565 C_Dis C_Dis
+
+;Layer 48
+CIRC XP566, XP567 C_Dis C_Dis
+
+;Layer 48
+CIRC XP568, XP569 C_Dis C_Dis
+
+;Layer 48
+CIRC XP570, XP571 C_Dis C_Dis
+
+;Layer 48
+CIRC XP572, XP573 C_Dis C_Dis
+
+;Layer 48
+CIRC XP574, XP575 C_Dis C_Dis
+
+;Layer 49
+CIRC XP576, XP577 C_Dis C_Dis
+
+;Layer 49
+CIRC XP578, XP579 C_Dis C_Dis
+
+;Layer 49
+CIRC XP580, XP581 C_Dis C_Dis
+
+;Layer 49
+CIRC XP582, XP583 C_Dis C_Dis
+
+;Layer 49
+CIRC XP584, XP585 C_Dis C_Dis
+
+;Layer 49
+CIRC XP586, XP587 C_Dis C_Dis
+
+;Layer 50
+CIRC XP588, XP589 C_Dis C_Dis
+
+;Layer 50
+CIRC XP590, XP591 C_Dis C_Dis
+
+;Layer 50
+CIRC XP592, XP593 C_Dis C_Dis
+
+;Layer 50
+CIRC XP594, XP595 C_Dis C_Dis
+
+;Layer 50
+CIRC XP596, XP597 C_Dis C_Dis
+
+;Layer 50
+CIRC XP598, XP599 C_Dis C_Dis
+
+;Layer 51
+CIRC XP600, XP601 C_Dis C_Dis
+
+;Layer 51
+CIRC XP602, XP603 C_Dis C_Dis
+
+;Layer 51
+CIRC XP604, XP605 C_Dis C_Dis
+
+;Layer 51
+CIRC XP606, XP607 C_Dis C_Dis
+
+;Layer 51
+CIRC XP608, XP609 C_Dis C_Dis
+
+;Layer 51
+CIRC XP610, XP611 C_Dis C_Dis
+
+;Layer 52
+CIRC XP612, XP613 C_Dis C_Dis
+
+;Layer 52
+CIRC XP614, XP615 C_Dis C_Dis
+
+;Layer 52
+CIRC XP616, XP617 C_Dis C_Dis
+
+;Layer 52
+CIRC XP618, XP619 C_Dis C_Dis
+
+;Layer 52
+CIRC XP620, XP621 C_Dis C_Dis
+
+;Layer 52
+CIRC XP622, XP623 C_Dis C_Dis
+
+;Layer 53
+CIRC XP624, XP625 C_Dis C_Dis
+
+;Layer 53
+CIRC XP626, XP627 C_Dis C_Dis
+
+;Layer 53
+CIRC XP628, XP629 C_Dis C_Dis
+
+;Layer 53
+CIRC XP630, XP631 C_Dis C_Dis
+
+;Layer 53
+CIRC XP632, XP633 C_Dis C_Dis
+
+;Layer 53
+CIRC XP634, XP635 C_Dis C_Dis
+
+;Layer 54
+CIRC XP636, XP637 C_Dis C_Dis
+
+;Layer 54
+CIRC XP638, XP639 C_Dis C_Dis
+
+;Layer 54
+CIRC XP640, XP641 C_Dis C_Dis
+
+;Layer 54
+CIRC XP642, XP643 C_Dis C_Dis
+
+;Layer 54
+CIRC XP644, XP645 C_Dis C_Dis
+
+;Layer 54
+CIRC XP646, XP647 C_Dis C_Dis
+
+;Layer 55
+CIRC XP648, XP649 C_Dis C_Dis
+
+;Layer 55
+CIRC XP650, XP651 C_Dis C_Dis
+
+;Layer 55
+CIRC XP652, XP653 C_Dis C_Dis
+
+;Layer 55
+CIRC XP654, XP655 C_Dis C_Dis
+
+;Layer 55
+CIRC XP656, XP657 C_Dis C_Dis
+
+;Layer 55
+CIRC XP658, XP659 C_Dis C_Dis
+
+;Layer 56
+CIRC XP660, XP661 C_Dis C_Dis
+
+;Layer 56
+CIRC XP662, XP663 C_Dis C_Dis
+
+;Layer 56
+CIRC XP664, XP665 C_Dis C_Dis
+
+;Layer 56
+CIRC XP666, XP667 C_Dis C_Dis
+
+;Layer 56
+CIRC XP668, XP669 C_Dis C_Dis
+
+;Layer 56
+CIRC XP670, XP671 C_Dis C_Dis
+
+;Layer 57
+CIRC XP672, XP673 C_Dis C_Dis
+
+;Layer 57
+CIRC XP674, XP675 C_Dis C_Dis
+
+;Layer 57
+CIRC XP676, XP677 C_Dis C_Dis
+
+;Layer 57
+CIRC XP678, XP679 C_Dis C_Dis
+
+;Layer 57
+CIRC XP680, XP681 C_Dis C_Dis
+
+;Layer 57
+CIRC XP682, XP683 C_Dis C_Dis
+
+;Layer 58
+CIRC XP684, XP685 C_Dis C_Dis
+
+;Layer 58
+CIRC XP686, XP687 C_Dis C_Dis
+
+;Layer 58
+CIRC XP688, XP689 C_Dis C_Dis
+
+;Layer 58
+CIRC XP690, XP691 C_Dis C_Dis
+
+;Layer 58
+CIRC XP692, XP693 C_Dis C_Dis
+
+;Layer 58
+CIRC XP694, XP695 C_Dis C_Dis
+
+;Layer 59
+CIRC XP696, XP697 C_Dis C_Dis
+
+;Layer 59
+CIRC XP698, XP699 C_Dis C_Dis
+
+;Layer 59
+CIRC XP700, XP701 C_Dis C_Dis
+
+;Layer 59
+CIRC XP702, XP703 C_Dis C_Dis
+
+;Layer 59
+CIRC XP704, XP705 C_Dis C_Dis
+
+;Layer 59
+CIRC XP706, XP707 C_Dis C_Dis
+
+;Layer 60
+CIRC XP708, XP709 C_Dis C_Dis
+
+;Layer 60
+CIRC XP710, XP711 C_Dis C_Dis
+
+;Layer 60
+CIRC XP712, XP713 C_Dis C_Dis
+
+;Layer 60
+CIRC XP714, XP715 C_Dis C_Dis
+
+;Layer 60
+CIRC XP716, XP717 C_Dis C_Dis
+
+;Layer 60
+CIRC XP718, XP719 C_Dis C_Dis
+
+;Layer 61
+CIRC XP720, XP721 C_Dis C_Dis
+
+;Layer 61
+CIRC XP722, XP723 C_Dis C_Dis
+
+;Layer 61
+CIRC XP724, XP725 C_Dis C_Dis
+
+;Layer 61
+CIRC XP726, XP727 C_Dis C_Dis
+
+;Layer 61
+CIRC XP728, XP729 C_Dis C_Dis
+
+;Layer 61
+CIRC XP730, XP731 C_Dis C_Dis
+
+;Layer 62
+CIRC XP732, XP733 C_Dis C_Dis
+
+;Layer 62
+CIRC XP734, XP735 C_Dis C_Dis
+
+;Layer 62
+CIRC XP736, XP737 C_Dis C_Dis
+
+;Layer 62
+CIRC XP738, XP739 C_Dis C_Dis
+
+;Layer 62
+CIRC XP740, XP741 C_Dis C_Dis
+
+;Layer 62
+CIRC XP742, XP743 C_Dis C_Dis
+
+;Layer 63
+CIRC XP744, XP745 C_Dis C_Dis
+
+;Layer 63
+CIRC XP746, XP747 C_Dis C_Dis
+
+;Layer 63
+CIRC XP748, XP749 C_Dis C_Dis
+
+;Layer 63
+CIRC XP750, XP751 C_Dis C_Dis
+
+;Layer 63
+CIRC XP752, XP753 C_Dis C_Dis
+
+;Layer 63
+CIRC XP754, XP755 C_Dis C_Dis
+
+;Layer 64
+CIRC XP756, XP757 C_Dis C_Dis
+
+;Layer 64
+CIRC XP758, XP759 C_Dis C_Dis
+
+;Layer 64
+CIRC XP760, XP761 C_Dis C_Dis
+
+;Layer 64
+CIRC XP762, XP763 C_Dis C_Dis
+
+;Layer 64
+CIRC XP764, XP765 C_Dis C_Dis
+
+;Layer 64
+CIRC XP766, XP767 C_Dis C_Dis
+
+;Layer 65
+CIRC XP768, XP769 C_Dis C_Dis
+
+;Layer 65
+CIRC XP770, XP771 C_Dis C_Dis
+
+;Layer 65
+CIRC XP772, XP773 C_Dis C_Dis
+
+;Layer 65
+CIRC XP774, XP775 C_Dis C_Dis
+
+;Layer 65
+CIRC XP776, XP777 C_Dis C_Dis
+
+;Layer 65
+CIRC XP778, XP779 C_Dis C_Dis
+
+;Layer 66
+CIRC XP780, XP781 C_Dis C_Dis
+
+;Layer 66
+CIRC XP782, XP783 C_Dis C_Dis
+
+;Layer 66
+CIRC XP784, XP785 C_Dis C_Dis
+
+;Layer 66
+CIRC XP786, XP787 C_Dis C_Dis
+
+;Layer 66
+CIRC XP788, XP789 C_Dis C_Dis
+
+;Layer 66
+CIRC XP790, XP791 C_Dis C_Dis
+
+;Layer 67
+CIRC XP792, XP793 C_Dis C_Dis
+
+;Layer 67
+CIRC XP794, XP795 C_Dis C_Dis
+
+;Layer 67
+CIRC XP796, XP797 C_Dis C_Dis
+
+;Layer 67
+CIRC XP798, XP799 C_Dis C_Dis
+
+;Layer 67
+CIRC XP800, XP801 C_Dis C_Dis
+
+;Layer 67
+CIRC XP802, XP803 C_Dis C_Dis
+
+;Layer 68
+CIRC XP804, XP805 C_Dis C_Dis
+
+;Layer 68
+CIRC XP806, XP807 C_Dis C_Dis
+
+;Layer 68
+CIRC XP808, XP809 C_Dis C_Dis
+
+;Layer 68
+CIRC XP810, XP811 C_Dis C_Dis
+
+;Layer 68
+CIRC XP812, XP813 C_Dis C_Dis
+
+;Layer 68
+CIRC XP814, XP815 C_Dis C_Dis
+
+;Layer 69
+CIRC XP816, XP817 C_Dis C_Dis
+
+;Layer 69
+CIRC XP818, XP819 C_Dis C_Dis
+
+;Layer 69
+CIRC XP820, XP821 C_Dis C_Dis
+
+;Layer 69
+CIRC XP822, XP823 C_Dis C_Dis
+
+;Layer 69
+CIRC XP824, XP825 C_Dis C_Dis
+
+;Layer 69
+CIRC XP826, XP827 C_Dis C_Dis
+
+;Layer 70
+CIRC XP828, XP829 C_Dis C_Dis
+
+;Layer 70
+CIRC XP830, XP831 C_Dis C_Dis
+
+;Layer 70
+CIRC XP832, XP833 C_Dis C_Dis
+
+;Layer 70
+CIRC XP834, XP835 C_Dis C_Dis
+
+;Layer 70
+CIRC XP836, XP837 C_Dis C_Dis
+
+;Layer 70
+CIRC XP838, XP839 C_Dis C_Dis
+
+;Layer 71
+CIRC XP840, XP841 C_Dis C_Dis
+
+;Layer 71
+CIRC XP842, XP843 C_Dis C_Dis
+
+;Layer 71
+CIRC XP844, XP845 C_Dis C_Dis
+
+;Layer 71
+CIRC XP846, XP847 C_Dis C_Dis
+
+;Layer 71
+CIRC XP848, XP849 C_Dis C_Dis
+
+;Layer 71
+CIRC XP850, XP851 C_Dis C_Dis
+
+;Layer 72
+CIRC XP852, XP853 C_Dis C_Dis
+
+;Layer 72
+CIRC XP854, XP855 C_Dis C_Dis
+
+;Layer 72
+CIRC XP856, XP857 C_Dis C_Dis
+
+;Layer 72
+CIRC XP858, XP859 C_Dis C_Dis
+
+;Layer 72
+CIRC XP860, XP861 C_Dis C_Dis
+
+;Layer 72
+CIRC XP862, XP863 C_Dis C_Dis
+
+;Layer 73
+CIRC XP864, XP865 C_Dis C_Dis
+
+;Layer 73
+CIRC XP866, XP867 C_Dis C_Dis
+
+;Layer 73
+CIRC XP868, XP869 C_Dis C_Dis
+
+;Layer 73
+CIRC XP870, XP871 C_Dis C_Dis
+
+;Layer 73
+CIRC XP872, XP873 C_Dis C_Dis
+
+;Layer 73
+CIRC XP874, XP875 C_Dis C_Dis
+
+;Layer 74
+CIRC XP876, XP877 C_Dis C_Dis
+
+;Layer 74
+CIRC XP878, XP879 C_Dis C_Dis
+
+;Layer 74
+CIRC XP880, XP881 C_Dis C_Dis
+
+;Layer 74
+CIRC XP882, XP883 C_Dis C_Dis
+
+;Layer 74
+CIRC XP884, XP885 C_Dis C_Dis
+
+;Layer 74
+CIRC XP886, XP887 C_Dis C_Dis
+
+;Layer 75
+CIRC XP888, XP889 C_Dis C_Dis
+
+;Layer 75
+CIRC XP890, XP891 C_Dis C_Dis
+
+;Layer 75
+CIRC XP892, XP893 C_Dis C_Dis
+
+;Layer 75
+CIRC XP894, XP895 C_Dis C_Dis
+
+;Layer 75
+CIRC XP896, XP897 C_Dis C_Dis
+
+;Layer 75
+CIRC XP898, XP899 C_Dis C_Dis
+
+;Layer 76
+CIRC XP900, XP901 C_Dis C_Dis
+
+;Layer 76
+CIRC XP902, XP903 C_Dis C_Dis
+
+;Layer 76
+CIRC XP904, XP905 C_Dis C_Dis
+
+;Layer 76
+CIRC XP906, XP907 C_Dis C_Dis
+
+;Layer 76
+CIRC XP908, XP909 C_Dis C_Dis
+
+;Layer 76
+CIRC XP910, XP911 C_Dis C_Dis
+
+;Layer 77
+CIRC XP912, XP913 C_Dis C_Dis
+
+;Layer 77
+CIRC XP914, XP915 C_Dis C_Dis
+
+;Layer 77
+CIRC XP916, XP917 C_Dis C_Dis
+
+;Layer 77
+CIRC XP918, XP919 C_Dis C_Dis
+
+;Layer 77
+CIRC XP920, XP921 C_Dis C_Dis
+
+;Layer 77
+CIRC XP922, XP923 C_Dis C_Dis
+
+;Layer 78
+CIRC XP924, XP925 C_Dis C_Dis
+
+;Layer 78
+CIRC XP926, XP927 C_Dis C_Dis
+
+;Layer 78
+CIRC XP928, XP929 C_Dis C_Dis
+
+;Layer 78
+CIRC XP930, XP931 C_Dis C_Dis
+
+;Layer 78
+CIRC XP932, XP933 C_Dis C_Dis
+
+;Layer 78
+CIRC XP934, XP935 C_Dis C_Dis
+
+;Layer 79
+CIRC XP936, XP937 C_Dis C_Dis
+
+;Layer 79
+CIRC XP938, XP939 C_Dis C_Dis
+
+;Layer 79
+CIRC XP940, XP941 C_Dis C_Dis
+
+;Layer 79
+CIRC XP942, XP943 C_Dis C_Dis
+
+;Layer 79
+CIRC XP944, XP945 C_Dis C_Dis
+
+;Layer 79
+CIRC XP946, XP947 C_Dis C_Dis
+
+;Layer 80
+CIRC XP948, XP949 C_Dis C_Dis
+
+;Layer 80
+CIRC XP950, XP951 C_Dis C_Dis
+
+;Layer 80
+CIRC XP952, XP953 C_Dis C_Dis
+
+;Layer 80
+CIRC XP954, XP955 C_Dis C_Dis
+
+;Layer 80
+CIRC XP956, XP957 C_Dis C_Dis
+
+;Layer 80
+CIRC XP958, XP959 C_Dis C_Dis
+
+;Layer 81
+CIRC XP960, XP961 C_Dis C_Dis
+
+;Layer 81
+CIRC XP962, XP963 C_Dis C_Dis
+
+;Layer 81
+CIRC XP964, XP965 C_Dis C_Dis
+
+;Layer 81
+CIRC XP966, XP967 C_Dis C_Dis
+
+;Layer 81
+CIRC XP968, XP969 C_Dis C_Dis
+
+;Layer 81
+CIRC XP970, XP971 C_Dis C_Dis
+
+;Layer 82
+CIRC XP972, XP973 C_Dis C_Dis
+
+;Layer 82
+CIRC XP974, XP975 C_Dis C_Dis
+
+;Layer 82
+CIRC XP976, XP977 C_Dis C_Dis
+
+;Layer 82
+CIRC XP978, XP979 C_Dis C_Dis
+
+;Layer 82
+CIRC XP980, XP981 C_Dis C_Dis
+
+;Layer 82
+CIRC XP982, XP983 C_Dis C_Dis
+
+;Layer 83
+CIRC XP984, XP985 C_Dis C_Dis
+
+;Layer 83
+CIRC XP986, XP987 C_Dis C_Dis
+
+;Layer 83
+CIRC XP988, XP989 C_Dis C_Dis
+
+;Layer 83
+CIRC XP990, XP991 C_Dis C_Dis
+
+;Layer 83
+CIRC XP992, XP993 C_Dis C_Dis
+
+;Layer 83
+CIRC XP994, XP995 C_Dis C_Dis
+
+;Layer 84
+CIRC XP996, XP997 C_Dis C_Dis
+
+;Layer 84
+CIRC XP998, XP999 C_Dis C_Dis
+
+;Layer 84
+CIRC XP1000, XP1001 C_Dis C_Dis
+
+;Layer 84
+CIRC XP1002, XP1003 C_Dis C_Dis
+
+;Layer 84
+CIRC XP1004, XP1005 C_Dis C_Dis
+
+;Layer 84
+CIRC XP1006, XP1007 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1008, XP1009 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1010, XP1011 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1012, XP1013 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1014, XP1015 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1016, XP1017 C_Dis C_Dis
+
+;Layer 85
+CIRC XP1018, XP1019 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1020, XP1021 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1022, XP1023 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1024, XP1025 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1026, XP1027 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1028, XP1029 C_Dis C_Dis
+
+;Layer 86
+CIRC XP1030, XP1031 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1032, XP1033 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1034, XP1035 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1036, XP1037 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1038, XP1039 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1040, XP1041 C_Dis C_Dis
+
+;Layer 87
+CIRC XP1042, XP1043 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1044, XP1045 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1046, XP1047 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1048, XP1049 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1050, XP1051 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1052, XP1053 C_Dis C_Dis
+
+;Layer 88
+CIRC XP1054, XP1055 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1056, XP1057 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1058, XP1059 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1060, XP1061 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1062, XP1063 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1064, XP1065 C_Dis C_Dis
+
+;Layer 89
+CIRC XP1066, XP1067 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1068, XP1069 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1070, XP1071 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1072, XP1073 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1074, XP1075 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1076, XP1077 C_Dis C_Dis
+
+;Layer 90
+CIRC XP1078, XP1079 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1080, XP1081 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1082, XP1083 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1084, XP1085 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1086, XP1087 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1088, XP1089 C_Dis C_Dis
+
+;Layer 91
+CIRC XP1090, XP1091 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1092, XP1093 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1094, XP1095 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1096, XP1097 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1098, XP1099 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1100, XP1101 C_Dis C_Dis
+
+;Layer 92
+CIRC XP1102, XP1103 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1104, XP1105 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1106, XP1107 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1108, XP1109 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1110, XP1111 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1112, XP1113 C_Dis C_Dis
+
+;Layer 93
+CIRC XP1114, XP1115 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1116, XP1117 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1118, XP1119 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1120, XP1121 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1122, XP1123 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1124, XP1125 C_Dis C_Dis
+
+;Layer 94
+CIRC XP1126, XP1127 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1128, XP1129 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1130, XP1131 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1132, XP1133 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1134, XP1135 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1136, XP1137 C_Dis C_Dis
+
+;Layer 95
+CIRC XP1138, XP1139 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1140, XP1141 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1142, XP1143 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1144, XP1145 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1146, XP1147 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1148, XP1149 C_Dis C_Dis
+
+;Layer 96
+CIRC XP1150, XP1151 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1152, XP1153 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1154, XP1155 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1156, XP1157 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1158, XP1159 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1160, XP1161 C_Dis C_Dis
+
+;Layer 97
+CIRC XP1162, XP1163 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1164, XP1165 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1166, XP1167 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1168, XP1169 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1170, XP1171 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1172, XP1173 C_Dis C_Dis
+
+;Layer 98
+CIRC XP1174, XP1175 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1176, XP1177 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1178, XP1179 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1180, XP1181 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1182, XP1183 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1184, XP1185 C_Dis C_Dis
+
+;Layer 99
+CIRC XP1186, XP1187 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1188, XP1189 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1190, XP1191 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1192, XP1193 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1194, XP1195 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1196, XP1197 C_Dis C_Dis
+
+;Layer 100
+CIRC XP1198, XP1199 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1200, XP1201 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1202, XP1203 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1204, XP1205 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1206, XP1207 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1208, XP1209 C_Dis C_Dis
+
+;Layer 101
+CIRC XP1210, XP1211 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1212, XP1213 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1214, XP1215 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1216, XP1217 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1218, XP1219 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1220, XP1221 C_Dis C_Dis
+
+;Layer 102
+CIRC XP1222, XP1223 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1224, XP1225 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1226, XP1227 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1228, XP1229 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1230, XP1231 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1232, XP1233 C_Dis C_Dis
+
+;Layer 103
+CIRC XP1234, XP1235 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1236, XP1237 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1238, XP1239 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1240, XP1241 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1242, XP1243 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1244, XP1245 C_Dis C_Dis
+
+;Layer 104
+CIRC XP1246, XP1247 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1248, XP1249 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1250, XP1251 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1252, XP1253 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1254, XP1255 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1256, XP1257 C_Dis C_Dis
+
+;Layer 105
+CIRC XP1258, XP1259 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1260, XP1261 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1262, XP1263 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1264, XP1265 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1266, XP1267 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1268, XP1269 C_Dis C_Dis
+
+;Layer 106
+CIRC XP1270, XP1271 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1272, XP1273 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1274, XP1275 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1276, XP1277 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1278, XP1279 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1280, XP1281 C_Dis C_Dis
+
+;Layer 107
+CIRC XP1282, XP1283 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1284, XP1285 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1286, XP1287 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1288, XP1289 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1290, XP1291 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1292, XP1293 C_Dis C_Dis
+
+;Layer 108
+CIRC XP1294, XP1295 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1296, XP1297 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1298, XP1299 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1300, XP1301 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1302, XP1303 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1304, XP1305 C_Dis C_Dis
+
+;Layer 109
+CIRC XP1306, XP1307 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1308, XP1309 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1310, XP1311 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1312, XP1313 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1314, XP1315 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1316, XP1317 C_Dis C_Dis
+
+;Layer 110
+CIRC XP1318, XP1319 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1320, XP1321 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1322, XP1323 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1324, XP1325 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1326, XP1327 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1328, XP1329 C_Dis C_Dis
+
+;Layer 111
+CIRC XP1330, XP1331 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1332, XP1333 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1334, XP1335 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1336, XP1337 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1338, XP1339 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1340, XP1341 C_Dis C_Dis
+
+;Layer 112
+CIRC XP1342, XP1343 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1344, XP1345 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1346, XP1347 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1348, XP1349 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1350, XP1351 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1352, XP1353 C_Dis C_Dis
+
+;Layer 113
+CIRC XP1354, XP1355 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1356, XP1357 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1358, XP1359 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1360, XP1361 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1362, XP1363 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1364, XP1365 C_Dis C_Dis
+
+;Layer 114
+CIRC XP1366, XP1367 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1368, XP1369 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1370, XP1371 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1372, XP1373 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1374, XP1375 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1376, XP1377 C_Dis C_Dis
+
+;Layer 115
+CIRC XP1378, XP1379 C_Dis C_Dis
+
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1393) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1393, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1393) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1393, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1393) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1393, WPV) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT1393, WPV)
+BAS(#CP_PARAMS,WDAT1393.Weld.Velocity)
+CIRC XP1380, XP1381
+ArcMainNG(#ArcOffAfterMoveStd, WDAT1393, WPV)
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerCompleted=True
+WAAM_RSI_OFF()
+WAAM_RSI_DELETE()
+
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.1)
+SET_CD_PARAMS(0)
+LIN Retract1393
+
+WAIT SEC 0
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+END
+

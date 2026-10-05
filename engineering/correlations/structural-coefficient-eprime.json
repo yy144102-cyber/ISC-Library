@@ -1,0 +1,57 @@
+{
+  "key": "structural-coefficient-eprime",
+  "form": "e' = ε / (1 − ε),   ただし ε = m_dry / (m_dry + m_prop)",
+  "variables": {
+    "e'": "乾燥質量／推進剤質量の比 [-]",
+    "ε": "構造係数 [-]",
+    "m_dry": "段の乾燥質量 [kg]",
+    "m_prop": "段の推進剤質量 [kg]"
+  },
+  "common_name": "構造係数（structural coefficient）",
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "28,86",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "42-43",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    },
+    {
+      "id": "gate",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "46",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "validity_gate"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "eps": "0 < ε < 1（rocket.py:32-33 で強制。外れると ValueError）",
+    "eps_typical": "典型 0.05–0.15（rocket.py:28。コード上の強制はない）",
+    "scaling": "段規模・推進剤種に依らず一定として扱う（rocket.py:6）"
+  },
+  "validity_gate": "eps根拠データを含む3点が揃うまで高忠実度化に進まない（06_adversarial_review_v2.md:46）",
+  "validity_gate_ref": "gate",
+  "limitations": "ε は段規模・推進剤種に依存するスケール則を無視して一定としている。さらにフェアリング・残留推進剤・ウルッジ/マージン方針が未導入であるため、実機の ε はここで与える値より大きくなりやすい。ε の根拠データが揃うまで高忠実度化に進まないこと。",
+  "limitations_ref": "lim",
+  "limitations_basis": "explicit",
+  "limitations_inference": null,
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "P-1 は ε そのものを名指しして限界を述べている。"
+}

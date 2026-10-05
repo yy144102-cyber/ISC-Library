@@ -1,0 +1,949 @@
+&ACCESS AR2
+&REL 5
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEFDAT  ARC0GLOBAL PUBLIC
+;*****************************************************************************************
+;ENUM DECL
+;*****************************************************************************************
+GLOBAL ENUM enArcResetType_T SubmitInit,ArcOff,LineSel,ProgReset,StatKeyReset,StatKeyCold
+GLOBAL ENUM enArcCallType_T NONE,PreDefinition,BeforeArcOn,ArcOnTrigger,AfterArcOn,BeforeArcSwi,ArcSwiTrigger,AfterArcSwi,BeforeArcOff,ArcOffTrigger,AfterArcOff,BeforeIgnition,AfterIgnition,BeforeCraterFill,AfterCraterFill,BeforeErrorStrategie,AfterErrorStrategie
+GLOBAL ENUM enArcErrorDecision_T None,Retry,Abort
+GLOBAL ENUM enArcDecisionRequest_T MaxErrors,ServicePosReached
+GLOBAL ENUM enArcToolDirection_T X,Z
+GLOBAL ENUM enArcMessageType_T NONE,NOTIFY,STATE,QUIT,WAITING,DIALOG
+GLOBAL ENUM enArcErrorMotion_T None,KeepOnPosition,MoveUpAndStop,BackFromStop,MoveBackward,MoveBackwardLimit,MoveForward,MoveLittleForward,ContinueWithoutRetry,BackToSplineStart,AdvancedErrorRecovery,MoveScratch,StartFromPos
+GLOBAL ENUM enArcErrStrategySelect_T None,DependingModeOp,OnlyBySmartPad,OnlyBySps
+GLOBAL ENUM enArcErrContDecision_T Automatic,DependingModeOp,SmartHMI,PLC
+GLOBAL ENUM enArcPowerSource_T None,Standard,AOTAI,ARCLINKXT,ABICORBINZEL,BOEHLER,DINSE,ESAB,EWM,FRONIUS,FRONIUS_TPS,FRONIUS_TPSI,FRONIUS_TWIN,KEMPPI,LINCOLN,LORCH,MERKLE,MILLER,SEABERY,SKS
+GLOBAL ENUM enArcProcessState_T Undefined,PlcInit,ColdIgnition,ColdSeam,PrgFree,ArcInit,SourceNotRdy,SourceRdy,IgnitionSetValid,RobReadyForProcess,PeripheryAlsoRdy,NoGasFlow,IgnitFailed,GasFlow,IgnitionStarted,IgnitionOK,MainCurrentActive,CraterFilling,GasPostFlow,WireFreeOK,SeamOK,NoProcessOver,NoGasPostFlowOver,WireFreeFailed,HotSeamInterrupted
+GLOBAL ENUM enArcCommandType_T None,PreDefinition,InAdvance,ArcOn,ArcSwi,ArcOff
+GLOBAL ENUM enArcExecType_T None,TriggerCall,InAdvanceCall,AdvanceStopCall
+GLOBAL ENUM enArcTimerAction_T LoadAndStop,TimerStart,LoadAndStart,TimerStop
+GLOBAL ENUM enArcArsCall_T ARSON,ARSOFF,ARSSWI,RSIWEAVE
+GLOBAL ENUM enArcFindSeamMiddleVis_T ILF,ALWAYS,NEVER
+GLOBAL ENUM enArcState_T Nothing,Init,Error,BreakStateMachine,CheckRobotReady,CheckPowerSource,CheckPeriphery,PrepIgnition,Ignition,WaitArcStable,RobotNotRdy,PowerSourceNotRdy,PeriNotRdy,NoGasFlow,IgnitionFailed,IgnitionErrorRestart,IgnitionErrorStrategy,Welding,WeldingDone,StopWelding,GasPostFlow,StopGasFlow,RestartAfterError,GeneralError,PreStartNotDone,PreStartDone
+GLOBAL ENUM enArcCheckWire_T Nothing,WireIsFree,ErrorWireIsNotFree,CheckWireFree,CheckWireArcLinkXT,CheckWireIsFreeArcLinkXT,CheckWireEndArcLinkXT,ErrorWireFreeManuallyCut,BurnFreeStart,BurnFreeStartArcLinkXT
+GLOBAL ENUM enArcErrorState_T Nothing,IRStopMess,InputError,InputErrorNoStop,TechStop,StillStandCtrl,SyncIgnitionCrtl,WatchdogCtrl,ConfigurationCtrl,BurnFreeCtrl,DefaultError,PreStartError,SttError
+GLOBAL ENUM enArcWeavePattern_T None,Triangle,Trapecoid,UnsymetricTrapecoid,DynamicTrapecoid,Spiral,Double8,OnSeam,EdgeBottom,EdgeTop,UserDefined1,UserDefined2,UserDefined3,UserDefined4,UserDefined5
+GLOBAL ENUM enArcWeaveCmd_T Off,OffTrigger,On,Change,OnlyDefinition,InterruptOn,InterruptOff,OnlineChange,SlopeControl,BlockSelect
+GLOBAL ENUM enArcPlugInAnsw_T Empty,ActPosSaved,Cancelled,Clossed
+GLOBAL ENUM enArcSlopeOption_T None,Distance,ToNextPoint
+GLOBAL ENUM enArcSlopeMode_T None,FromPoint,ToPoint,SplBwd
+GLOBAL ENUM enArcOffSlopeOption_T None,Distance,Time,Combined
+GLOBAL ENUM enMoveBackArcOffOption_T None,Distance
+GLOBAL ENUM enOffSlopeStart_T None,Invalid,BeforeArcOff,AtArcOff,AfterArcOff
+GLOBAL ENUM enArcSlope_T ToStart,ToRun,ToEnd
+GLOBAL ENUM enArcCall_T None,PreDefinition,GasPreflow,ArcOnBeforeMoveStd,ArcOnMoveStd,ArcOnAfterMoveStd,ArcOnBeforeSplSingle,ArcOnSplSingle,ArcOnAfterSplSingle,ArcOnAfterMoveSpl,ArcPreOnMoveSpl,ArcOnMoveSpl,ArcSwiBeforeMoveStd,ArcSwiMoveStd,ArcSwiAfterMoveStd,ArcSwiBeforeSplSingle,ArcSwiSplSingle,ArcSwiAfterSplSingle,ArcSwiMoveSpl,ArcOffBeforeOffStd,ArcOffBeforeOffStd2,ArcOffBeforeMoveStd,ArcOffMoveStd,ArcOffAfterMoveStd,ArcOffBeforeOffSplSingle,ArcOffBefOffSplSingle2,ArcOffBeforeSplSingle,ArcOffSplSingle,ArcOffAfterSplSingle,ArcOffBeforeOffSpline,ArcOffBeforeOffSpline2,ArcBeforeSpline,ArcOffMoveSpl,ArcAfterSpline
+GLOBAL ENUM enArcPath_T OnTheFlyArcOn,OnTheFlyArcOff,ArcOnStop,ArcPreOnMoveSpl,ArcOffStop,ArcOffBefore,ArcOffBefore2,MlPathArcSwi,MlPathArcOff,ArcOffStrategy
+GLOBAL ENUM enArcDelay_T PreDefinition,GasPreflow,ArcPreOn,ArcPreOnMoveSpl,ArcOnMoveSpl,ArcOnAfterMoveSpl,MlDelayArcOn,MlDelayArcSwi,MlDelayArcOff
+GLOBAL ENUM enArcStopCond_T SplArcOn,SplArcOff
+GLOBAL ENUM enArcAmllf_T NONE,ARC,AS,STT
+GLOBAL ENUM enAmlSttCalcOption_T TTS,TOOL,TTS_PointA,TTSCALC
+GLOBAL ENUM enArcAwOperator_T L,LE,G,GE,LG,LEG,LGE,LEGE
+GLOBAL ENUM enArcAwSource_T ISenPrea,ISenPint,IAnalog,ISoftPlcReal
+GLOBAL ENUM enTechnology_T NONE,FG,ARS,STT,RSI
+GLOBAL ENUM enKrlId_T None,Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8,PurgeTime,StartTime,PreFlowTime,Velocity,Pattern,Length,Amplitude,Angle,Frequency,CraterTime,BurnBackTime,PostFlowTime,wArcBurnFreeTimePulse,wArcBurnFreeGasFlowTime,wArcBurnFreeMaxRetries,WeaveDelayLeft,WeaveDelayRight
+GLOBAL ENUM enOutOfRange_T None,ValueTooBig,ValueTooSmall
+GLOBAL ENUM enArcMoveState_T None,Std,SplBlock,SplSingle
+GLOBAL ENUM enAawSwc_T STRIKE,WELDING,CRATER
+GLOBAL ENUM enAawSourceState_T DEACTIVE,ILF,NEXTSOURCE,FUNCTION,PEAK,ILFWEAVEDEACTIV
+GLOBAL ENUM enAawFilterType_T Disabled,AverageSource,CutSourcePeak
+GLOBAL ENUM enAawWeaveConst_T None,ConstLength,ConstVelocity,Overload,Deactivated
+GLOBAL ENUM enArcUsrCall_T MaxIgnErrAbort,MaxWeldErrAbort,MaxIgnErrRetry,MaxWeldErrRetry,AdvErrIgnition,AdvErrWeld,AdvErrSeamRepeat,AdvErrSeamSkip,PreStrikeParam,PosStrikeParam,PreArcOn,PostArcOn,PreArcSwi,PostArcSwi,PreArcOff,PostArcOff,PreRestart,PostRestart,PreSplStart,PostSplStart,ErrorHandle
+GLOBAL ENUM enArcWeaveMode_T WeaveLength,WeaveFrequency
+GLOBAL ENUM engArcSpeedType_T None,VelAppl,OvApp
+GLOBAL ENUM enPsMsgType None,Error,Warning
+GLOBAL ENUM enSignalType NONE,SIN,SOUT,GIN,GOUT,AIN,AOUT
+GLOBAL ENUM enIgnitionType OnBeginning,OnSeam
+GLOBAL ENUM enTcSet None,Wdat,TcSet1,TcSet2
+GLOBAL ENUM enTcMode None,Weave,Length,WeavePosOnly,WeaveNegOnly,WeaveDoublePos,WeaveDoubleNeg
+GLOBAL ENUM enArcCompare Greater,Smaller
+GLOBAL ENUM enArcCall BeforeArcOff,AtArcOff
+GLOBAL ENUM enArcSignalSource None,Welder,External
+GLOBAL ENUM enRobotTeamState Init,InitTeam,MasterInit,MasterSet,MasterReady,MasterErrorNrOfMaster,MasterErrorNrOfSlave,SlaveInit,SlaveWaiting,SlaveReady,RobotTeamDisable,MasterWaitingSlaves,MasterCheckRobotTeam
+GLOBAL ENUM enSeamCtrlOptType_T None,OnSeam,OnPart
+GLOBAL ENUM enSeamValueMinMax_T WOV,ILF
+GLOBAL ENUM enSeamSpsComType_T WithMsg,WithIO
+GLOBAL ENUM enSeamState_T NONE,MissingLengthValue,LineSelected,MissingTeachDistance,SeamCold,SeamOverlap,MissingSomeWeldedPart,ErrorDistanceToLong,ErrorDistanceToShort,SeamLengthValueOk,SeamDisabled,WrongSeamSequence,NewSeamFound,SeamNotDone,MasterPart,ErrorRecoverySkipSeam
+GLOBAL ENUM enSeamStateError_T None,IgnitionError,WeldingError,RobotTeamError
+GLOBAL ENUM enFileFunc_T CloseAllFiles,CloseFile,EndOfFile,MkDir,MkFile,FilePresent,RemoveFile,SetMainFile,SetArchiveFiles,OpenFileWrite,OpenFileRead,OpenFileAdd,OpenFileReadWrite,FileSelectCursor,StrToBuffer,NlStrToBuffer,BufferToFile,FileSize
+GLOBAL ENUM enKrlFunc_T FileWrite,FileRead
+GLOBAL ENUM enPart_T None,Master,NewDistance,NewSeam
+GLOBAL ENUM enInitMode All,PreDefinition,ArcOn
+GLOBAL ENUM ArsRSISENMODE OFF,IPO,IPO_FAST
+GLOBAL ENUM enArcSignalVarName_T NONE,wsArcIPowerSourceMsg1,wsArcIPowerSourceMsg2,wsArcISeamNumberCode,wsArcIChannel,wsArcIErrRecoveryPlcSign,wsArcIMsgPlc,wArcISLPartId,wsArcISenseSignals,wsArcOModiCoding,wsArcOVelocity,wsArcOSeamNumberCode,wsArcOWeldSelect,wsArcOChannel,wsArcOMsgPlc,wsArcOWelderId,wArcOSLErrorCode,wArcOSLSeamNum
+GLOBAL ENUM enArcApplCmdStt_T InPosCalls,InAdvanceCalls,AdvancedErrorRecovery,GroupErrorRecovery,RobErrMovementBefore,RobErrMovementAfter
+GLOBAL ENUM enArcApplConfigStt_T OnErrorContinue,OnErrorRestart,OnErrorStop,OnErrorDialog
+GLOBAL ENUM enArcRecovery_T GroupStart,GroupEnd,DoService
+GLOBAL ENUM enArcSttRecMode_T StartPlay,StartRec,StopPlayOrRec,DelAll,DisableCorrection
+;*****************************************************************************************
+;STRUC DECL
+;*****************************************************************************************
+GLOBAL STRUC stArcStateInt_T INT Nothing,Init,Error,BreakStateMachine,CheckRobotReady,CheckPowerSource,CheckPeriphery,PrepIgnition,Ignition,WaitArcStable,RobotNotRdy,PowerSourceNotRdy,PeriNotRdy,NoGasFlow,IgnitionFailed,IgnitionErrorRestart,IgnitionErrorStrategy,Welding,WeldingDone,StopWelding,GasPostFlow,StopGasFlow,RestartAfterError
+GLOBAL STRUC stArcStateStr_T CHAR Nothing[3],Init[3],Error[3],BreakStateMachine[3],CheckRobotReady[3],CheckPowerSource[3],CheckPeriphery[3],PrepIgnition[3],Ignition[3],WaitArcStable[3],RobotNotRdy[3],PowerSourceNotRdy[3],PeriNotRdy[3],NoGasFlow[3],IgnitionFailed[3],IgnitionErrorRestart[3],IgnitionErrorStrategy[3],Welding[3],WeldingDone[3],StopWelding[3],GasPostFlow[3],StopGasFlow[3],RestartAfterError[3]
+;GLOBAL STRUC stArcSignal_T BOOL Active,InitState,State,INT SignNr,Index,SigOffsetNr,Offset,FromIndex,ToIndex,Length,FromIndexOffset,ToIndexOffset,AnaIndex,REAL PulsTime,TimeOut,CHAR Description[40],enArcSignalSource Source,enSignalType SigType
+;GLOBAL STRUC stArcSignalGroup_T BOOL Active, enArcSignalSource Source,enSignalType SigType,INT                          Offset,FromIndex,ToIndex,Length,FromIndexOffset,ToIndexOffset,AnaIndex
+GLOBAL STRUC stArcSignalOffset_T INT Offset,SignNr,FromIndex,ToIndex
+GLOBAL STRUC stArcSignal_T BOOL Active,InitState,State,INT Index,SignNr,FromIndex,ToIndex,Length,AnaIndex,REAL PulsTime,TimeOut,enArcSignalVarName_T VarName,CHAR Description[40],enArcSignalSource Source,enSignalType SigType,stArcSignalOffset_T Offset
+GLOBAL STRUC stArcCtrlLine_T REAL Para,Val
+GLOBAL STRUC stArcClChannel_T BOOL IntValue,INT UsedInArcCommand,INT NrPoints,stArcCtrlLine_T P1,P2,P3,P4,P5
+GLOBAL STRUC stArcModeCoding_T CHAR ModusName[24],INT Coding,BOOL InUse,CHAR JobModeId[24],BOOL StrikeParamDisable
+GLOBAL STRUC stArcSenseSQ_T CHAR Process[24],REAL KpSide,KiSide,TaSide,KpHeight,KiHeight,TaHeight,DeadZoneSide,DeadZoneHeight,AsymetricHeightUp,AsymetricHeightDown,SanityValue,TrigWindowPerc,TrigWindowPercZero,WeldBreakDecay,WeldBreakMax,HeightCycle,HeightRefCycle
+GLOBAL STRUC stArcRobotName CHAR Master[24],Slave1[24],Slave2[24],Slave3[24],Slave4[24]
+GLOBAL STRUC stArcSQNameTable_T CHAR SqDescription[80],CHAR StrucName[24]
+GLOBAL STRUC stArcSlopeOpt_T BOOL Active,REAL SValue,EValue,CValue
+GLOBAL STRUC stArcSlope_T enArcSlopeMode_T Mode,REAL Time,IlfDistance,DisBetween,StartDis,BOOL ToPosNext,stArcSlopeOpt_T C1,C2,C3,C4,C5,C6,C7,C8,Velocity,Length,Amplitude,Angle
+GLOBAL STRUC stArcSlopeActive_T BOOL C1,C2,C3,C4,C5,C6,C7,C8,Velocity,Length,Amplitude,Angle
+GLOBAL STRUC stArcChannelValue_T REAL m,b
+GLOBAL STRUC stArcStrategy_T enArcMessageType_T MsgType,IgnitionFailureMsgType,enArcErrorMotion_T IgnitionReaction,WeldErrReaction,INT MaxRestart,MaxErrStrategies,MaxBreaksOnSeam,Index,REAL RecoveryTime,FwdDistance,MotionOnSeam,UpAndStopDistance,BOOL NoErrorUntilSeamEnd,DoUpAndStop
+GLOBAL STRUC stStrike_T CHAR JobModeId[24],ParamSetId[24],SeamName[24],PartName[24],INT SeamNumber,PartNumber,REAL StartTime,PreFlowTime,Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8,PurgeTime,DesiredLength,LengthTolNeg,LengthTolPos,BOOL LengthCtrlActive
+GLOBAL STRUC stWeld_T CHAR JobModeId[24],ParamSetId[24],REAL Velocity,Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8
+GLOBAL STRUC stAdvError_T BOOL MyError,REAL ErrorDistance,INT ArcMode
+GLOBAL STRUC stCrater_T CHAR JobModeId[24],ParamSetId[24],REAL CraterTime,PostflowTime,Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8,BurnBackTime
+GLOBAL STRUC stWeave_T enArcWeavePattern_T Pattern,REAL Length,Amplitude,Angle,Frequency,LeftSideDelay,RightSideDelay
+GLOBAL STRUC stAdvanced_T INT IgnitionErrorStrategy,WeldErrorStrategy,BitCodedRobotMark,SeamNumber,enArcSlopeOption_T SlopeOption,enArcOffSlopeOption_T SlopeOptionOff,REAL SlopeTime,SlopeDistance,SlopeTimeOff,SlopeDistanceOff,enOffSlopeStart_T SlopeStartOptionOff,BOOL OnTheFlyActiveOn,OnTheFlyActiveOff,REAL OnTheFlyDistanceOn,OnTheFlyDistanceOff,BOOL PreStartOn,PreStartLocal,REAL PreStartTime,enMoveBackArcOffOption_T MoveBackAtArcOffOption,REAL MoveBackAtArcOffDistance
+GLOBAL STRUC stTrack_T BOOL IsArcSenseEnabled,ControlEnabled,KeepOffset,TeachNew,FindSeamMiddle,REAL TrackingDelay,ControlSensibility,MaxDeviation,ControlSensibilityHeight,Bias,WeaveOffset,HeightCorrValue
+GLOBAL STRUC stMultiLayer_T enArcAmllf_T OP,POS SPos,SBase,EPos,CPos,ActPos
+GLOBAL STRUC stActValue_T CHAR Name[24],Unit[24],REAL Value
+GLOBAL STRUC stInPsValue_T stActValue_T Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8
+GLOBAL STRUC stInfo_T INT Version,WId,CHAR WName[40]
+GLOBAL STRUC stArcDat_T CHAR WdatId[24],stInfo_T Info,stStrike_T Strike,stWeld_T Weld,stWeave_T Weave,stCrater_T Crater,stAdvanced_T Advanced,stTrack_T Track,stMultiLayer_T MultiLayer
+GLOBAL STRUC stAmlInfo_T CHAR Info[80],INT MaxLayer
+GLOBAL STRUC stArcArcLastMoveState MOVE_STATE MoveState,CHAR VarPoint[24]
+GLOBAL STRUC stWeaveDelay_T BOOL Active,REAL TimeDelay
+GLOBAL STRUC stPattern_T BOOL Active,INT ORDER,REAL Angle,stWeaveDelay_T LDelay,stWeaveDelay_T RDelay,TECHMODE MODE,TECHCPS CPS1,CPS2,CPS3,TECHFCTCTRL FCTCTRL
+GLOBAL STRUC stParameter_T BOOL Active,IsInteger,CHAR Name[80],CHAR Unit[24],enKrlId_T KrlId,REAL Min,DefaultVal,Max,Step
+GLOBAL STRUC stParam_T BOOL Active,CHAR SetName[24],enKrlId_T KrlId,REAL SetMin,SetVal,SetMax
+GLOBAL STRUC stParamInfo_T CHAR JobModeId[24],SetName[24],Info[8]
+GLOBAL STRUC stWeavePattern_T enArcWeavePattern_T WeavePatternKey,CHAR Name[24],stPattern_T Tech1,Tech2,Tech3
+GLOBAL STRUC stLastValue_T REAL Val1,Val2,Val3,Val4,Val5
+GLOBAL STRUC stSource_T BOOL Active,enArcAwSource_T SourceInput,INT SourceNr,stLastValue_T LastValue,enW1AwFunction_T W1Function,enW2AwFunction_T W2Function,enW3AwFunction_T W3Function,enW4AwFunction_T W4Function,enArcAwOperator_T Operator,REAL FromNum,ToNum,ConstValue
+GLOBAL STRUC stAdaptiveWelding_T CHAR Name[24],enKrlId_T KrlId,BOOL Active,INT OnRange,REAL InValue,IlfValue,CalcValue,OutValue,stSource_T Source1,Source2,Source3,Source4,Source5
+GLOBAL STRUC stAawWeave_T BOOL LengthActive,AmplitudeActive,REAL Length,Amplitude
+GLOBAL STRUC stAawValue_T BOOL Active,LoadVal,REAL OutValue,ValueIlf
+GLOBAL STRUC stAawCF_T stAawValue_T Velocity,Length
+GLOBAL STRUC stPointName_T CHAR ProgName[24],PointName[24],INT SNR,enArcCommandType_T Command
+GLOBAL STRUC stArcWeldDist_T BOOL Active,LineSelect,Error,CheckDisabled,NewSeam,ErrorSequence,SkipSeam,REAL DesiredLength,TolerancePos,ToleranceNeg,Min,Max,StartWeld,EndWeld,SeamLength,WeldedDist,ErrorExecuted,NotWeldedDist,Divide,Overlap,INT Index,MsgNr,PartNumber,SeamNumber,PlcErrorNr,NrStrikeError,NrWeldError,NrRtWeldError,NrRecoveryError,SNR,OutPartId,enSeamState_T State,CHAR PrgPointName[48],SeamName[24],PartName[24]
+GLOBAL STRUC stArcWeldTimeStamps_T REAL Purge,Preflow,Ignition,FirstWeld,Weld,StopWelding,PostFlow,WeldingDone,Error
+GLOBAL STRUC stArcWeldTime_T stArcWeldTimeStamps_T TimeStamps,BOOL WeldingActive,INT Purge,Preflow,Ignition,WeldWithError,Weld,Crater,PostFlow,Seam,SeamNoGas,Error
+GLOBAL STRUC stArcPsKxrFile_T enPsMsgType PsMsgType,CHAR KxrFile[24]
+GLOBAL STRUC stArcOffSlope_T enArcOffSlopeOption_T Option,REAL Time,Distance,ActTime,ActDist,CalcValue,BOOL Active
+GLOBAL STRUC stArcTcElement_T CHAR JobModeId[24],ParamSetId[24],BOOL Active,REAL Threshold,C1,C2,C3,C4,C5,C6,C7,C8
+GLOBAL STRUC stArcTcSet_T stInfo_T Info,stArcTcElement_T Set1,Set2
+GLOBAL STRUC stArcTcInfo_T enTcMode Mode,enTcSet TcSet,BOOL Active,Sleep,REAL ThresholdAct,DistOffset,INT CtrLength,CtrSet1,CtrSet2,CtrWdat,StateCounter
+GLOBAL STRUC stArcTcState_T BOOL ExeStep,enTcSet TcSet,enArcCompare IntComp,REAL Threshold
+GLOBAL STRUC stMoveBackAtArcOff_T BOOL PosRecorded,Done,REAL Velocity
+GLOBAL STRUC stArcWelder_T enArcPowerSource_T Type,CHAR Name[48],INT Id
+GLOBAL STRUC stArcIo_T INT Input,Output
+GLOBAL STRUC stArcIoOffset_T stArcIo_T Welder,External
+GLOBAL STRUC stArcBurnFreeOption_T BOOL Active,INT Mode,Retries,REAL TimePulse,GasFlowTime
+GLOBAL STRUC stArcBurnFree_T stArcBurnFreeOption_T Option,stCrater_T Param
+GLOBAL STRUC stArcPluginSettings_T BOOL syncWithSelectedWelder
+GLOBAL STRUC stArcBitState_T BOOL VarFalse,VarTrue
+GLOBAL STRUC stArcFeatureInfo_T BOOL InitFeature,InitArcOn,InitArcOff
+GLOBAL STRUC stArcFeatureAdvError_T BOOL Active,SeamWelded,ErrorOnSeam
+GLOBAL STRUC stArcFeature_T BOOL Weave,WeaveRsi,Sense,ThermalControl,Slope,PreStart,OnTheFlyOn,OnTheFlyOff,RetractArcOff,WeaveDelay,SlopeArcOff,SeamLength,SeamCtrlPlc,StepWeld
+GLOBAL STRUC stArcFeatureState_T stArcFeatureInfo_T Info,stArcFeatureAdvError_T AdvError,stArcFeature_T Act,Last
+GLOBAL STRUC stArcCallState_T enArcCall_T CallType,enArcCommandType_T CommandType,enArcMoveState_T MoveType,enArcExecType_T ExecType
+GLOBAL STRUC stSeamConfig_T INT MaxFileSize,CHAR DirName[20],PartName[20]
+GLOBAL STRUC stSeamTemp_T BOOL ErrorOnSeam,Active,FilePresent,INT FileHandle,FileSize,FilePointer,NrOfSeam,CHAR PathToFile[255],enPart_T Part ; MasterPart,MasterSingle
+GLOBAL STRUC stSeamMem_T BOOL NewSeam,RemoveFile,INT NrOfSeam,FileActLine,FileMaxLine
+GLOBAL STRUC stSeam_T stSeamConfig_T Config,stSeamTemp_T Temp,stSeamMem_T Mem
+GLOBAL STRUC stSeamLenght_T BOOL Active,NewLength,ErrorSequence,RemoveSeam,SeamDisabled,INT SeamNumber,PartNumber,PlcErrorNr,enSeamState_T SeamState,REAL DesiredLength,TolerancePos,ToleranceNeg,CHAR PrgPointName[48],SeamName[24],PartName[24]
+GLOBAL STRUC enSeamMsgType_T enArcMessageType_T MsgTyp,BOOL Ack
+GLOBAL STRUC enOnSeamOnPart_T enSeamMsgType_T T1,T2,AUT,EX
+GLOBAL STRUC enArcSeamLengtMsgOpt_T enSeamState_T State,CHAR MsgKey[80],INT PlcErrorNr,MsgNr,enOnSeamOnPart_T OnSeam,OnPart
+GLOBAL STRUC stBackward_T REAL DistArcOn,DistAtError,DistToMove,DistLimited,DistRealMoved
+GLOBAL STRUC stApplInterfaceStt_T enArcApplCmdStt_T Command,enArcErrorMotion_T ErrorMotion,enSeamStateError_T SeamStateError,enArcCall_T ArcFunc,enArcSttRecMode_T RecMode
+GLOBAL STRUC stRobotSinc_T BOOL Active,INT BitSinc,CHAR Name[64]
+GLOBAL STRUC stArcRecovery_T CHAR GroupName[256],stRobotSinc_T RobotSinc
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+DECL GLOBAL enArcState_T enArcCurrentState=#Nothing
+DECL GLOBAL enArcState_T enArcCurrentStatePre=#Nothing
+DECL GLOBAL enArcErrorState_T enArcErrorState=#Nothing
+DECL GLOBAL enArcErrorState_T enArcRTError=#Nothing
+DECL GLOBAL enArcState_T enArcSaveState=#Nothing
+DECL GLOBAL enArcState_T enArcNextRemoteState=#Nothing
+DECL GLOBAL AXIS_OF_COORDINATES enArcKssToolDirection=#X
+DECL GLOBAL enArcErrorMotion_T enArcActiveStrategy=#None
+DECL GLOBAL enArcCheckWire_T enArcCurrentCheckWire=#Nothing
+DECL GLOBAL stArcArcLastMoveState enArcMotionBeforeArcOn={MoveState #NONE,VarPoint[] " "}
+DECL GLOBAL stArcArcLastMoveState enArcMotionInfo[3]
+enArcMotionInfo[1]={MoveState #NONE,VarPoint[] " "}
+enArcMotionInfo[2]={MoveState #NONE,VarPoint[] " "}
+enArcMotionInfo[3]={MoveState #NONE,VarPoint[] " "}
+DECL GLOBAL enAmlSttCalcOption_T gAmlSttCalcOption=#TTS
+DECL GLOBAL enArcCommandType_T gArcCommand=#None
+DECL GLOBAL engArcSpeedType_T gArcSpeedType=#None
+DECL GLOBAL enRobotTeamState gArcRobotTeamState
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+DECL GLOBAL stArcStrategy_T stArcIgnErrSet={MsgType #NOTIFY,IgnitionFailureMsgType #QUIT,IgnitionReaction #MoveForward,MaxRestart 3,MaxErrStrategies 1,Index 1,RecoveryTime 1.00000,FwdDistance 0.500000,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+DECL GLOBAL stArcStrategy_T stArcWeldErrSet={MsgType #QUIT,WeldErrReaction #MoveBackward,MaxBreaksOnSeam 3,Index 1,MotionOnSeam 3.00000,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+DECL GLOBAL stWeave_T stArcActWeaveSet={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0}
+DECL GLOBAL stStrike_T stArcActStartSet={JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0}
+DECL GLOBAL stStrike_T stArcSeamSet={SeamName[] "No Name",PartName[] "No Name",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE}
+DECL GLOBAL stWeld_T stArcActWeldSet={JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0183000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL stCrater_T stArcActCraterSet={JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.0,PostflowTime 2.00000,Channel1 1.00000,Channel2 3804.00,Channel3 2.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0}
+DECL GLOBAL stAdvanced_T stArcActAdvancedSet={IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}
+DECL GLOBAL stTrack_T stArcActSenseParamOn={IsArcSenseEnabled FALSE,ControlEnabled FALSE,KeepOffset FALSE,TeachNew FALSE,FindSeamMiddle FALSE,TrackingDelay 0.0,ControlSensibility 0.0,MaxDeviation 0.0,ControlSensibilityHeight 0.0,Bias 0.0,WeaveOffset 0.0,HeightCorrValue 0.0}
+DECL GLOBAL stTrack_T stArcActSenseParam={IsArcSenseEnabled FALSE,ControlEnabled FALSE,KeepOffset FALSE,TeachNew FALSE,FindSeamMiddle FALSE,TrackingDelay 0.0,ControlSensibility 0.0,MaxDeviation 0.0,ControlSensibilityHeight 0.0,Bias 0.0,WeaveOffset 0.0,HeightCorrValue 0.0}
+DECL GLOBAL stTrack_T stArcSenseParamBuffer={IsArcSenseEnabled FALSE,ControlEnabled FALSE,KeepOffset FALSE,TeachNew FALSE,FindSeamMiddle FALSE,TrackingDelay 0.0,ControlSensibility 0.0,MaxDeviation 0.0,ControlSensibilityHeight 0.0,Bias 0.0,WeaveOffset 0.0,HeightCorrValue 0.0}
+DECL GLOBAL stWeave_T stArcActSenseWeaveDef={Pattern #None,Length 0.0,Amplitude 0.0,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0}
+DECL GLOBAL stWeave_T stArcSenseWeaveBufferOn={Pattern #None,Length 0.0,Amplitude 0.0,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0}
+DECL GLOBAL stWeld_T stArcActSenseWeldSet={JobModeId[] " ",ParamSetId[] "  ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL stArcDat_T stArcDatAct={Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0183000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.0,PostflowTime 2.00000,Channel1 1.00000,Channel2 3804.00,Channel3 2.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0},Track {IsArcSenseEnabled FALSE,ControlEnabled FALSE,KeepOffset FALSE,TeachNew FALSE,FindSeamMiddle FALSE,TrackingDelay 0.0,ControlSensibility 0.0,MaxDeviation 0.0,ControlSensibilityHeight 0.0,Bias 0.0,WeaveOffset 0.0,HeightCorrValue 0.0}}
+DECL GLOBAL stArcDat_T stSlopeLast={WdatId[] "WDAT1",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0183000,Channel1 1.00000,Channel2 3044.00,Channel3 7.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.0,PostflowTime 2.00000,Channel1 1.00000,Channel2 3044.00,Channel3 3.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0},Track {IsArcSenseEnabled FALSE,ControlEnabled FALSE,KeepOffset FALSE,TeachNew FALSE,FindSeamMiddle FALSE,TrackingDelay 0.0,ControlSensibility 0.0,MaxDeviation 0.0,ControlSensibilityHeight 0.0,Bias 0.0,WeaveOffset 0.0,HeightCorrValue 0.0}}
+DECL GLOBAL stInfo_T stArcInfo={Version 307020112,WId 1,WName[] "Universal welder"}
+DECL GLOBAL stWeavePattern_T stActWeaveContinue={WeavePatternKey #None,Name[] "None",Tech1 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech2 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech3 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}}}
+DECL GLOBAL stWeavePattern_T stActWeaveTrigger={WeavePatternKey #None,Name[] "None",Tech1 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech2 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech3 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}}}
+DECL GLOBAL stArcSlope_T gArcSlopeAct={Time 0.0,IlfDistance 0.0,DisBetween 0.0,ToPosNext FALSE,C1 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C2 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C3 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C4 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C5 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C6 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C7 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C8 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Velocity {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Length {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Amplitude {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Angle {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0}}
+DECL GLOBAL stAawWeave_T gAawWeaveValue={LengthActive FALSE,AmplitudeActive FALSE,Length 0.0,Amplitude 0.0}
+DECL GLOBAL stAawCF_T gAawCFrequencyValue={Velocity {Active FALSE,LoadVal FALSE,OutValue 0.0,ValueIlf 0.0},Length {Active FALSE,LoadVal FALSE,OutValue 0.0,ValueIlf 0.0}}
+DECL GLOBAL stArcWeldDist_T stArcWeldDist={Active FALSE,LineSelect FALSE,Error FALSE,CheckDisabled FALSE,NewSeam FALSE,ErrorSequence TRUE,SkipSeam FALSE,DesiredLength 0.0,TolerancePos 0.0,ToleranceNeg 0.0,Min 0.0,Max 0.0,StartWeld 0.0,EndWeld 0.0,SeamLength 0.0,WeldedDist 0.0,ErrorExecuted 0.0,NotWeldedDist 0.0,Divide 0.0,Overlap 0.0,Index 0,MsgNr 0,PartNumber 0,SeamNumber 0,PlcErrorNr 0,NrStrikeError 0,NrWeldError 0,NrRtWeldError 0,NrRecoveryError 0,SNR 0,State #NONE,PrgPointName[] " ",SeamName[] " ",PartName[] " "}
+DECL GLOBAL stArcWeldTime_T stArcWeldTime={TimeStamps {Purge 0.0,Preflow 4617615.00,Ignition 4617621.00,FirstWeld 4617622.00,Weld 4617622.00,StopWelding 0.0,PostFlow 0.0,WeldingDone 0.0,Error 4618611.00},Purge 0,Preflow 2009,Ignition 264,WeldWithError 360087,Weld 360087,Crater 7,PostFlow 2004,Seam 364371,SeamNoGas 360358,Error 0}
+DECL GLOBAL stArcOffSlope_T stArcOffSlope={Option #None,Time 0.0,Distance 0.0,ActTime 0.0,ActDist 0.0,CalcValue 0.0,Active FALSE}
+DECL GLOBAL stArcTcSet_T stArcActTcSet={Info {Version 0,WId 0,WName[] " "},Set1 {JobModeId[] " ",ParamSetId[] " ",Active FALSE,Threshold 0.0,C1 0.0,C2 0.0,C3 0.0,C4 0.0,C5 0.0,C6 0.0,C7 0.0,C8 0.0},Set2 {JobModeId[] " ",ParamSetId[] " ",Active FALSE,Threshold 0.0,C1 0.0,C2 0.0,C3 0.0,C4 0.0,C5 0.0,C6 0.0,C7 0.0,C8 0.0}}
+DECL GLOBAL stArcTcInfo_T stTcInfo={Mode #None,TcSet #None,Active FALSE,Sleep FALSE,ThresholdAct 0.0,DistOffset 0.0,CtrLength 0,CtrSet1 0,CtrSet2 0,CtrWdat 0,StateCounter 0}
+DECL GLOBAL stMoveBackAtArcOff_T stMoveBackAtArcOff={PosRecorded FALSE,Done FALSE,Velocity 0.0}
+DECL GLOBAL stArcPluginSettings_T stPlgnOnlineOptimization={syncWithSelectedWelder FALSE}
+DECL GLOBAL stArcFeatureState_T stArcFeatureState={Info {InitFeature FALSE,InitArcOn TRUE,InitArcOff FALSE},AdvError {Active FALSE,SeamWelded FALSE,ErrorOnSeam FALSE},Act {Weave FALSE,WeaveRsi FALSE,Sense FALSE,ThermalControl FALSE,Slope FALSE,PreStart FALSE,OnTheFlyOn FALSE,OnTheFlyOff FALSE,RetractArcOff FALSE,WeaveDelay FALSE,SlopeArcOff FALSE,SeamLength FALSE,SeamCtrlPlc FALSE,StepWeld FALSE},Last {Weave FALSE,WeaveRsi FALSE,Sense FALSE,ThermalControl FALSE,Slope FALSE,PreStart FALSE,OnTheFlyOn FALSE,OnTheFlyOff FALSE,RetractArcOff FALSE,WeaveDelay FALSE,SlopeArcOff FALSE,SeamLength FALSE,SeamCtrlPlc FALSE,StepWeld FALSE}}
+DECL GLOBAL stArcCallState_T stArcCallState={CallType #PreDefinition,CommandType #ArcOn,MoveType #Std,ExecType #AdvanceStopCall}
+DECL GLOBAL stBackward_T stBackward={DistArcOn 0.0,DistAtError 0.0,DistToMove 0.0,DistLimited 0.0,DistRealMoved 0.0}
+DECL GLOBAL MBW_PARA_TARGET stArcSplTarget ;MoveBackward
+DECL GLOBAL MBW_PARA_OFFSET stArcSplOffset ;MoveBackward
+DECL GLOBAL MBW_RESULT stArcSplBwdResult ;MoveBackward
+;*****************************************************************************************
+;STRUC Used for Intrerface with oder option package 
+;*****************************************************************************************
+DECL GLOBAL stArcBitState_T stValFalse={VarFalse FALSE} ;Set variable to FALSE
+DECL GLOBAL stArcBitState_T stValTrue={VarTrue TRUE} ;Set variable to TRUE
+;Interface to
+DECL GLOBAL stArcBitState_T stArcWeldingOn={VarFalse FALSE}
+DECL GLOBAL stArcBitState_T stArcOnSeam={VarFalse FALSE}
+DECL GLOBAL stArcBitState_T stArcGhostMode={VarTrue TRUE}
+DECL GLOBAL stArcBitState_T stArcErrorGlobal={VarFalse FALSE}
+;*****************************************************************************************
+;STATUSKEYS
+;*****************************************************************************************
+DECL GLOBAL BOOL skArcKrlSetGas=FALSE ;[Gas] temp Status Key OLD ATBg_SK_KrlSetGas
+DECL GLOBAL BOOL skArcKrlSetErrQuit=FALSE ;[Reset Power Source] temp Status Key OLD ATBg_SK_KrlSetErrQuit
+DECL GLOBAL BOOL skArcStatusKeyHot=FALSE ;Set by HMI OLD ATBg_StatusKey_Hot
+DECL GLOBAL BOOL skArcHotKeyVisible=TRUE ;Status Key Bar with HotKey is visible or not
+DECL GLOBAL INT skArcWireFeed=0 ;Set by HMI OLD ATBg_StatusKey_WireFeed
+DECL GLOBAL INT skArcWireFeedHistroy=0
+DECL GLOBAL BOOL skArcSetGas=FALSE ;Set by HMI OLD ATBg_SK_BtnSetGas
+DECL GLOBAL INT skArcStatusGas=0 ;Set by HMI OLD ATBg_SK_BtnStatusGas
+DECL GLOBAL BOOL skArcSetErrQuit=FALSE ;Set by HMI OLD ATBg_SK_BtnSetErrQuit
+DECL GLOBAL BOOL skArcHotRequest=FALSE ;Set by HMI OLD ATBg_HotRequest
+DECL GLOBAL BOOL skArcDryRun=FALSE ;Set by HMI OLD ATBg_DryRun
+DECL GLOBAL INT skArcStsKeyFroniusTeach=-1 ;Icon Fronius Teachmode
+DECL GLOBAL BOOL skArcSetKeyTeachMode=FALSE ;Set Fronius Teachmode
+DECL GLOBAL INT skArcStsKeyFroniusTwinMo=-1 ;Set Fronius Twin Operation Mode
+DECL GLOBAL INT skArcActFroniusTwinMode=-1 ;Actuel Fronius Twin Operation Mode
+DECL GLOBAL INT skArcPSReady=1 ;To HMI OLD ATBg_SK_BtnPSReady
+DECL GLOBAL INT skArcStatusErrQuit=0 ;To HMI OLD ATBg_SK_BtnStatusErrQuit
+DECL GLOBAL INT skArcInfoToSetStsKeyHot=0 ;To HMI OLD ATBg_InfoToSetStsKeyHot
+DECL GLOBAL BOOL skArsMoveYPlus=FALSE
+DECL GLOBAL BOOL skArsMoveYMinus=FALSE
+DECL GLOBAL BOOL skArsMoveZPlus=FALSE
+DECL GLOBAL BOOL skArsMoveZMinus=FALSE
+DECL GLOBAL BOOL skArsCorrectionOn=TRUE
+DECL GLOBAL BOOL skArsManualCorrFinished=TRUE
+DECL GLOBAL BOOL skArsManualCorrActive=FALSE ;ArcSense Manual Correction Active
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL GLOBAL BOOL gArcWatchdogEnabled=TRUE ;Watchdog control ist active
+DECL GLOBAL BOOL gArcWatchdogError=FALSE ;Watchdog error
+DECL GLOBAL BOOL gArcSyncIgnitionError=FALSE ;Sync Ignition Error
+DECL GLOBAL BOOL gArcDefaultError=FALSE ;Default Error
+DECL GLOBAL BOOL gArcSttError=FALSE ;STT Error
+DECL GLOBAL BOOL gArcStillstandError=FALSE ;Motion Forward Control Executed
+DECL GLOBAL BOOL gArcStatKeyWeldOn=FALSE ;Statkey switched from Cold do Hot when robot is in standstill -> Start Welding
+DECL GLOBAL BOOL gArcErrorRestartActive=FALSE
+DECL GLOBAL BOOL gArcInterruptRestartOn=FALSE
+DECL GLOBAL BOOL gArcErrorStrategyActive=FALSE
+DECL GLOBAL BOOL gArcConditionStrategyOn=FALSE
+DECL GLOBAL BOOL gArcOnStopConditionOn=FALSE ;Stop at Spline ArcOn Condition
+DECL GLOBAL BOOL gArcOffStopConditionOn=TRUE ;Stop at Spline ArcOff Condition
+DECL GLOBAL BOOL gArcMyIgnitionError=FALSE ;ignition Error (for Roboteam)
+DECL GLOBAL BOOL gArcIgnoreError=TRUE ;To ignore error in some states
+DECL GLOBAL BOOL gArcNoErrorRestart=FALSE ;FALSE | Restart can happen
+DECL GLOBAL BOOL gArcColdSeam=FALSE ;Flag for ColdSeam
+DECL GLOBAL BOOL gArcBlockArcOff=FALSE
+DECL GLOBAL BOOL gArcOnlineOptRequest=FALSE ;Event for online Interrupt: Request by param key
+DECL GLOBAL BOOL gArcOnlineOptActive=FALSE ;Online opt active for other technology
+DECL GLOBAL BOOL gArcDisableOnlineOpt=FALSE ;Permission for activating online opt
+DECL GLOBAL BOOL gArcSensorActive=FALSE ;ArcSense is active
+DECL GLOBAL BOOL gArcSwiTriggered=TRUE ;Update of weld / Seam datas by ARC_SWI command
+DECL GLOBAL BOOL gArcOffTriggered=FALSE ;Update of weld / Seam datas by ARC_OFF command
+DECL GLOBAL BOOL gArcClearArcMode=FALSE ;Clear ArcMode at ArcOff, LineSelect of ProgReset
+DECL GLOBAL BOOL gArcClearChannels=FALSE ;Clear Output Channels at ArcOff, LineSelect of ProgReset
+DECL GLOBAL BOOL gArcClearSpecFunc=FALSE ;Clear Special Functions at ArcOff, LineSelect of ProgReset
+DECL GLOBAL BOOL gArcIsInitialized=FALSE
+DECL GLOBAL BOOL gArcOnSeam=FALSE ;Robot is on Seam OLD ATBg_OnSeam ToDo
+DECL GLOBAL BOOL gArcWeldCondition=FALSE
+DECL GLOBAL BOOL gArcBurnFreeActive=FALSE ;Current burn free process
+DECL GLOBAL BOOL gArcIgnoreWeldErrStrat=FALSE ;To Ignore Weld Error Strategy
+DECL GLOBAL BOOL gArcIgnoreIgnErrStrat=FALSE ;To Ignore Ignition Error Strategy
+DECL GLOBAL BOOL gArcCanRestartIgnition=TRUE ;Can Restart Igntion when SeamError Counter is not reached
+DECL GLOBAL BOOL gArcChecksumMsgAndHot=FALSE ;For ArcLink if CheckSum changed
+DECL GLOBAL BOOL gArcModeOpChanged=TRUE ;For ArcLink to Set Message if CheckSum changed
+DECL GLOBAL BOOL gArcLineSelected=TRUE ;Line Selected
+DECL GLOBAL BOOL gArcWeaveOption=TRUE ;Default:(TRUE) enables Weaving
+DECL GLOBAL BOOL gArcCollisionDetected=FALSE
+DECL GLOBAL BOOL gArcHandleNoErrorActive=FALSE ;Ignore Errors
+DECL GLOBAL BOOL gArcNoErrorUntilSeamEnd=FALSE ;Error Strategies No ErrorUntilSeam End
+DECL GLOBAL BOOL ATAg_ER_GoToNexSeam=FALSE ;One error GoTo Next Seam Set at Start of Seam
+DECL GLOBAL BOOL ATAg_ER_ErrorOnSeam=FALSE ;Error On Seam Set at End of Seam
+DECL GLOBAL BOOL ATAg_ER_ArcGroupEnabled=FALSE ;Used to check if repeat is correctly set no select line
+DECL GLOBAL BOOL ATAg_ER_ChkRepeatGroup=FALSE ;RepeatGroup
+DECL GLOBAL BOOL ATAg_ER_NoErrorT1Dialog=TRUE ;Enabled Error on Seam Test Dialogue T1 Mode
+DECL GLOBAL BOOL ATAg_ER_WeldDone=FALSE ;Seam Done or on error go to next seam
+DECL GLOBAL BOOL ATAg_ER_SkipSeam=FALSE ;User Selection to skip seam
+DECL GLOBAL BOOL ATAg_ER_IsMyError=FALSE ;My error use only for right MSG
+DECL GLOBAL BOOL ATAg_ER_ExtError=FALSE ;Error on External Robot
+DECL GLOBAL BOOL ATAg_ER_BeginMemPoint=FALSE ;Template MemPointSet
+DECL GLOBAL BOOL ATAg_ER_SensorActive=FALSE ;Find ArcSense on ErrorRecovery (AcrSence is not possible on Error Recovery)
+DECL GLOBAL BOOL ATAg_ER_ExtSensorActive=FALSE ;Find ArcSense on ErrorRecovery in RobotTeam (AcrSence is not possible on Error Recovery)
+DECL GLOBAL BOOL gArcSenseBackCondActive=FALSE
+DECL GLOBAL BOOL gArcSenseModErrStrat=FALSE ;ArcSense modify ErrorStrategy
+DECL GLOBAL BOOL gArcSenseIsReqRestart=FALSE ;ArcSense Restart
+DECL GLOBAL BOOL gArcSenseSimSig=FALSE ;Use ANOUT instead of ANIN for simulation
+DECL GLOBAL BOOL gArcRobotTeamInit=FALSE ;Init Robot Team
+DECL GLOBAL BOOL gArcRobotTeamOk=FALSE ;All Remote Robot are synchronized
+DECL GLOBAL BOOL gArcMoreThenOneMaster=FALSE
+DECL GLOBAL BOOL gArcTechBasicOption=TRUE ;ArcTechBasic is Present/Installed
+DECL GLOBAL BOOL gArcTechAdvancedOption=TRUE ;ArcTechAdvanced is Present/Installed
+DECL GLOBAL BOOL gArcSenseOption=FALSE ;ArcSense is Present/Installed
+DECL GLOBAL BOOL gArcSttV3Option=FALSE ;Seam Tech Tracking V3.x or minor Present/Installed
+DECL GLOBAL BOOL gArcSttV4Option=FALSE ;Seam Tech Tracking V4.x or major Present/Installed
+DECL GLOBAL BOOL gArcMultiLayerOption=FALSE ;MultiLayer is Present/Installed
+DECL GLOBAL BOOL gArcRSIOption=TRUE ;Robot Sensor Interface is Present/Installed
+DECL GLOBAL BOOL gArcAWOption=FALSE ;Adaptive Welding is Present/Installed
+DECL GLOBAL BOOL gArcTMOption=FALSE ;TouchSense is Present/Installed
+DECL GLOBAL BOOL gArcTMActive=FALSE ;TouchSense TeachMode is Active
+DECL GLOBAL BOOL gArcWSActive=FALSE ;TouchSense WireSense is Active
+DECL GLOBAL BOOL gArcTrackActive=FALSE ;Optical Sensor Active
+DECL GLOBAL BOOL gArcPlugInGlobSetChanged=FALSE ;Global Set Changed From PlugIn
+DECL GLOBAL BOOL gArcSyncIgnitionEnable=FALSE ;Enable check Ignition State
+DECL GLOBAL BOOL gArcMotionForwardEnable=FALSE ;Enable check Robot Actual speed > 0
+DECL GLOBAL BOOL gArcAllRobotOnDistance=FALSE ;All Slave Are on Distance arrive
+DECL GLOBAL BOOL gArcWeldingActive=FALSE ;Welding is active - HOT (RDM Driver)
+DECL GLOBAL BOOL gArcExitRestartInterrupt=FALSE ;On TRUE Exit from Interrupt Reduce Speed: Restart after error on distance
+DECL GLOBAL BOOL gAmlRootLayer=FALSE ;Root Layer in Execution
+DECL GLOBAL BOOL gArcRsiWeavingActive=FALSE ;Weaving with RSI is active
+DECL GLOBAL BOOL gArsReduceWeaveDone=FALSE ;Reduce RSI WeaveOffset is done
+DECL GLOBAL BOOL gArcWeaveFGDelayActive=FALSE ;Weeave Delay Interrupt Enable
+DECL GLOBAL BOOL gArcOnSeamBegin=FALSE ;ArcOn at seam begin
+DECL GLOBAL BOOL gArcMsgBufferEnable=TRUE ;Enables Message Interface
+DECL GLOBAL BOOL gArcActSlopeActive=FALSE ;Slope is Active
+DECL GLOBAL BOOL gArcSlopeArcOn=FALSE ;Slope start at ArcOn
+DECL GLOBAL BOOL gArcDiagSaveToFile=FALSE ;Adaptive Welding Save diagnostic to File
+DECL GLOBAL BOOL gAawDiagSaveToFile=FALSE ;Adaptive Welding Save diagnostic to File
+DECL GLOBAL BOOL gArcPreDefWait=FALSE ;Wait Time at Beginning when ArcMode is Init State  (Depending on PowerSource)
+DECL GLOBAL BOOL gArcOffDone=FALSE ;RDM Trigger Seam finished
+DECL GLOBAL BOOL gArcIsSimulation=FALSE ;ArcTech [Simulation] Simulation Active
+DECL GLOBAL BOOL gArcIsWorkVisual=FALSE ;ArcTech [Simulation] Run on WorkWisual
+DECL GLOBAL BOOL gArcIsKukaSim=FALSE ;ArcTech [Simulation] Run on Kuka Sim
+DECL GLOBAL BOOL gArcIsOnSimEnvironment=FALSE ;ArcTech [Simulation] gArcIsSimulation==TRUE OR gArcIsWorkVisual==TRUE OR gArcIsKukaSim==TRUE
+DECL GLOBAL BOOL gArcSubMitInitDone=TRUE ;ArcTech [SubMit] Initialization Done
+DECL GLOBAL BOOL gArcInternalInError=FALSE ;Internal Input Error (To Test Error Strategies)
+DECL GLOBAL BOOL gArcInternalInErrorIgn=FALSE ;Internal Input Error at Ignition (To Test Error Strategies)
+DECL GLOBAL BOOL gArcDebugC1ToAnalog10=FALSE ;Debug If TRUE $ANOUT[10] becomes Values from Channel1
+DECL GLOBAL BOOL gArcDwellTimeWhenRsi=FALSE ;Use Dwell Time in ILF and Trapecoid if RSI is installed
+DECL GLOBAL BOOL gArcPartChk=TRUE ;PartCheck
+DECL GLOBAL BOOL gArcErrorWelderSelection=FALSE ;Different welder selection ArcOn and ArcSwi or ArcOff use to set message
+DECL GLOBAL BOOL gArcUsedInCommandOption=TRUE ;If TRUE set channel only when it is used for Command
+DECL GLOBAL BOOL gArcCtrlLineWithMinMax=FALSE ;Min Max Values will considered for Output Channels (Param To Value)
+DECL GLOBAL BOOL gArcWelderActive=TRUE ;One or more Welder is active
+DECL GLOBAL BOOL gArcForceTableInit=FALSE ;Force Init WoV Generated In/Out Offset Elements
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL GLOBAL INT gArcActModeOn=1 ;Actual ArcMode On
+DECL GLOBAL INT gArcActIlfWelder=1 ;Actual Selected ILF Welder
+DECL GLOBAL INT gArcActSkWelder=1 ;Actual Selected Welder
+DECL GLOBAL INT gArcActModeSwi=1 ;Actual ArcMode Switch OLD ATBg_ActArcModeSwi ToDo
+DECL GLOBAL INT gArcActModeOff=1 ;Actual ArcMode Off
+DECL GLOBAL INT gArcLineSelectCounter=0 ;Cycle counter for line select
+DECL GLOBAL INT gArcSafeOverrideValue=-1 ;Saved override value
+DECL GLOBAL INT gArcCollisionStateHandle=0 ;Global for debugging: 0 => No Handle exists
+DECL GLOBAL INT gArcCollisionDlgHandle=0 ;Global for debugging: 0 => No Handle exists
+DECL GLOBAL INT gArcInputNrCollision=0
+DECL GLOBAL INT gArcOutputNrCollision=0
+DECL GLOBAL INT gArcDialogAnswer=0
+DECL GLOBAL INT gArcSeamNumber=0
+DECL GLOBAL INT gArcPartNumber=0
+DECL GLOBAL INT gArcIgnErrorCounter=0 ;Global diagnosis: Number of ignitions
+DECL GLOBAL INT gArcIgnRestartCounter=0 ;Global diagnosis: Number of failures + (number of ignitions)== > real number of ignitions
+DECL GLOBAL INT gArcSeamErrorCounter=0 ;Global diagnosis: Number of failures on seam
+DECL GLOBAL INT gArcSyncList=1 ;Number of Sync Robots
+DECL GLOBAL INT gArcTmpSyncCmdSim=0 ;simulated robot in roboteam
+DECL GLOBAL INT gArcNumberOfSlaves=0 ;Number of Slaves
+DECL GLOBAL INT gArcSlaveId=0 ;Slave Index
+DECL GLOBAL INT gArcStrategyIgnIndex=1 ;Ignition error strategy index
+DECL GLOBAL INT gArcStrategyWeldIndex=1 ;Weld error strategy index
+DECL GLOBAL INT gArcWeldErrorCounter=0 ;Memory Numbers of error during welding (Singular robot MAX= 0; RobotTeam MAX= 5 )
+DECL GLOBAL INT gArcSenseContId=-1 ;ArcSense RSI ID
+DECL GLOBAL INT gArcSttContId=-1 ;ArcStt RSI ID
+DECL GLOBAL INT gArcWeldingOnTimeout=0 ;Time at Welding ON + Timout
+DECL GLOBAL INT gArcMsgRemoteClearNumber=0 ;Clear Specific message from remote
+DECL GLOBAL INT gArcRemoteDialogNumber=0 ;Clear Specific dialogue from remote
+DECL GLOBAL INT gArcRemoteDialogAnswer=0 ;Set answer Specific dialogue from remote
+DECL GLOBAL INT gArcRemoteMsgNum=0 ;Remote message number to clean
+DECL GLOBAL INT gMaxSubmitTimerAllow=1000 ;SubMit Maximum Time Allow
+DECL GLOBAL INT gArcPosDiagnostic=1 ;Diagnostic [Array,] Next position 
+DECL GLOBAL INT gArcPosDiag=1 ;Diagnostic [,Array] position
+DECL GLOBAL INT gArcActDiagnostic=1 ;Diagnostic [Array,] position
+DECL GLOBAL INT gArcActParamStrike=0 ;Actual Strike Parameter Set active
+DECL GLOBAL INT gArcActParamWelding=0 ;Actual Welding Parameter Set active
+DECL GLOBAL INT gArcActParamCrater=0 ;Actual Crater Parameter Set active 
+DECL GLOBAL INT gArsWeaveDelayMode=0 ;0= Stop at side, 1= Do not stop at side
+DECL GLOBAL INT gArsInWeaveShiftCycle=0 ;0= Automatic Calculation, 1= Off, >1 Fix Value (Value * 4ms -> e.g. 20 = 100ms)
+DECL GLOBAL INT gAmlSelectLayer ;[MultiLayer] Actuel Select Layer  
+DECL GLOBAL INT gAmlActLayer=-1 ;[MultiLayer] Actual Layer
+DECL GLOBAL INT gAmlStartLayer=0 ;[MultiLayer] Start Layer
+DECL GLOBAL INT gAmlEndLayer=0 ;[MultiLayer] End Layer
+DECL GLOBAL INT gArcTeachModeTimeOut=300000 ;TechMode signal TimeOut ms DEfault 5min []
+DECL GLOBAL INT gArcRemoteStatesInt[16]
+gArcRemoteStatesInt[1]=0
+gArcRemoteStatesInt[2]=0
+gArcRemoteStatesInt[3]=0
+gArcRemoteStatesInt[4]=0
+gArcRemoteStatesInt[5]=0
+gArcRemoteStatesInt[6]=0
+gArcRemoteStatesInt[7]=0
+gArcRemoteStatesInt[8]=0
+gArcRemoteStatesInt[9]=0
+gArcRemoteStatesInt[10]=0
+gArcRemoteStatesInt[11]=0
+gArcRemoteStatesInt[12]=0
+gArcRemoteStatesInt[13]=0
+gArcRemoteStatesInt[14]=0
+gArcRemoteStatesInt[15]=0
+gArcRemoteStatesInt[16]=0
+DECL GLOBAL INT gArcSpecialFunction='B0000' ;Special Functions
+DECL GLOBAL INT gArcOnlineOptCom=0 ;1=Changes done by OnlintOptPlugIn PlugIn->KRL, 0=Keep changes KRL->PlugIn, 2=Revert changes KRL->PlugIn
+DECL GLOBAL INT gArcDebugMsgEnable='B0000' ;Message Debug Bit
+DECL GLOBAL INT gArcGeneralDebug='B0001' ;General Debug Code
+DECL GLOBAL INT gArcDebugSlope='B0010' ;Slope Debug Code
+DECL GLOBAL INT gArcDebugWeave='B0100' ;Weave Debug Code
+DECL GLOBAL INT gArcDebugAdaptive='B1000' ;Adaptive Debug Code
+DECL GLOBAL INT gArcDebugSense='B00010000' ;Sense Debug Code
+DECL GLOBAL INT gArcDebugMultiLayer='B00100000' ;MultiLayer Debug Code
+DECL GLOBAL INT gArcPointArrayIndex=2 ;Index for Point Array (RDM Driver)
+DECL GLOBAL INT gArcPointStateCounter=0 ;State Counter to get PointNames (RDM Driver)
+DECL GLOBAL INT gArcCommandCounter=361 ;Command Counter (Counts ArcOn, ArcSwi, ArcOff)
+DECL GLOBAL INT gArcMaxNrOfArcModi[4]
+DECL GLOBAL INT gArcIErrRecoveryPlcSign=0 ;Input signal value from PLC update from SubMit
+DECL GLOBAL INT ArcCheckWelderNr=0 ;Error on Welder selection
+DECL GLOBAL INT gArcLineSelDelayCtr=5 ;Line Select Delay Counter (Submit cycles)
+DECL GLOBAL INT gArcLineSelState=0 ;Line Select State Counter
+DECL GLOBAL INT gArcPreStartTimeOut=500 ;On Wrong PreStart ignition TimeOut [ms]
+DECL GLOBAL INT gArcSyncIgnitionStamp=5859027 ;TimeOut security On status Ignition
+DECL GLOBAL INT gArcGasPreTargetTime=0 ;Flying Gas Target Time
+DECL GLOBAL INT irtArcWeaveDelay=0 ;Realize delayed weaving (Dynamic Interrupt)
+DECL GLOBAL INT irtArcSlopeFunction=0 ;Realize slope function (Dynamic Interrupt)
+DECL GLOBAL INT irtArcTcGreater=0 ;Realize Thermal Control Greater comparison (Dynamic Interrupt)
+DECL GLOBAL INT irtArcTcSmaller=0 ;Realize Thermal Control Smaller comparison (Dynamic Interrupt)
+DECL GLOBAL INT irtArcThresholdInterNr=0 ;ArcSense Check CheckThreshold (Dynamic Interrupt)
+DECL GLOBAL INT irtArcPosAdjust=0 ;ArcSense Resume Restart (Dynamic Interrupt)
+DECL GLOBAL INT irtStepWeld=0 ;Step Weld (Dynamic Interrupt)
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL GLOBAL REAL gArcDryVelFactor=1.00000 ;Set move factor
+DECL GLOBAL REAL gArcBasVelDefinition=0.0183000 ;Help variable for fold content at block selection
+DECL GLOBAL REAL gArcMoveBackMaxDist=0.0 ;Maximal
+DECL GLOBAL REAL gArcSyncIgnitionTimeout=1.10000
+DECL GLOBAL REAL gArcMaxWeaveDelayTime=0.0 ;In Sec Weave Delay Time
+DECL GLOBAL REAL gAmlDistanceOnArcOn=3.00000 ;MultiLayer Distance on ArcOn Min 3mim
+DECL GLOBAL REAL gAmlDistanceOnArcSwi=6.00000 ;MultiLayer Distance on ArcSwi Min 6mim
+DECL GLOBAL REAL gArcThresholdPosWeaveDly=3.80000 ;Threshold of actual wave in mm
+DECL GLOBAL REAL gArcThresholdNegWeaveDly=-3.80000 ;Threshold of actual wave in mm
+DECL GLOBAL REAL gArcStepInterval=0.0 ;Slope distance interval
+DECL GLOBAL REAL gArcActWeldMode=0.0 ;Act WeldMode for RDM driver
+DECL GLOBAL REAL gArcActChannel1=1.00000 ;Act Channel 1 for RDM driver
+DECL GLOBAL REAL gArcActChannel2=3044.00 ;Act Channel 2 for RDM driver
+DECL GLOBAL REAL gArcActChannel3=700.000 ;Act Channel 3 for RDM driver
+DECL GLOBAL REAL gArcActChannel4=0.0 ;Act Channel 4 for RDM driver
+DECL GLOBAL REAL gArcActChannel5=10.0000 ;Act Channel 5 for RDM driver
+DECL GLOBAL REAL gArcActChannel6=412.000 ;Act Channel 6 for RDM driver
+DECL GLOBAL REAL gArcActChannel7=0.0 ;Act Channel 7 for RDM driver
+DECL GLOBAL REAL gArcActChannel8=0.0 ;Act Channel 8 for RDM driver
+DECL GLOBAL REAL gArcWeldingInfo[4,8]
+DECL GLOBAL REAL gArcITrackingSensor[4]
+;*****************************************************************************************
+;CHAR
+;*****************************************************************************************
+DECL GLOBAL CHAR gArcActIlfWelderName[13]
+gArcActIlfWelderName[]="Welder: 1"
+DECL GLOBAL CHAR gArcWdatId[24]
+gArcWdatId[]=" "
+DECL GLOBAL CHAR ArcErrorRemoteRobot[40]
+ArcErrorRemoteRobot[]=" "
+DECL GLOBAL CHAR ArcErrorRemoteMsg[40]
+ArcErrorRemoteMsg[]=" "
+DECL GLOBAL CHAR gArcSeamName[24]
+gArcSeamName[]="No Name"
+DECL GLOBAL CHAR gArcPartName[24]
+gArcPartName[]="No Name"
+DECL GLOBAL CHAR ArcMasterName[24] ; Name des Masters in der KRC_Coop[]
+ArcMasterName[]=" "
+DECL GLOBAL CHAR ATAg_ER_SeamName[24]
+ATAg_ER_SeamName[]=" "
+DECL GLOBAL CHAR ATAg_ER_PointLine[256] ;Temp string Number Line Error on Seam
+ATAg_ER_PointLine[]=" "
+DECL GLOBAL CHAR ATAg_ER_PointLineError[256] ;Flag string Number Line Error on Seam
+ATAg_ER_PointLineError[]=" "
+DECL GLOBAL CHAR ATAg_ER_ProgName[256] ;Temp Program Name Module Error on Seam
+ATAg_ER_ProgName[]=" "
+DECL GLOBAL CHAR ATAg_ER_ProgNameError[256] ;Flag Program Name Module Error on Seam
+ATAg_ER_ProgNameError[]=" "
+DECL GLOBAL CHAR ATAg_ER_GroupName[256] ;Flag Group Name Module Error on Seam
+ATAg_ER_GroupName[]=" "
+DECL GLOBAL CHAR ArcRTErrorOnRobot[80]
+ArcRTErrorOnRobot[]=" "
+DECL GLOBAL CHAR gAmlActLayerStr[80]
+gAmlActLayerStr[]=" "
+DECL GLOBAL CHAR gArcPointName[24]
+gArcPointName[]="$POS_ACT"
+DECL GLOBAL CHAR gArcCommandInfo[24]
+gArcCommandInfo[]="ArcOn"
+DECL GLOBAL CHAR gArcWeldPointName[24]
+gArcWeldPointName[]="XP1"
+;*****************************************************************************************
+;E6POS
+;*****************************************************************************************
+DECL GLOBAL E6POS stArcSenseFailurePointMB
+DECL GLOBAL E6POS gMoveBackAtArcOffPos={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+;*****************************************************************************************
+;NewKRL
+;*****************************************************************************************
+GLOBAL STRUC stArcProcessState_T BOOL ProcessEnabled,ProzessActive,WeldingActive,PreDefDone
+DECL GLOBAL stArcProcessState_T stArcProcessState={ProcessEnabled FALSE,ProzessActive FALSE,WeldingActive FALSE,PreDefDone FALSE}
+;*****************************************************************************************
+;MoveScratch Feature
+;*****************************************************************************************
+GLOBAL STRUC stMoveScratch_T BOOL Enable,BeforeArcOn,REAL DistanceFwd,DistanceBwd,Speed,INT Repetition,WireFeedTime
+DECL GLOBAL stMoveScratch_T stMoveScratch={Enable FALSE,BeforeArcOn FALSE,DistanceFwd 5.00000,DistanceBwd 5.00000,Speed 1.00000,Repetition 3,WireFeedTime 0}
+GLOBAL STRUC stErrorDistance_T enArcErrorMotion_T ActIgnStrat,ActWeldStrat,BOOL ErrorArcOn,BreakState,REAL Error,NewIgnition,ReduceSpeed
+DECL GLOBAL stErrorDistance_T stErrorDistance={ActIgnStrat #None,ActWeldStrat #None,ErrorArcOn FALSE,BreakState FALSE,Error 0.0,NewIgnition 0.500000,ReduceSpeed -1.50000}
+DECL GLOBAL REAL gArcMoveScratchMaxDist=10.0000
+DECL GLOBAL E6POS gMoveScratchInitPos={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL E6POS gMoveScratchSavePos={X -11.9895372,Y -39.1090965,Z 0.0753565356,A -179.999985,B -8.85389381E-05,C -5.89076371E-05,S 'B00010110',T 'B00010010',E1 1.01376E+06,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL E6POS gMoveScratchFwdPos={X -0.00203403574,Y -26.3066406,Z 0.0483182184,A -179.999969,B -5.46097726E-05,C -0.000167404447,S 'B00010110',T 'B00010001',E1 1.01412E+06,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL E6POS gMoveScratchBwdPos={X -16.3814850,Y -39.1091347,Z 0.0591735728,A -179.999985,B -8.78563878E-05,C -5.65092E-05,S 'B00010110',T 'B00010010',E1 1.01376E+06,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL FRAME gMoveScratchFrame={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+;*****************************************************************************************
+;Std Backward Feature
+;*****************************************************************************************
+GLOBAL STRUC stPosSave_T BOOL Overflow,INT Count,REAL DistCount,DistDiff
+DECL GLOBAL stPosSave_T stPosSave={Overflow FALSE,Count 6,DistCount 15.1031990,DistDiff 5.60828781}
+DECL GLOBAL E6POS gArcSavePos[20]
+DECL GLOBAL REAL gArcSaveDist[20]
+DECL GLOBAL REAL gArcSaveTechVal[20]
+DECL GLOBAL BOOL gArcEnableStdBwd=TRUE
+DECL GLOBAL BOOL gArcMoveBackStd=TRUE
+DECL GLOBAL REAL gArcPosSaveDistance=2.00000
+DECL GLOBAL E6POS gArcE6PosNull={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL E6POS gArcStdBackPos={X -11.9895372,Y -39.1090965,Z 0.0753565356,A -179.999985,B -8.85389381E-05,C -5.89076371E-05,S 'B00010110',T 'B00010010',E1 1.01376E+06,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL GLOBAL E6POS gArcStdBackPosStart={X -5.02059269,Y -39.1096611,Z 0.100823618,A -180.000,B -8.90857918E-05,C -1.02269451E-05,S 'B00010110',T 'B00010010',E1 1.01376E+06,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+;*****************************************************************************************
+;StartFromOffset Feature
+;*****************************************************************************************
+DECL GLOBAL REAL gArcPosDiff=0.0
+;*****************************************************************************************
+;Step Seam Feature
+;*****************************************************************************************
+GLOBAL ENUM enArcStepWeldType_T None,SetDistance,SetStepLength,UntilArcOff
+GLOBAL STRUC stArcStepDat_T BOOL Active,enArcStepWeldType_T Type,REAL ShiftDist,TotalDist,WeldDist,StepDist,INT StepsNumber
+GLOBAL STRUC stArcStepWeldInfo_T enArcStepWeldType_T Type,BOOL WeldActive,SwiExecuted,REAL ShiftDist,TotalDist,WeldDist,NotWeldDist,DistArcOn,NextCheckLength,LastWeldOnDist,INT StepsNumber,StepCount
+DECL GLOBAL stArcStepWeldInfo_T stArcStepWeldInfo={Type #None,WeldActive FALSE,SwiExecuted FALSE,ShiftDist 0.0,TotalDist 0.0,WeldDist 0.0,NotWeldDist 0.0,DistArcOn 0.0,NextCheckLength 0.0,LastWeldOnDist 0.0,StepsNumber 0,StepCount 0}
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+DECL GLOBAL stPointName_T gArcPointInfo={ProgName[] "L0001_S1_CWGMA_ISC",PointName[] "WPV",SNR 0,Command #None}
+;*****************************************************************************************
+;ARRAY
+;*****************************************************************************************
+DECL GLOBAL stPointName_T gArcPointNames[3]
+gArcPointNames[1]={PointName[] "$POS_ACT"} ;ArcOn Point Name (RDM Driver)
+gArcPointNames[2]={PointName[] "XP3"} ;ArcSwi Toggle Point Name (RDM Driver)
+gArcPointNames[3]={PointName[] " "} ;ArcSwi Toggle Point Name (RDM Driver)
+DECL GLOBAL stAdvError_T gArcAdvError[5]
+gArcAdvError[1]={MyError FALSE,ErrorDistance 0.0,ArcMode 0}
+gArcAdvError[2]={MyError FALSE,ErrorDistance 0.0,ArcMode 0}
+gArcAdvError[3]={MyError FALSE,ErrorDistance 0.0,ArcMode 0}
+gArcAdvError[4]={MyError FALSE,ErrorDistance 0.0,ArcMode 0}
+gArcAdvError[5]={MyError FALSE,ErrorDistance 0.0,ArcMode 0}
+DECL GLOBAL stWeld_T stArcErrorWeldParams[5]
+stArcErrorWeldParams[1]={JobModeId[] " ",ParamSetId[] " ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+stArcErrorWeldParams[2]={JobModeId[] " ",ParamSetId[] " ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+stArcErrorWeldParams[3]={JobModeId[] " ",ParamSetId[] " ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+stArcErrorWeldParams[4]={JobModeId[] " ",ParamSetId[] " ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+stArcErrorWeldParams[5]={JobModeId[] " ",ParamSetId[] " ",Velocity 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL stWeave_T stArcErrorWeaveParams[5]
+stArcErrorWeaveParams[1]={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0}
+stArcErrorWeaveParams[2]={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0}
+stArcErrorWeaveParams[3]={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0}
+stArcErrorWeaveParams[4]={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0}
+stArcErrorWeaveParams[5]={Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0}
+DECL GLOBAL stArcStrategy_T stArcTeamIgnStrategy[10]
+stArcTeamIgnStrategy[1]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[2]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[3]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[4]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[5]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[6]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[7]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[8]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[9]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+stArcTeamIgnStrategy[10]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+DECL GLOBAL stArcStrategy_T stArcTeamWeldStrategy[10]
+stArcTeamWeldStrategy[1]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[2]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[3]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[4]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[5]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[6]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[7]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[8]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[9]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+stArcTeamWeldStrategy[10]={MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+DECL GLOBAL stArcTcState_T stArcTcState[8]
+stArcTcState[1]={ExeStep FALSE,TcSet #None,IntComp #Greater,Threshold 0.0}
+stArcTcState[2]={ExeStep FALSE,TcSet #None,IntComp #Greater,Threshold 0.0}
+stArcTcState[3]={ExeStep FALSE,TcSet #None,IntComp #Smaller,Threshold 0.0}
+stArcTcState[4]={ExeStep FALSE,TcSet #None,IntComp #Smaller,Threshold 0.0}
+stArcTcState[5]={ExeStep FALSE,TcSet #None,IntComp #Smaller,Threshold 0.0}
+stArcTcState[6]={ExeStep FALSE,TcSet #None,IntComp #Smaller,Threshold 0.0}
+stArcTcState[7]={ExeStep FALSE,TcSet #None,IntComp #Greater,Threshold 0.0}
+stArcTcState[8]={ExeStep FALSE,TcSet #None,IntComp #Greater,Threshold 0.0}
+DECL GLOBAL stArcSenseSQ_T gArcSenseParam[2]
+gArcSenseParam[1]={Process[] "SideAndHeight",KpSide 0.200000,KiSide 0.0,TaSide 1.00000,KpHeight 0.200000,KiHeight 0.0,TaHeight 1.00000,DeadZoneSide 0.01000000,DeadZoneHeight 0.01000000,AsymetricHeightUp 1.00000,AsymetricHeightDown 1.00000,SanityValue 0.300000,TrigWindowPerc 0.200000,TrigWindowPercZero 0.300000,WeldBreakDecay 375.000,WeldBreakMax 10.0000,HeightCycle 0.0,HeightRefCycle 0.0}
+gArcSenseParam[2]={Process[] "Height",KpSide 0.0,KiSide 0.0,TaSide 0.0,KpHeight 0.200000,KiHeight 0.01000000,TaHeight 1.00000,DeadZoneSide 0.0,DeadZoneHeight 0.01000000,AsymetricHeightUp 1.00000,AsymetricHeightDown 1.00000,SanityValue 0.300000,TrigWindowPerc 0.200000,TrigWindowPercZero 0.300000,WeldBreakDecay 375.000,WeldBreakMax 10.0000,HeightCycle 200.000,HeightRefCycle 400.000}
+;*****************************************************************************************
+;Advanced Monitoring PlugIn
+;*****************************************************************************************
+DECL GLOBAL REAL gArcMonOModiCoding=0.0
+DECL GLOBAL REAL gArcMonOChannel1=0.0
+DECL GLOBAL REAL gArcMonOChannel2=0.0
+DECL GLOBAL REAL gArcMonOChannel3=0.0
+DECL GLOBAL REAL gArcMonOChannel4=0.0
+DECL GLOBAL REAL gArcMonOChannel5=0.0
+DECL GLOBAL REAL gArcMonOChannel6=0.0
+DECL GLOBAL REAL gArcMonOChannel7=0.0
+DECL GLOBAL REAL gArcMonOChannel8=0.0
+DECL GLOBAL REAL gArcMonIChannel1=700.000
+DECL GLOBAL REAL gArcMonIChannel2=1209.00
+DECL GLOBAL REAL gArcMonIChannel3=1168.00
+DECL GLOBAL REAL gArcMonIChannel4=0.0
+DECL GLOBAL REAL gArcMonIChannel5=0.0
+DECL GLOBAL REAL gArcMonIChannel6=0.0
+DECL GLOBAL REAL gArcMonIChannel7=0.0
+DECL GLOBAL REAL gArcMonIChannel8=0.0
+;*****************************************************************************************
+;Arc Weave Pattern
+;*****************************************************************************************
+DECL GLOBAL stWeavePattern_T gArcTrapezoidSpl={WeavePatternKey #Trapecoid,Name[] "Trapecoid",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.125000,Y2 0.850000,X3 0.250000,Y3 1.00000,X4 0.375000,Y4 0.850000,X5 0.500000,Y5 0.0,X6 0.625000,Y6 -0.850000,X7 0.750000,Y7 -1.00000,X8 0.875000,Y8 -0.850000,X9 1.00000,Y9 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+DECL GLOBAL stWeavePattern_T gArcUnsymTrapezoidSpl={WeavePatternKey #UnsymetricTrapecoid,Name[] "UnsymetricTrapecoid",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 0.850000,X3 0.200000,Y3 1.00000,X4 0.300000,Y4 0.850000,X5 0.400000,Y5 0.0,X6 0.550000,Y6 -0.850000,X7 0.700000,Y7 -1.00000,X8 0.850000,Y8 -0.850000,X9 1.00000,Y9 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+
+DECL GLOBAL stWeavePattern_T ArcWeavePattern[30]
+ArcWeavePattern[1]={WeavePatternKey #Triangle,Name[] "Triangle",Tech1 {LDelay {Active TRUE},RDelay {Active TRUE},CPS1 {X1 0.0,Y1 0.0,X2 0.250000,Y2 1.00000,X3 0.750000,Y3 -1.00000,X4 1.00000,Y4 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[2]={WeavePatternKey #Trapecoid,Name[] "Trapecoid",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.166666,Y2 1.00000,X3 0.333333,Y3 1.00000,X4 0.500000,Y4 0.0,X5 0.666666,Y5 -1.00000,X6 0.833333,Y6 -1.00000,X7 1.00000,Y7 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[3]={WeavePatternKey #UnsymetricTrapecoid,Name[] "UnsymetricTrapecoid",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 1.00000,X3 0.300000,Y3 1.00000,X4 0.500000,Y4 -1.00000,X5 0.900000,Y5 -1.00000,X6 1.00000,Y6 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[4]={WeavePatternKey #Spiral,Name[] "Spiral",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.166666,Y2 1.00000,X3 0.333333,Y3 1.00000,X4 0.666666,Y4 -1.00000,X5 0.833333,Y5 -1.00000,X6 1.00000,Y6 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 -1.00000,X2 0.0833330,Y2 -1.00000,X3 0.416666,Y3 1.00000,X4 0.580000,Y4 1.00000,X5 0.916666,Y5 -1.00000,X6 1.00000,Y6 -1.00000},FCTCTRL {GEOREF #X}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[5]={WeavePatternKey #Double8,Name[] "Double8",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.125000,Y2 0.500000,X3 0.250000,Y3 1.00000,X4 0.375000,Y4 0.500000,X5 0.500000,Y5 0.0,X6 0.625000,Y6 -0.500000,X7 0.750000,Y7 -1.00000,X8 0.875000,Y8 -0.500000,X9 1.00000,Y9 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.125000,Y2 0.500000,X3 0.250000,Y3 0.0,X4 0.375000,Y4 -0.500000,X5 0.500000,Y5 0.0,X6 0.625000,Y6 0.500000,X7 0.750000,Y7 0.0,X8 0.875000,Y8 -0.500000,X9 1.00000,Y9 0.0},FCTCTRL {GEOREF #X}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[6]={WeavePatternKey #OnSeam,Name[] "OnSeam",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 1.00000,Y2 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.166666,Y2 1.00000,X3 0.333333,Y3 1.00000,X4 0.500000,Y4 0.0,X5 0.666666,Y5 -1.00000,X6 0.833333,Y6 -1.00000,X7 1.00000,Y7 0.0},FCTCTRL {GEOREF #X}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[7]={WeavePatternKey #EdgeBottom,Name[] "EdgeBottom",Tech1 {LDelay {Active TRUE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 -1.00000,X3 0.200000,Y3 -1.00000,X4 0.300000,Y4 0.0,X5 0.500000,Y5 0.0,X6 0.550000,Y6 0.0,X7 0.600000,Y7 1.00000,X8 0.700000,Y8 1.00000,X9 0.800000,Y9 0.0,X10 0.900000,Y10 0.0},CPS2 {X1 1.00000,Y1 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active TRUE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 1.00000,X3 0.200000,Y3 1.00000,X4 0.300000,Y4 0.0,X5 0.500000,Y5 0.0,X6 0.550000,Y6 0.0,X7 0.600000,Y7 1.00000,X8 0.700000,Y8 1.00000,X9 0.800000,Y9 0.0,X10 0.900000,Y10 0.0},CPS2 {X1 1.00000,Y1 0.0},FCTCTRL {GEOREF #Z}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[8]={WeavePatternKey #EdgeTop,Name[] "EdgeTop",Tech1 {LDelay {Active TRUE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 1.00000,X3 0.200000,Y3 1.00000,X4 0.300000,Y4 0.0,X5 0.500000,Y5 0.0,X6 0.550000,Y6 0.0,X7 0.600000,Y7 -1.00000,X8 0.700000,Y8 -1.00000,X9 0.800000,Y9 0.0,X10 0.900000,Y10 0.0},CPS2 {X1 1.00000,Y1 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active TRUE},CPS1 {X1 0.0,Y1 0.0,X2 0.100000,Y2 1.00000,X3 0.200000,Y3 1.00000,X4 0.300000,Y4 0.0,X5 0.500000,Y5 0.0,X6 0.550000,Y6 0.0,X7 0.600000,Y7 1.00000,X8 0.700000,Y8 1.00000,X9 0.800000,Y9 0.0,X10 0.900000,Y10 0.0},CPS2 {X1 1.00000,Y1 0.0},FCTCTRL {GEOREF #Z}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[9]={WeavePatternKey #DynamicTrapecoid,Name[] "DynamicTrapecoid",Tech1 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0,X7 0.0,Y7 0.0,X8 0.0,Y8 0.0,X9 0.0,Y9 0.0,X10 0.0,Y10 0.0},CPS2 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0},FCTCTRL {GEOREF #Y}},Tech2 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}},Tech3 {LDelay {Active FALSE},RDelay {Active FALSE},CPS1 {X1 0.0,Y1 0.0,X2 0.0,Y2 0.0,X3 0.0,Y3 0.0,X4 0.0,Y4 0.0,X5 0.0,Y5 0.0,X6 0.0,Y6 0.0},FCTCTRL {GEOREF #NONE}}}
+ArcWeavePattern[10]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[11]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[12]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[13]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[14]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[15]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[16]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[17]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[18]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[19]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[20]={WeavePatternKey #None,Name[] " "}
+ArcWeavePattern[21]={WeavePatternKey #UserDefined1,Name[] "UserDefined1"}
+ArcWeavePattern[22]={WeavePatternKey #UserDefined2,Name[] "UserDefined2"}
+ArcWeavePattern[23]={WeavePatternKey #UserDefined3,Name[] "UserDefined3"}
+ArcWeavePattern[24]={WeavePatternKey #UserDefined4,Name[] "UserDefined4"}
+ArcWeavePattern[25]={WeavePatternKey #UserDefined5,Name[] "UserDefined5"}
+;*****************************************************************************************
+;Interrupts (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT irtArcResumeOnError=4 ;For next restart process
+DECL GLOBAL CONST INT irtFeature1=5 ;Generic Feature Interrupt
+DECL GLOBAL CONST INT irtFeature2=6 ;Generic Feature Interrupt
+DECL GLOBAL CONST INT irtArcConditionWeld=7 ;Condition Control(Input and Robot Team)
+DECL GLOBAL CONST INT irtArcConditionRestart=8 ;Condition ReStart
+DECL GLOBAL CONST INT irtArcConditionStrategy=9 ;Condition Move
+DECL GLOBAL CONST INT irtArcOnlineOpt=10 ;Online Optimization
+DECL GLOBAL CONST INT irtArcPosSave=11 ;Save Postion
+;*****************************************************************************************
+;Interrupts SPS (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT irtsArcCollisionCheck=4 ;Interrupt for collision device independent from selected user program
+DECL GLOBAL CONST INT irtArcWeaveSideLeft=5 ;Interrupt for Weave Left Side
+DECL GLOBAL CONST INT irtArcWeaveSideRight=6 ;Interrupt for Weave Right Side
+DECL GLOBAL CONST INT irtArcToggleWatchdog=7 ;Interrupt for Toggle Watchdog
+;*****************************************************************************************
+;Cycflags (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT cfArcConditionWeld=241 ;Global Condition
+DECL GLOBAL CONST INT cfArcControlInput=242 ;Recognizing of missing signals
+DECL GLOBAL CONST INT cfArcControlRemote=243 ;Recognizing of Error on Remote Robot
+DECL GLOBAL CONST INT cfArcConditionRestart=244 ;Move on Position from Error Strategy
+DECL GLOBAL CONST INT cfArcConditionStrategy=245 ;Restart after one error ArcOn
+DECL GLOBAL CONST INT cfArcRestartRSISub=246 ;ArcSense Restart RSI
+DECL GLOBAL CONST INT cfArcWeaveEdgeCfNr=247 ;Realize delayed weaving
+DECL GLOBAL CONST INT cfArcPosWeaveDelayTopNr=249 ;Realize weave Delay top
+DECL GLOBAL CONST INT cfArcNegWeaveDelayTopNr=250 ;Realize weave Delay top
+DECL GLOBAL CONST INT cfArcCollisionCheck=251 ;Collision Condition
+;*****************************************************************************************
+;Timer (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT ctArcSyncTimerIndex=19 ;Sync Ignition Error Timer
+DECL GLOBAL CONST INT ctArcWeldingOnTimeout=21 ;Sync Ignition Error Timer
+;*****************************************************************************************
+;Mechanical function generator (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT ctArcMechGenerator1=1 ;Mechanical function generator1 (Default : 1)
+DECL GLOBAL CONST INT ctArcMechGenerator2=2 ;Mechanical function generator2 (Default : 2)
+DECL GLOBAL CONST INT ctArcMechGenerator3=3 ;Mechanical function generator3 (Default : 3)
+;*****************************************************************************************
+;INT (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST INT cArcOvAfterCollission=10 ;Default
+DECL GLOBAL CONST INT cArcPreDefinitionTime=-90 ;[ms] SettlingTime for Ignition in Trigger command
+DECL GLOBAL CONST INT cArcTPSIHeartMaxDelay=1000 ;Time Out Heart Beat
+DECL GLOBAL CONST INT cArcTimeHeartDelta=200 ;Resolve problems if SubMit have long cycle
+DECL GLOBAL CONST INT cArsMultilayerY=1 ;$SEN_PREA_C[] ArcSense Y TTS for Multilayer
+DECL GLOBAL CONST INT cArsMultilayerZ=2 ;$SEN_PREA_C[] ArcSense Z TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerX=30 ;$SEN_PREA_C[] SeamTackTracking X TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerY=31 ;$SEN_PREA_C[] SeamTackTracking Y TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerZ=32 ;$SEN_PREA_C[] SeamTackTracking Z TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerA=33 ;$SEN_PREA_C[] SeamTackTracking A TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerB=34 ;$SEN_PREA_C[] SeamTackTracking B TTS for Multilayer
+DECL GLOBAL CONST INT cSttMultilayerC=35 ;$SEN_PREA_C[] SeamTackTracking C TTS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerX=51 ;$SEN_PREA_C[] SeamTackTracking X ACT_POS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerY=52 ;$SEN_PREA_C[] SeamTackTracking Y ACT_POS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerZ=53 ;$SEN_PREA_C[] SeamTackTracking Z ACT_POS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerA=54 ;$SEN_PREA_C[] SeamTackTracking A ACT_POS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerB=55 ;$SEN_PREA_C[] SeamTackTracking B ACT_POS for Multilayer
+DECL GLOBAL CONST INT cSttPosActMultilayerC=56 ;$SEN_PREA_C[] SeamTackTracking C ACT_POS for Multilayer
+DECL GLOBAL CONST INT cArsRsiOk=0 ;ArcSence RSi Status OK
+DECL GLOBAL CONST INT cMaxDiagNr=500 ;Maximum Dialog array
+DECL GLOBAL CONST INT cMaxDiagFiles=100 ;Maximum Dialog files
+DECL GLOBAL CONST INT cTimeOutExclude=60 ;TimeOut Exclude Collision Monitoring
+DECL GLOBAL CONST INT cMaxLayerNumber=99 ;Maximum number of layers in MultilayerBlock
+DECL GLOBAL CONST INT cArcUserFigure1=21 ;User1 pattern figure
+DECL GLOBAL CONST INT cArcUserFigure2=22 ;User2 pattern figure
+DECL GLOBAL CONST INT cArcUserFigure3=23 ;User3 pattern figure
+DECL GLOBAL CONST INT cArcUserFigure4=24 ;User4 pattern figure
+DECL GLOBAL CONST INT cArcUserFigure5=25 ;User5 pattern figure
+DECL GLOBAL CONST INT cArcInMsgShowState=1 ;Bit State Show Message Nr.
+DECL GLOBAL CONST INT cArcInMsgShowQuit=2 ;Bit Quit Show Message Nr.
+DECL GLOBAL CONST INT cArcInMsgShowDialog=3 ;Bit Dialog Show Message Nr.
+DECL GLOBAL CONST INT cArcInMsgClear=4 ;Bit Set Msg Clear
+DECL GLOBAL CONST INT cArcInMsgDialogAnswerS=5 ;Bit Start: Set Dialog Answer Bit5 to Bit8
+DECL GLOBAL CONST INT cArcInMsgDialogAnswerE=8 ;Bit End: Set Dialog Answer Bit5 to Bit8
+DECL GLOBAL CONST INT cArcInMsgNumberResetS=9 ;Bit Start: Reset Msg Number Bit9 to Bit32
+DECL GLOBAL CONST INT cArcInMsgNumberResetE=32 ;Bit End: Reset Msg Number Bit9 to Bit32
+DECL GLOBAL CONST INT cArcOutMsgPresentState=1 ;Bit State Show Message Nr.
+DECL GLOBAL CONST INT cArcOutMsgPresentQuit=2 ;Bit Quit Show Message Nr.
+DECL GLOBAL CONST INT cArcOutMsgPresentDialog=3 ;Bit Dialog Show Message Nr.
+DECL GLOBAL CONST INT cArcOutMsgDialogKeyS=5 ;Bit Start: Dialog Key Number Bit5 to Bit8
+DECL GLOBAL CONST INT cArcOutMsgDialogKeyE=8 ;Bit End: Dialog Key Number Bit5 to Bit8
+DECL GLOBAL CONST INT cArcOutMsgPresentNumberS=9 ;Bit Start: Reset Msg Number Bit9 to Bit32
+DECL GLOBAL CONST INT cArcOutMsgPresentNumberE=32 ;Bit End: Reset Msg Number Bit9 to Bit32
+DECL GLOBAL CONST INT cArcBinzelWatchdogTime=500 ;Binzel Watchdogtime in ms
+DECL GLOBAL CONST INT cArcBinzelWatchdogMax=1000 ;Binzel Watchdogtime max. in ms
+DECL GLOBAL CONST INT cOvApplDefault=100 ;$OV_APPL Default Value
+DECL GLOBAL CONST INT cAawMaxDiagFiles=100 ;Adaptive Welding Maximum number of diagnostic files do save
+DECL GLOBAL CONST INT cAawStrikeEnable='B0100' ;Adaptive Welding Active Strike 
+DECL GLOBAL CONST INT cAawWeldingEnable='B0010' ;Adaptive Welding Active Welding
+DECL GLOBAL CONST INT cAawCraterEnable='B0001' ;Adaptive Welding Active Crater
+DECL GLOBAL CONST INT cMaxMoveBackDistance=50 ;Maximum Move-back Distance at ArcOff (mm)
+DECL GLOBAL CONST INT cIntMax=2147483647 ;Integer Maximum Value
+DECL GLOBAL CONST INT cPsMsgNr=10000 ;MsgNr PowerSource Messages
+;*****************************************************************************************
+;BOOL (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST BOOL cArcSyncErrorOption=TRUE
+;*****************************************************************************************
+;REAL (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST REAL cArcTPSiModeRecoveryTime=0.0120000 ;ArcMode has to be stable before channels would be set
+DECL GLOBAL CONST REAL cArcDistSplCondStop=1.00000 ;[mm] Distance for conditional stop at ArcOn
+DECL GLOBAL CONST REAL cArcNDistSplCondStop=-1.00000 ;[mm] Distance for trigger at ArcOff in Spline
+DECL GLOBAL CONST REAL cArcSyncWaitTime=0.100000 ;sec
+DECL GLOBAL CONST REAL cArcSlopeTimerInterval=100.000
+DECL GLOBAL CONST REAL cArcEpsArcOffStop=-0.00100000 ;[mm] Distance for conditional stop at ArcOff
+DECL GLOBAL CONST REAL cArcDistArcOffRedCorr=-4.00000 ;Trigger distance to stop RSI Process by ArcOff
+DECL GLOBAL CONST REAL cArcWeaveMinAmplitude=0.200000 ;Minimum Weave Amplitude
+DECL GLOBAL CONST REAL cArcWeaveMaxAmplitude=25.0000 ;Maximum Weave Amplitude
+DECL GLOBAL CONST REAL cArcWeaveMinLength=0.200000 ;Minimum Weave Length
+DECL GLOBAL CONST REAL cArcWeaveMaxLength=25.0000 ;Maximum Weave Length
+DECL GLOBAL CONST REAL cArcWeaveMinAngle=-179.900 ;Minimum Weave Angle
+DECL GLOBAL CONST REAL cArcWeaveMaxAngle=179.900 ;Maximum Weave Angle
+DECL GLOBAL CONST REAL cArcWeaveMinDelayTime=0.0 ;Minimum Weave DelayTime
+DECL GLOBAL CONST REAL cArcWeaveMaxDelayTime=2.00000 ;Maximum Weave DelayTime
+DECL GLOBAL CONST REAL cArcSlopeInterval=1.00000 ;Distance  to slopen
+DECL GLOBAL CONST REAL cArcVelocityRaport=0.0167000 ;Velocity Raport
+DECL GLOBAL CONST REAL cArcApplVelocityMax=0.0250000 ;Max Velocity for $VEL_APPL (greater than this value there are problems with SPLINE !!!!)
+DECL GLOBAL CONST REAL cArcWeaveFrequencyMin=0.0300000 ;Minimum Weave Frequency
+DECL GLOBAL CONST REAL cArcWeaveFrequencyMax=15.5000 ;Maximum Weave Frequency
+DECL GLOBAL CONST REAL cArcVelApplMin=0.000900000 ;Minimum $VEL_APPL set default:[0.0009]
+DECL GLOBAL CONST REAL cArcVelApplMax=3.00000 ;Maximum $VEL_APPL set default:[3.0000]
+;*****************************************************************************************
+;ENUMS (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST KRLMSGOPT_T Opt_NOVLSTOP_NOLOG={VL_STOP FALSE,CLEAR_P_RESET TRUE,LOG_TO_DB FALSE} ;Message option without VLSTOP and without Log
+DECL GLOBAL CONST KRLMSGOPT_T Opt_VLSTOP_NOLOG={VL_STOP TRUE,CLEAR_P_RESET TRUE,LOG_TO_DB FALSE} ;Message option with VLSTOP and without Log
+DECL GLOBAL CONST KRLMSGOPT_T Opt_NOVLSTOP_LOG={VL_STOP FALSE,CLEAR_P_RESET TRUE,LOG_TO_DB TRUE} ;Message option without VLSTOP and with Log
+DECL GLOBAL CONST KRLMSGOPT_T Opt_VLSTOP_LOG={VL_STOP TRUE,CLEAR_P_RESET TRUE,LOG_TO_DB TRUE} ;Message option with VLSTOP and with Log
+DECL GLOBAL CONST stArcStateInt_T stArcStateInt={Nothing 101,Init 102,Error 103,BreakStateMachine 104,CheckRobotReady 105,CheckPowerSource 106,CheckPeriphery 107,PrepIgnition 108,Ignition 109,WaitArcStable 110,RobotNotRdy 111,PowerSourceNotRdy 112,PeriNotRdy 113,NoGasFlow 114,IgnitionFailed 115,IgnitionErrorRestart 116,IgnitionErrorStrategy 117,Welding 118,WeldingDone 119,StopWelding 120,GasPostFlow 121,StopGasFlow 122,RestartAfterError 123}
+DECL GLOBAL CONST stArcStateStr_T stArcStateStr={Nothing[] "101",Init[] "102",Error[] "103",BreakStateMachine[] "104",CheckRobotReady[] "105",CheckPowerSource[] "106",CheckPeriphery[] "107",PrepIgnition[] "108",Ignition[] "109",WaitArcStable[] "110",RobotNotRdy[] "111",PowerSourceNotRdy[] "112",PeriNotRdy[] "113",NoGasFlow[] "114",IgnitionFailed[] "115",IgnitionErrorRestart[] "116",IgnitionErrorStrategy[] "117",Welding[] "118",WeldingDone[] "119",StopWelding[] "120",GasPostFlow[] "121",StopGasFlow[] "122",RestartAfterError[] "123"}
+;*****************************************************************************************
+;CHAR (from ArcConstants)
+;*****************************************************************************************
+DECL GLOBAL CONST CHAR gArcVarIsSimulation[24]
+gArcVarIsSimulation[]="@IsSimulationEnvironment"
+DECL GLOBAL CONST CHAR gArcVarIsWorkVisual[13]
+gArcVarIsWorkVisual[]="@IsWorkVisual"
+DECL GLOBAL CONST CHAR gArcVarIsKukaSim[11]
+gArcVarIsKukaSim[]="@IsKukaSim"
+;*****************************************************************************************
+;Arc General (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL BOOL gArcDiagOn=TRUE ;enables/disables diag function
+DECL GLOBAL BOOL gArcCircTypeSetEnable=TRUE ;enables/disables Circ Type field in InlineForm
+DECL GLOBAL BOOL gArcNoQuitOnSplStart=FALSE ;enables/disables Quit Message on Spline Start when Ignition Error Strategy BackToSplineStart is active
+DECL GLOBAL BOOL gArcDontSwitch=FALSE ;enables/disables Switch Parameter on ArcSwitch
+DECL GLOBAL BOOL gArcGhostMode=FALSE ;enables/disables ArcProcess simulation
+DECL GLOBAL REAL gArcGasPulseLength=5.00000 ;Maximum of Gas purge by softkey Range from 1 to 20 [s]
+DECL GLOBAL REAL gArcFactorFastSpeed=5.00000 ;Speed Factor for Advanced Error Recovery
+DECL GLOBAL REAL gArcSpeedMoveBack=0.01000000 ;Speed Spline MoveBackward
+DECL GLOBAL REAL gArcSpeedMoveBackStart=0.0200000 ;Speed Spline Move to spline start
+DECL GLOBAL REAL gArcTechValThreshold=0.940000 ;Adapted [Allowed up to 94 % ~ not more as 3.5 Hz]
+DECL GLOBAL BOOL gArcPreDefTimeEnable=FALSE ;Enable WAIT SEC pre Definition Time [DEFAULT = FALSE]
+DECL GLOBAL BOOL gArcRsiWeaving=FALSE ;TRUE -> RSI weaving, FALSE -> Function generator weaving
+DECL GLOBAL BOOL gArcWaitWhenCold=FALSE ;(Default: FALSE) Wait (preflowTime, startTime, craterTime, postflowTime) when cold
+DECL GLOBAL BOOL gArcOnCircEnabled=FALSE ;(Default: FALSE) Enables CIRC Command for ArcOn
+DECL GLOBAL BOOL gArcOffColdQuitMsg=TRUE ;(Default: TRUE) Quitt Message on ArcOff when Seam finished cold
+DECL GLOBAL BOOL gArcDiagCallEnable=FALSE ;(Default: FALSE) Show on arctech diagnostic log Call Up Names
+DECL GLOBAL INT gArcPlugInUsrSLenCtrl=20 ;UserLevel Setting for PlugIn SeamLengthCtrl (0 = Disabled) (20 = Expert) (30 = Admin)
+DECL GLOBAL BOOL gArcSignalGroupSelection=TRUE ;(Default: TRUE) Signal Type from to (TRUE) Signal group selection (FALSE) Signal group set bit to bit
+;*****************************************************************************************
+;Arc Tech Global Wdats Variables (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL CHAR gArcGlobalPath[128] ;Path for Recovery User program
+gArcGlobalPath[]="KRC:\R1\TP\ArcTech\ArcUser\UserArcGlobalWDats.dat" ;DEFAULT  - "KRC:\R1\TP\ArcTech\ArcUser\UserArcGlobalWDats.dat"
+;*****************************************************************************************
+;Arc Tech Error Recovery Variables (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL CHAR ATAg_ER_Path[128] ;Path for Recovery User program
+ATAg_ER_Path[]="KRC:\R1\Program\ArcTechErrorRecovery" ;DEFAULT  - "KRC:\R1\Program\ArcTeErrorRecovery"
+DECL GLOBAL CHAR ATAg_ER_TemplatePath[128] ;Path for Recovery Template
+ATAg_ER_TemplatePath[]="KRC:\R1\Program\ArcTechErrorRecovery\Template" ;DEFAULT  - "KRC:\R1\Program\ArcTechErrorRecovery\Template"
+DECL GLOBAL CHAR ATAg_ER_ServicePosPath[128] ;Path for ServicePosition
+ATAg_ER_ServicePosPath[]="KRC:\R1\Program\ArcTechErrorRecovery\ServicePosition" ;DEFAULT  - "KRC:\R1\Program\ArcTechErrorRecovery\ServicePosition" 
+DECL GLOBAL CHAR ATAg_ER_ServPosPrgName[24] ; Name of the Service Position Module
+ATAg_ER_ServPosPrgName[]="ServicePosition" ;DEFAULT  - "ServicePosition"
+;*****************************************************************************************
+;Arc Trace Recording (Starts at ArcOn - Ends at ArcOff) (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL BOOL gArcTraceOn=FALSE ;enables/disables trace function
+DECL GLOBAL CHAR gArcTraceName[24]
+gArcTraceName[]="Arc" ;Trace Name = Arc + SeamName
+DECL GLOBAL CHAR gArcTraceDef[64]
+gArcTraceDef[]="Tracedef_KRC_IpoActualValues.xml" ;Used TraceDef
+DECL GLOBAL BOOL gArcKukaSimTraceOn=TRUE ;enables/disables trace function for KUKA.Sim
+;*****************************************************************************************
+;ArcTechAdvanced adjustments (from ArcCustom)
+;*****************************************************************************************
+;*****************************************************************************************
+;ArcSense (Tracking) (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL BOOL gArsSideControlOn=TRUE ;enables/disables ArcSense Side Control
+DECL GLOBAL BOOL gArsHeightControlOn=TRUE ;enables/disables ArcSense Height Control
+DECL GLOBAL BOOL gArsSwiDontChangeParam=FALSE ;If true there is no new signal referencing at arc swi when paramter changed
+DECL GLOBAL INT gArsSigQualSensitivity=2 ;For Signal Detection Sensitivity (0 = OFF, 1 = Default, 2 = Lower sensitivity 3 = Lowest sensitivity)
+DECL GLOBAL INT gArsPeriodsCorrSlow=10 ;Periods slower correction after BiasChanged or when find seam middle is active
+DECL GLOBAL REAL gArsSoftStartCtn=0.100000 ;ArcSense SoftStartCounter at Begin max = 1
+DECL GLOBAL REAL gArsMaxCorrWeaveSide=1.00000 ;Maximum Correction Side for one Weave Cycle in mm
+DECL GLOBAL REAL gArsMaxCorrWeaveHeight=1.00000 ;Maximum Correction Height for one Weave Cycle in mm
+DECL GLOBAL REAL gArsControlSelection=0.0 ;Selection of control algroythm
+DECL GLOBAL REAL gArsMinInputValue=0.01000000 ;Minimum Input Value
+DECL GLOBAL INT gArsAmpMaxOutIdx=0 ;Amplitude max reached toggle bit Output Index
+DECL GLOBAL INT gArsMinRefCycleOn=5 ;Minimum reference cycles at ArcOn (2 - 10)
+DECL GLOBAL INT gArsMinRefCycleSwi=3 ;Minimum reference cycles at ArcSwi (2 - 10)
+DECL GLOBAL INT gArsNrCycRefMidVal=4 ;Number of cycles for middle value calculation when new reference (0 - 10) 0 = OFF
+DECL GLOBAL INT gArsMidValRefPercent=100 ;Correction in percent for middle value when new referecne (0 - 100)
+;*****************************************************************************************
+;Arc Adaptive Welding (from ArcCustom)
+;*****************************************************************************************
+DECL GLOBAL INT gArcAwFuncEnable='B0111' ;Adaptive Welding Function  'B0001' = Active Strike ,'B0010' = Active Welding,'B0100' = Active Crater,'B0111' = Active Strike,Welding,Crater
+DECL GLOBAL INT gAawDiagEnable='B0111' ;Adaptive Welding Diagnostic 'B0001' = Active Strike ,'B0010' = Active Welding,'B0100' = Active Crater,'B0111' = Active Strike,Welding,Crater,'B1111' = Active ALL
+DECL GLOBAL enAawFilterType_T gAawFilterType=#Disabled ;#Disabled = Filter Disable #AverageSource = Average Source Value (Return Average Source value)  #CutSourcePeak = Cut Peak Source (Return same Value)
+DECL GLOBAL INT gAawPerCentFilter=100 ;Adaptive Welding Filter input source value Value(0 - 100)
+DECL GLOBAL BOOL gAawConstFrequency=TRUE ;Adaptive Welding Constant Frequency Velocity ... Length
+DECL GLOBAL INT gAawAnalogFactor=10 ;Multiplication factor for analog input ($ANIN[X] * gAawAnalogFactor)
+
+;*****************************************************************************************
+;DECL STRUC
+;*****************************************************************************************
+GLOBAL STRUC stPowerSource_T INT Mode,REAL Channel1,Channel2,Channel3,Channel4,Channel5,Channel6,Channel7,Channel8
+
+;*****************************************************************************************
+;PowerSources Fronius
+;*****************************************************************************************
+;TPS
+;Mode 0 = Program standard
+;Mode 1 = Pulsed arc program
+;Mode 2 = Job mode
+;Mode 3 = Parameter selection internally
+;Mode 4 = Manual
+;Mode 5 = CC/CV
+;TPSI/TWIN
+;Mode 0 = Internal parameter selection
+;Mode 1 = Special 2-step mode characteristics
+;Mode 2 = Job mode
+;Mode 3 = 2-step mode characteristics
+DECL GLOBAL stPowerSource_T stArcInitFroniusTps={Mode 3,Channel1 1.00000,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL stPowerSource_T stArcInitFroniusTpsI={Mode 0,Channel1 1.00000,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL stPowerSource_T stArcInitFroniusTwin={Mode 0,Channel1 1.00000,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+;*****************************************************************************************
+;PowerSources EWM
+;*****************************************************************************************
+DECL GLOBAL stPowerSource_T stArcInitEwm={Mode 1,Channel1 1.00000,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+;*****************************************************************************************
+;PowerSources Kemppi
+;*****************************************************************************************
+DECL GLOBAL stPowerSource_T stArcInitKemppi={Mode 1,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+;*****************************************************************************************
+;PowerSources Lorch
+;*****************************************************************************************
+DECL GLOBAL stPowerSource_T stArcInitLorch={Mode 7,Channel1 1.00000,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+;*****************************************************************************************
+;PowerSources ArcLinkXT
+;*****************************************************************************************
+DECL GLOBAL stPowerSource_T stArcInitArcLinkXT={Mode 0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+;*****************************************************************************************
+;PowerSources Standard
+;*****************************************************************************************
+DECL GLOBAL stPowerSource_T stArcInitStandard={Mode 0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+ENDDAT

@@ -1,0 +1,17 @@
+&ACCESS R2
+&COMMENT ArcTech UserArcMonitoring
+DEFDAT  UserArcMonitoring PUBLIC
+;FOLD [USER SIGNALS] ;Do not delete this Fold -> necessary for ArcMonitoring
+GLOBAL SIGNAL TestSignal1 $IN[1026]  TO $IN[1026]
+GLOBAL SIGNAL TestSignal2 $IN[1026]  TO $IN[1026]
+DECL GLOBAL INT gTestSignal2
+;ENDFOLD [USER SIGNALS]
+;FOLD [USER INT VARIABLES] ;Do not delete this Fold -> necessary for ArcMonitoring
+DECL GLOBAL INT TestInt1=10
+DECL GLOBAL INT TestInt2=20
+;ENDFOLD [USER INT VARIABLES]
+;FOLD [USER REAL VARIABLES] ;Do not delete this Fold -> necessary for ArcMonitoring
+DECL GLOBAL REAL TestReal1=11.1100
+DECL GLOBAL REAL TestReal2=22.2200
+;ENDFOLD [USER REAL VARIABLES]
+ENDDAT

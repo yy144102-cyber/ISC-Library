@@ -1,0 +1,29 @@
+&ACCESS RVO
+&REL 77
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\BUILD FILES
+DEFDAT  CIRCULARTRACK
+
+DECL FDAT FweldA={TOOL_NO 1,BASE_NO 1,IPO_FRAME #BASE}
+DECL FDAT FHOMEA={TOOL_NO 1,BASE_NO 1,IPO_FRAME #BASE,POINT2[] " "}
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "Kuka.MoveDataPtpName=PDAT1; Kuka.MovementDataPdat.apo_mode=#CDIS; Kuka.MovementDataPdat.apo_dist=500; Kuka.MovementData.vel=100; Kuka.MovementData.acc=100; Kuka.MovementData.exax_ign=0; Kuka.VelocityPtp=100; Kuka.BlendingEnabled=False; Kuka.CurrentCDSetIndex=0; Kuka.PointName=P4; Kuka.FrameData.base_no=3; Kuka.FrameData.tool_no=2; Kuka.FrameData.ipo_frame=#BASE; Kuka.FrameData.point2=; Kuka.isglobalpoint=False; Kuka.MoveDataName=CPDAT4; Kuka.MovementData.apo_fac=50; Kuka.MovementData.apo_dist=100; Kuka.MovementData.axis_acc=100; Kuka.MovementData.axis_vel=100; Kuka.MovementData.circ_typ=#BASE; Kuka.MovementData.jerk_fac=50; Kuka.MovementData.ori_typ=#VAR; Kuka.VelocityPath=0.2; ArcTech.WdatVarName=WDAT4; Kuka.APXEnabled=False; Kuka.Logics.Io=51; Kuka.Logics.IoName=Side Gas; Kuka.Logics.State=False; Kuka.Logics.Cont=False "}
+DECL PDAT PPDAT={VEL 50.0000,ACC 100.000,APO_DIST 500.000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL LDAT LCPDAT={VEL 0.200000,ACC 100.000,APO_DIST 100.000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0}
+
+DECL E6POS XhomeA={X -84.8200,Y -55.1600,Z 490.330,A 71.9800,B -19.0300,C 0.790000,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL E6POS XStart={X -49.2403870,Y -8.68241119,Z 10.0000,A 71.9800,B -19.0300,C 0.790000,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL E6POS XMid={X -48.9962349,Y -9.96839714,Z 12.0000,A 71.9800,B -19.0300,C 0.790000,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL E6POS XEnd={X -49.2403870,Y -8.68241119,Z 14.0000,A 71.9800,B -19.0300,C 0.790000,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0} ;fold 
+;FOLD core 1
+DECL stArcDat_T WDAT10={Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "WAAMPlanner",StartTime 0.0,PreFlowTime 0.0,Channel1 1.00000,Channel2 3804.00,Channel3 10.0000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "WAAMPlanner",Velocity 0.01000000,Channel1 1.00000,Channel2 3804.00,Channel3 10.0000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeTime 0.0,SlopeDistance 0.0,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0}}
+DECL stArcDat_T WP10={Info {Version 301020269},Strike {SeamName[] " ",SeamNumber 0},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT12={Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "WAAMPlanner",Velocity 0.01000000,Channel1 1.00000,Channel2 3804.00,Channel3 10.0000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeTime 0.0,SlopeDistance 0.0,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0}}
+DECL stArcDat_T WP12={Info {Version 301020269}}
+DECL stArcDat_T WDATE12={Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "WAAMPlanner",Velocity 0.01000000,Channel1 1.00000,Channel2 3804.00,Channel3 10.0000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeTime 0.0,SlopeDistance 0.0,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0}}
+DECL stArcDat_T WPE12={Info {Version 301020269}}
+DECL stArcDat_T WDAT137={Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "WAAMPlanner",CraterTime 0.600000,PostflowTime 3.00000,Channel1 1.00000,Channel2 3804.00,Channel3 10.0000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeTime 0.0,SlopeDistance 0.0,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0}}
+DECL stArcDat_T WP137={Info {Version 301020269}}
+;ENDFOLD
+DECL PDAT PPDAT1={VEL 100.000,ACC 100.000,APO_DIST 500.000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+ENDDAT

@@ -1,0 +1,1555 @@
+&ACCESS R2
+&REL 5
+&COMMENT Generated from WOV
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcWoV
+DEFDAT  ARCWOVIO PUBLIC
+
+DECL GLOBAL stArcIoOffset_T wArcIoOffset[4]
+wArcIoOffset[1]={Welder {Input 0,Output 0},External {Input 0,Output 0}}
+wArcIoOffset[2]={Welder {Input 0,Output 0},External {Input 0,Output 0}}
+wArcIoOffset[3]={Welder {Input 0,Output 0},External {Input 0,Output 0}}
+wArcIoOffset[4]={Welder {Input 0,Output 0},External {Input 0,Output 0}}
+
+
+;*****************************************************************************************
+;Inputs
+;*****************************************************************************************
+DECL GLOBAL stArcSignal_T wArcInput[4,35]
+wArcInput[1,1]={Active TRUE,SignNr 2001,VarName #NONE,Description[] "Power source ready",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcInput[1,2]={Active TRUE,SignNr 400,VarName #NONE,Description[] "AB System Ready",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcInput[1,3]={Active TRUE,SignNr 2010,VarName #NONE,Description[] "Wire free signal",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2010}}
+wArcInput[1,4]={Active TRUE,SignNr 2004,VarName #NONE,Description[] "Current present",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2004}}
+wArcInput[1,5]={Active TRUE,SignNr 2006,VarName #NONE,Description[] "Main current",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2006}}
+wArcInput[1,6]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,7]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,8]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,9]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,10]={Active TRUE,SignNr 2008,VarName #NONE,Description[] "Collision protection device",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2008}}
+wArcInput[1,11]={Active TRUE,SignNr 407,VarName #NONE,Description[] "AB Wire Available",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}}
+wArcInput[1,12]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,13]={Active TRUE,SignNr 2003,VarName #NONE,Description[] "Weld process active",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2003}}
+wArcInput[1,14]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,15]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,16]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,17]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,18]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,19]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,20]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,21]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,22]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,23]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,24]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,25]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,26]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,27]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,28]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,29]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,30]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,31]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,32]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,33]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,34]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[1,35]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,1]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,2]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,3]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,4]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,5]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,6]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,7]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,8]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,9]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,10]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,11]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,12]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,13]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,14]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,15]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,16]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,17]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,18]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,19]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,20]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,21]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,22]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,23]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,24]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,25]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,26]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,27]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,28]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,29]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,30]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,31]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,32]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,33]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,34]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[2,35]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,1]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,2]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,3]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,4]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,5]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,6]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,7]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,8]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,9]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,10]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,11]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,12]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,13]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,14]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,15]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,16]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,17]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,18]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,19]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,20]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,21]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,22]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,23]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,24]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,25]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,26]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,27]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,28]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,29]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,30]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,31]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,32]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,33]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,34]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[3,35]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,1]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,2]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,3]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,4]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,5]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,6]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,7]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,8]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,9]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,10]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,11]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,12]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,13]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,14]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,15]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,16]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,17]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,18]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,19]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,20]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,21]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,22]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,23]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,24]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,25]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,26]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,27]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,28]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,29]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,30]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,31]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,32]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,33]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,34]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcInput[4,35]={Active FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIRdyWeldSource[4,6]
+wArcIRdyWeldSource[1,1]={Active TRUE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] "$IN[2001]-Power source ready",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}} ;Power source ready
+wArcIRdyWeldSource[1,2]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIRdyWeldSource[1,3]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIRdyWeldSource[1,4]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIRdyWeldSource[1,5]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIRdyWeldSource[1,6]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIRdyWeldSource[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIRdyWeldSource[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIWeldPeriphery[4,6]
+wArcIWeldPeriphery[1,1]={Active TRUE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] "$IN[400]-AB System Ready",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}} ;AB System Ready
+wArcIWeldPeriphery[1,2]={Active TRUE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] "$IN[407]-AB Wire Available",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}} ;AB Wire Available
+wArcIWeldPeriphery[1,3]={Active FALSE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcIWeldPeriphery[1,4]={Active FALSE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcIWeldPeriphery[1,5]={Active FALSE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcIWeldPeriphery[1,6]={Active FALSE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcIWeldPeriphery[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldPeriphery[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIWeldStartMove[4,6]
+wArcIWeldStartMove[1,1]={Active TRUE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] "$IN[2001]-Power source ready",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}} ;Power source ready
+wArcIWeldStartMove[1,2]={Active TRUE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] "$IN[400]-AB System Ready",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}} ;AB System Ready
+wArcIWeldStartMove[1,3]={Active TRUE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] "$IN[407]-AB Wire Available",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}}
+wArcIWeldStartMove[1,4]={Active TRUE,State TRUE,Index 5,SignNr 2006,TimeOut 0.0,VarName #NONE,Description[] "$IN[2006]-Main current",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2006}} ;AB Wire Available
+wArcIWeldStartMove[1,5]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}} ;Main current
+wArcIWeldStartMove[1,6]={Active FALSE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIWeldStartMove[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldStartMove[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIWeldMoving[4,6]
+wArcIWeldMoving[1,1]={Active TRUE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] "$IN[407]-AB Wire Available",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}}
+wArcIWeldMoving[1,2]={Active TRUE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] "$IN[2001]-Power source ready",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}} ;AB Wire Available
+wArcIWeldMoving[1,3]={Active TRUE,State TRUE,Index 5,SignNr 2006,TimeOut 0.0,VarName #NONE,Description[] "$IN[2006]-Main current",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2006}} ;Power source ready
+wArcIWeldMoving[1,4]={Active FALSE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}} ;Main current
+wArcIWeldMoving[1,5]={Active FALSE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}}
+wArcIWeldMoving[1,6]={Active FALSE,State TRUE,Index 11,SignNr 407,TimeOut 0.0,VarName #NONE,Description[] " ",Source #External,SigType #SIN,Offset {Offset 0,SignNr 407}}
+wArcIWeldMoving[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldMoving[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIWeldSeamEnd[4,6]
+wArcIWeldSeamEnd[1,1]={Active TRUE,State FALSE,Index 4,SignNr 2004,TimeOut 0.0,VarName #NONE,Description[] "$IN[2004]-Current present",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2004}} ;Current present
+wArcIWeldSeamEnd[1,2]={Active TRUE,State FALSE,Index 5,SignNr 2006,TimeOut 0.0,VarName #NONE,Description[] "$IN[2006]-Main current",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2006}} ;Main current
+wArcIWeldSeamEnd[1,3]={Active TRUE,State FALSE,Index 13,SignNr 2003,TimeOut 0.0,VarName #NONE,Description[] "$IN[2003]-Weld process active",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2003}} ;Weld process active
+wArcIWeldSeamEnd[1,4]={Active FALSE,State FALSE,Index 4,SignNr 2004,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2004}}
+wArcIWeldSeamEnd[1,5]={Active FALSE,State FALSE,Index 4,SignNr 2004,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2004}}
+wArcIWeldSeamEnd[1,6]={Active FALSE,State FALSE,Index 4,SignNr 2004,TimeOut 0.0,VarName #NONE,Description[] " ",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2004}}
+wArcIWeldSeamEnd[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWeldSeamEnd[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIKeySwitchProcess[4]
+wArcIKeySwitchProcess[1]={Active TRUE,State TRUE,Index 2,SignNr 400,TimeOut 0.0,VarName #NONE,Description[] "$IN[400]-AB System Ready",Source #External,SigType #SIN,Offset {Offset 0,SignNr 400}}
+wArcIKeySwitchProcess[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIKeySwitchProcess[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIKeySwitchProcess[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIWireFreeDetection[4]
+wArcIWireFreeDetection[1]={Active TRUE,State FALSE,Index 3,SignNr 2010,TimeOut 0.0,VarName #NONE,Description[] "$IN[2010]-Wire free signal",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2010}}
+wArcIWireFreeDetection[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWireFreeDetection[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIWireFreeDetection[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIGasFlowAvailable[4]
+wArcIGasFlowAvailable[1]={Active FALSE,State TRUE,Index 7,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIGasFlowAvailable[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIGasFlowAvailable[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIGasFlowAvailable[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcICollisionMonitoring[4]
+wArcICollisionMonitoring[1]={Active TRUE,State TRUE,Index 10,SignNr 2008,TimeOut 0.0,VarName #NONE,Description[] "$IN[2008]-Collision protection device",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2008}}
+wArcICollisionMonitoring[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcICollisionMonitoring[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcICollisionMonitoring[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIStrategyDecision[4]
+wArcIStrategyDecision[1]={Active FALSE,State FALSE,Index 17,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIStrategyDecision[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIStrategyDecision[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIStrategyDecision[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIDecisionValid[4]
+wArcIDecisionValid[1]={Active FALSE,State TRUE,Index 18,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIDecisionValid[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIDecisionValid[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIDecisionValid[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIPowerSourceReady[4]
+wArcIPowerSourceReady[1]={Active TRUE,State TRUE,Index 1,SignNr 2001,TimeOut 0.0,VarName #NONE,Description[] "$IN[2001]-Power source ready",Source #Welder,SigType #SIN,Offset {Offset 0,SignNr 2001}}
+wArcIPowerSourceReady[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIPowerSourceReady[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIPowerSourceReady[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcIHeartBeatTPSi[4]
+wArcIHeartBeatTPSi[1]={Active FALSE,State TRUE,Index 19,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIHeartBeatTPSi[2]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIHeartBeatTPSi[3]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+wArcIHeartBeatTPSi[4]={Active FALSE,State FALSE,Index 0,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+
+
+;*****************************************************************************************
+;Outputs
+;*****************************************************************************************
+DECL GLOBAL stArcSignal_T wArcOutput[4,35]
+wArcOutput[1,1]={Active TRUE,InitState FALSE,SignNr 2000,VarName #NONE,Description[] "Start welding",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2000}}
+wArcOutput[1,2]={Active TRUE,InitState FALSE,SignNr 2008,VarName #NONE,Description[] "Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}}
+wArcOutput[1,3]={Active TRUE,InitState TRUE,SignNr 2011,VarName #NONE,Description[] "Acknowledge power source",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2011}}
+wArcOutput[1,4]={Active TRUE,InitState FALSE,SignNr 398,VarName #NONE,Description[] "Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}}
+wArcOutput[1,5]={Active TRUE,InitState FALSE,SignNr 2009,VarName #NONE,Description[] "Wire feed",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2009}}
+wArcOutput[1,6]={Active TRUE,InitState FALSE,SignNr 2010,VarName #NONE,Description[] "Wire retract",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2010}}
+wArcOutput[1,7]={Active TRUE,InitState TRUE,SignNr 2001,VarName #NONE,Description[] "Robot Ready",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2001}}
+wArcOutput[1,8]={Active TRUE,InitState FALSE,SignNr 399,VarName #NONE,Description[] "Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}}
+wArcOutput[1,9]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,10]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,11]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,12]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,13]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,14]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,15]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,16]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,17]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,18]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,19]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,20]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,21]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,22]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,23]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,24]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,25]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,26]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,27]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,28]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,29]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,30]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,31]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,32]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,33]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,34]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[1,35]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,1]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,2]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,3]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,4]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,5]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,6]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,7]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,8]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,9]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,10]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,11]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,12]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,13]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,14]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,15]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,16]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,17]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,18]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,19]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,20]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,21]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,22]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,23]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,24]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,25]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,26]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,27]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,28]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,29]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,30]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,31]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,32]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,33]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,34]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[2,35]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,1]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,2]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,3]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,4]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,5]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,6]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,7]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,8]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,9]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,10]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,11]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,12]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,13]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,14]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,15]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,16]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,17]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,18]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,19]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,20]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,21]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,22]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,23]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,24]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,25]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,26]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,27]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,28]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,29]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,30]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,31]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,32]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,33]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,34]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[3,35]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,1]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,2]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,3]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,4]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,5]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,6]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,7]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,8]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,9]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,10]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,11]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,12]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,13]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,14]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,15]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,16]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,17]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,18]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,19]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,20]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,21]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,22]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,23]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,24]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,25]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,26]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,27]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,28]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,29]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,30]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,31]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,32]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,33]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,34]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOutput[4,35]={Active FALSE,InitState FALSE,SignNr 0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOGasPreFlowStart[4,6]
+wArcOGasPreFlowStart[1,1]={Active TRUE,State TRUE,Index 3,SignNr 2011,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2011]-Acknowledge power source",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2011}} ;Acknowledge power source
+wArcOGasPreFlowStart[1,2]={Active TRUE,State TRUE,Index 2,SignNr 2008,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2008]-Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}} ;Gas flow
+wArcOGasPreFlowStart[1,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[1,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPreFlowStart[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWeldStart[4,6]
+wArcOWeldStart[1,1]={Active TRUE,State TRUE,Index 1,SignNr 2000,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2000]-Start welding",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2000}} ;Start welding
+wArcOWeldStart[1,2]={Active TRUE,State TRUE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOWeldStart[1,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[1,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldStart[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOIgnitProblem[4,6]
+wArcOIgnitProblem[1,1]={Active TRUE,State FALSE,Index 1,SignNr 2000,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2000]-Start welding",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2000}} ;Start welding
+wArcOIgnitProblem[1,2]={Active TRUE,State FALSE,Index 2,SignNr 2008,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2008]-Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}} ;Gas flow
+wArcOIgnitProblem[1,3]={Active TRUE,State FALSE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOIgnitProblem[1,4]={Active TRUE,State FALSE,Index 8,SignNr 399,PulsTime 0.0,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}} ;Cold Wire Retract
+wArcOIgnitProblem[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOIgnitProblem[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWeldProblem[4,6]
+wArcOWeldProblem[1,1]={Active TRUE,State FALSE,Index 1,SignNr 2000,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2000]-Start welding",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2000}} ;Start welding
+wArcOWeldProblem[1,2]={Active TRUE,State FALSE,Index 2,SignNr 2008,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2008]-Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}} ;Gas flow
+wArcOWeldProblem[1,3]={Active TRUE,State FALSE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOWeldProblem[1,4]={Active TRUE,State FALSE,Index 8,SignNr 399,PulsTime 0.0,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}} ;Cold Wire Retract
+wArcOWeldProblem[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldProblem[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOReceiptError[4,6]
+wArcOReceiptError[1,1]={Active TRUE,State TRUE,Index 3,SignNr 2011,PulsTime 0.500000,VarName #NONE,Description[] "$OUT[2011]-Acknowledge power source",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2011}} ;Acknowledge power source
+wArcOReceiptError[1,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 1026}}
+wArcOReceiptError[1,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 1026}}
+wArcOReceiptError[1,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 1026}}
+wArcOReceiptError[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 1026}}
+wArcOReceiptError[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 1026}}
+wArcOReceiptError[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOReceiptError[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWeldEnd[4,6]
+wArcOWeldEnd[1,1]={Active TRUE,State FALSE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOWeldEnd[1,2]={Active TRUE,State FALSE,Index 1,SignNr 2000,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2000]-Start welding",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2000}} ;Start welding
+wArcOWeldEnd[1,3]={Active TRUE,State TRUE,Index 8,SignNr 399,PulsTime 0.200000,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}} ;Cold Wire Retract
+wArcOWeldEnd[1,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWeldEnd[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOGasPostFlowEnd[4,6]
+wArcOGasPostFlowEnd[1,1]={Active TRUE,State FALSE,Index 2,SignNr 2008,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2008]-Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}} ;Gas flow
+wArcOGasPostFlowEnd[1,2]={Active TRUE,State FALSE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOGasPostFlowEnd[1,3]={Active TRUE,State FALSE,Index 8,SignNr 399,PulsTime 0.0,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}} ;Cold Wire Retract
+wArcOGasPostFlowEnd[1,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasPostFlowEnd[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOClearErrorArcOff[4,6]
+wArcOClearErrorArcOff[1,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[1,2]={Active TRUE,State FALSE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}} ;Cold Wire Feed
+wArcOClearErrorArcOff[1,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[1,4]={Active TRUE,State FALSE,Index 8,SignNr 399,PulsTime 0.0,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}} ;Cold Wire Retract
+wArcOClearErrorArcOff[1,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[1,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[2,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[3,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,1]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,5]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOClearErrorArcOff[4,6]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWireFeedForward[4]
+wArcOWireFeedForward[1]={Active TRUE,State TRUE,Index 5,SignNr 2009,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2009]-Wire feed",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2009}}
+wArcOWireFeedForward[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireFeedForward[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireFeedForward[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWireFeedBackward[4]
+wArcOWireFeedBackward[1]={Active TRUE,State TRUE,Index 6,SignNr 2010,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2010]-Wire retract",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2010}}
+wArcOWireFeedBackward[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireFeedBackward[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireFeedBackward[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWatchDogAlive[4]
+wArcOWatchDogAlive[1]={Active TRUE,State TRUE,Index 7,SignNr 2001,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2001]-Robot Ready",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2001}}
+wArcOWatchDogAlive[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWatchDogAlive[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWatchDogAlive[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOBurnFreeFault[4]
+wArcOBurnFreeFault[1]={Active TRUE,State TRUE,Index 8,SignNr 399,PulsTime 0.0,VarName #NONE,Description[] "$OUT[399]-Cold Wire Retract",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 399}}
+wArcOBurnFreeFault[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOBurnFreeFault[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOBurnFreeFault[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOCriticalIgnitError[4]
+wArcOCriticalIgnitError[1]={Active FALSE,State TRUE,Index 12,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalIgnitError[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalIgnitError[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalIgnitError[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOCriticalSeamError[4]
+wArcOCriticalSeamError[1]={Active FALSE,State TRUE,Index 13,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalSeamError[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalSeamError[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCriticalSeamError[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOCollisionDetect[4]
+wArcOCollisionDetect[1]={Active FALSE,State TRUE,Index 14,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCollisionDetect[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCollisionDetect[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOCollisionDetect[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcODecisionRequest[4]
+wArcODecisionRequest[1]={Active FALSE,State TRUE,Index 15,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcODecisionRequest[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcODecisionRequest[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcODecisionRequest[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOWireDetectRequest[4]
+wArcOWireDetectRequest[1]={Active FALSE,State TRUE,Index 16,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireDetectRequest[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireDetectRequest[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOWireDetectRequest[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOBurnBack[4]
+wArcOBurnBack[1]={Active FALSE,State TRUE,Index 17,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOBurnBack[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOBurnBack[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOBurnBack[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOPlcCleanPosition[4]
+wArcOPlcCleanPosition[1]={Active FALSE,State TRUE,Index 18,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOPlcCleanPosition[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOPlcCleanPosition[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOPlcCleanPosition[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOGasActive[4]
+wArcOGasActive[1]={Active TRUE,State TRUE,Index 2,SignNr 2008,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2008]-Gas flow",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2008}}
+wArcOGasActive[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasActive[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOGasActive[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOAcknowledgePowerSrc[4]
+wArcOAcknowledgePowerSrc[1]={Active TRUE,State TRUE,Index 3,SignNr 2011,PulsTime 0.0,VarName #NONE,Description[] "$OUT[2011]-Acknowledge power source",Source #Welder,SigType #SOUT,Offset {Offset 0,SignNr 2011}}
+wArcOAcknowledgePowerSrc[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOAcknowledgePowerSrc[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOAcknowledgePowerSrc[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOTeachMode[4]
+wArcOTeachMode[1]={Active FALSE,State TRUE,Index 21,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOTeachMode[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOTeachMode[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOTeachMode[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOProcessHot[4]
+wArcOProcessHot[1]={Active TRUE,State TRUE,Index 4,SignNr 398,PulsTime 0.0,VarName #NONE,Description[] "$OUT[398]-Cold Wire Feed",Source #External,SigType #SOUT,Offset {Offset 0,SignNr 398}}
+wArcOProcessHot[2]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOProcessHot[3]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOProcessHot[4]={Active FALSE,State FALSE,Index 0,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+DECL GLOBAL stArcSignal_T wArcOSpecial[4,16,8]
+wArcOSpecial[1,1,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,1,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,2,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,3,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,4,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,5,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,6,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,7,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,8,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,9,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,10,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,11,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,12,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,13,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,14,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,15,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[1,16,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,1,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,2,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,3,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,4,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,5,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,6,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,7,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,8,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,9,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,10,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,11,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,12,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,13,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,14,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,15,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[2,16,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,1,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,2,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,3,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,4,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,5,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,6,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,7,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,8,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,9,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,10,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,11,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,12,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,13,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,14,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,15,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[3,16,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,1,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,2,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,3,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,4,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,5,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,6,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,7,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,8,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,9,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,10,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,11,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,12,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,13,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,14,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,15,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,1]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,2]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,3]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,4]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,5]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,6]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,7]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+wArcOSpecial[4,16,8]={Active FALSE,State FALSE,SignNr 0,VarName #NONE,SigType #SOUT,Offset {Offset 0,SignNr 0}}
+
+
+;*****************************************************************************************
+;Input Signals
+;*****************************************************************************************
+DECL GLOBAL stArcSignal_T wsArcIPowerSourceMsg1[4]
+wsArcIPowerSourceMsg1[1]={Active TRUE,FromIndex 2128,ToIndex 2143,Length 16,VarName #wsArcIPowerSourceMsg1,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2128,ToIndex 2143}}
+wsArcIPowerSourceMsg1[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg1,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIPowerSourceMsg1[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg1,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIPowerSourceMsg1[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg1,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcIPowerSourceMsg2[4]
+wsArcIPowerSourceMsg2[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg2,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIPowerSourceMsg2[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg2,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIPowerSourceMsg2[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg2,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIPowerSourceMsg2[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIPowerSourceMsg2,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcIChannel[4,8]
+wsArcIChannel[1,1]={Active TRUE,FromIndex 2096,ToIndex 2111,Length 16,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2096,ToIndex 2111}}
+wsArcIChannel[1,2]={Active TRUE,FromIndex 2080,ToIndex 2095,Length 16,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2080,ToIndex 2095}}
+wsArcIChannel[1,3]={Active TRUE,FromIndex 2060,ToIndex 2070,Length 11,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2060,ToIndex 2070}}
+wsArcIChannel[1,4]={Active TRUE,FromIndex 2160,ToIndex 2175,Length 16,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2160,ToIndex 2175}}
+wsArcIChannel[1,5]={Active TRUE,FromIndex 2176,ToIndex 2191,Length 16,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2176,ToIndex 2191}}
+wsArcIChannel[1,6]={Active TRUE,FromIndex 2192,ToIndex 2207,Length 16,VarName #wsArcIChannel,Source #Welder,SigType #GIN,Offset {Offset 0,FromIndex 2192,ToIndex 2207}}
+wsArcIChannel[1,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[1,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[2,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[3,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcIChannel[4,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIChannel,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcISenseSignals[4]
+wsArcISenseSignals[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,AnaIndex 0,VarName #wsArcISenseSignals,Source #None,SigType #NONE}
+wsArcISenseSignals[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,AnaIndex 0,VarName #wsArcISenseSignals,Source #None,SigType #NONE}
+wsArcISenseSignals[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,AnaIndex 0,VarName #wsArcISenseSignals,Source #None,SigType #NONE}
+wsArcISenseSignals[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,AnaIndex 0,VarName #wsArcISenseSignals,Source #None,SigType #NONE}
+
+DECL GLOBAL stArcSignal_T wsArcISeamNumberCode[4]
+wsArcISeamNumberCode[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcISeamNumberCode,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcISeamNumberCode[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcISeamNumberCode,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcISeamNumberCode[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcISeamNumberCode,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcISeamNumberCode[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcISeamNumberCode,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcIErrRecoveryPlcSign={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIErrRecoveryPlcSign,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcIMsgPlc={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcIMsgPlc,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wArcISLPartId={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wArcISLPartId,Source #None,SigType #GIN,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+GLOBAL SIGNAL wsArc1IPowerSourceMsg1 $IN[2128]  TO $IN[2143]
+GLOBAL SIGNAL wsArc2IPowerSourceMsg1 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IPowerSourceMsg1 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IPowerSourceMsg1 $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc1IPowerSourceMsg2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IPowerSourceMsg2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IPowerSourceMsg2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IPowerSourceMsg2 $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc1IChannel1 $IN[2096]  TO $IN[2111]
+GLOBAL SIGNAL wsArc1IChannel2 $IN[2080]  TO $IN[2095]
+GLOBAL SIGNAL wsArc1IChannel3 $IN[2060]  TO $IN[2070]
+GLOBAL SIGNAL wsArc1IChannel4 $IN[2160]  TO $IN[2175]
+GLOBAL SIGNAL wsArc1IChannel5 $IN[2176]  TO $IN[2191]
+GLOBAL SIGNAL wsArc1IChannel6 $IN[2192]  TO $IN[2207]
+GLOBAL SIGNAL wsArc1IChannel7 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc1IChannel8 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel1 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel3 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel4 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel5 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel6 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel7 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2IChannel8 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel1 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel3 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel4 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel5 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel6 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel7 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3IChannel8 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel1 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel2 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel3 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel4 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel5 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel6 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel7 $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4IChannel8 $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc1ISenseSignals $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2ISenseSignals $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3ISenseSignals $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4ISenseSignals $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc1ISeamNumberCode $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc2ISeamNumberCode $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc3ISeamNumberCode $IN[1024]  TO $IN[1024]
+GLOBAL SIGNAL wsArc4ISeamNumberCode $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc0IErrRecoveryPlc $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wsArc0IMsgPlc $IN[1024]  TO $IN[1024]
+
+GLOBAL SIGNAL wArc0ISLPartId $IN[1024]  TO $IN[1024]
+
+
+
+;*****************************************************************************************
+;Output Signals
+;*****************************************************************************************
+DECL GLOBAL stArcSignal_T wsArcOModiCoding[4]
+wsArcOModiCoding[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOModiCoding,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOModiCoding[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOModiCoding,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOModiCoding[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOModiCoding,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOModiCoding[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOModiCoding,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOChannel[4,8]
+wsArcOChannel[1,1]={Active TRUE,FromIndex 2005,ToIndex 2005,Length 1,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 2005,ToIndex 2005}}
+wsArcOChannel[1,2]={Active TRUE,FromIndex 2064,ToIndex 2079,Length 16,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 2064,ToIndex 2079}}
+wsArcOChannel[1,3]={Active TRUE,FromIndex 2080,ToIndex 2095,Length 16,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 2080,ToIndex 2095}}
+wsArcOChannel[1,4]={Active TRUE,FromIndex 480,ToIndex 495,Length 16,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 480,ToIndex 495}}
+wsArcOChannel[1,5]={Active TRUE,FromIndex 2096,ToIndex 2111,Length 16,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 2096,ToIndex 2111}}
+wsArcOChannel[1,6]={Active TRUE,FromIndex 2112,ToIndex 2120,Length 9,VarName #wsArcOChannel,Source #Welder,SigType #GOUT,Offset {Offset 0,FromIndex 2112,ToIndex 2120}}
+wsArcOChannel[1,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[1,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[2,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[3,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,5]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,6]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,7]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOChannel[4,8]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOChannel,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOVelocity[4]
+wsArcOVelocity[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOVelocity,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOVelocity[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOVelocity,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOVelocity[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOVelocity,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOVelocity[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOVelocity,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOSeamNumberCode[4]
+wsArcOSeamNumberCode[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOSeamNumberCode,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOSeamNumberCode[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOSeamNumberCode,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOSeamNumberCode[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOSeamNumberCode,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOSeamNumberCode[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOSeamNumberCode,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOWeldSelect[4]
+wsArcOWeldSelect[1]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOWeldSelect,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOWeldSelect[2]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOWeldSelect,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOWeldSelect[3]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOWeldSelect,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+wsArcOWeldSelect[4]={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOWeldSelect,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOMsgPlc={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOMsgPlc,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wsArcOWelderId={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wsArcOWelderId,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wArcOSLErrorCode={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wArcOSLErrorCode,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+DECL GLOBAL stArcSignal_T wArcOSLSeamNum={Active FALSE,FromIndex 0,ToIndex 0,Length 0,VarName #wArcOSLSeamNum,Source #None,SigType #GOUT,Offset {Offset 0,FromIndex 0,ToIndex 0}}
+
+GLOBAL SIGNAL wsArc1OModiCoding $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OModiCoding $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OModiCoding $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OModiCoding $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc1OChannel1 $OUT[2005]  TO $OUT[2005]
+GLOBAL SIGNAL wsArc1OChannel2 $OUT[2064]  TO $OUT[2079]
+GLOBAL SIGNAL wsArc1OChannel3 $OUT[2080]  TO $OUT[2095]
+GLOBAL SIGNAL wsArc1OChannel4 $OUT[480]  TO $OUT[495]
+GLOBAL SIGNAL wsArc1OChannel5 $OUT[2096]  TO $OUT[2111]
+GLOBAL SIGNAL wsArc1OChannel6 $OUT[2112]  TO $OUT[2120]
+GLOBAL SIGNAL wsArc1OChannel7 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc1OChannel8 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel1 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel2 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel3 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel4 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel5 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel6 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel7 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OChannel8 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel1 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel2 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel3 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel4 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel5 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel6 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel7 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OChannel8 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel1 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel2 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel3 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel4 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel5 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel6 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel7 $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OChannel8 $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc1OVelocity $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OVelocity $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OVelocity $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OVelocity $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc1OSeamNumberCode $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OSeamNumberCode $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OSeamNumberCode $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OSeamNumberCode $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc1OWeldSelect $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc2OWeldSelect $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc3OWeldSelect $OUT[1024]  TO $OUT[1024]
+GLOBAL SIGNAL wsArc4OWeldSelect $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc0OMsgPlc $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wsArc0OWelderId $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wArc0OSLErrorCode $OUT[1024]  TO $OUT[1024]
+
+GLOBAL SIGNAL wArc0OSLSeamNum $OUT[1024]  TO $OUT[1024]
+
+
+ENDDAT

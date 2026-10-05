@@ -1,0 +1,46 @@
+{
+  "key": "stage-closure-criterion",
+  "form": "k = (R − 1) · e' 。k ≥ 1 のとき、その段でその Δv は達成不能（クロージャ不成立）",
+  "variables": {
+    "k": "クロージャ指標 [-]",
+    "R": "質量比 [-]",
+    "e'": "乾燥質量／推進剤質量の比 ε/(1−ε) [-]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "79,87-89",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "42-43",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "feasible": "k < 1 のときのみ段サイジングが解を持つ（rocket.py:88-89）",
+    "inherits": "R（mass-ratio-from-delta-v）と e'（structural-coefficient-eprime）の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "判定閾値 k=1 の位置は ε の値だけで決まる。ε はスケール則を無視した一定近似であり、フェアリング・残留推進剤・ウルッジ/マージンも未計上であるため、ε を小さく見積もると本来不成立の段が成立と判定される。この誤りは例外を出さず、もっともらしい質量が出力される。",
+  "limitations_ref": "lim",
+  "limitations_basis": "inferred",
+  "limitations_inference": "P-1 は ε 一定と質量項未計上を限界として述べている（06:42-43）が、判定指標 k を名指ししていない。k は ε を e' を介してのみ含むため、ε の誤差がそのまま成立/不成立の閾値位置の誤差になると対応づけた。",
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "k ≥ 1 の意味（物理的に達成不能）は rocket.py:79 に記載があるが、これは判定の定義であって限界の記載ではない。"
+}

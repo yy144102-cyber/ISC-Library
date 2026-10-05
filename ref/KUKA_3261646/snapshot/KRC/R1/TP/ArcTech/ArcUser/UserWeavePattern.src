@@ -1,0 +1,286 @@
+&ACCESS RO2
+&REL 2
+&COMMENT ArcTech User Pettern Figure
+DEF UserWeavePattern( )
+;FOLD Figure Kuka Examples
+;********************************************************
+;No weaving
+;********************************************************
+;Y  
+; 1 |
+;   |
+;   |
+; 0 |# # # # # # # # # 
+;   |
+;   |
+;-1 |
+;  - - - - - - - - - - - - - - - > X
+
+;********************************************************
+;Triangle
+;********************************************************
+;y 
+; 1 |         #
+;   |        # #
+;   |       #   #
+; 0 |#     #     #
+;   | #   #    
+;   |  # #
+;-1 |   #
+;  - - - - - - - - - - - - - - - > X
+
+;********************************************************
+;Trapezoid
+;********************************************************
+;y  
+; 1 |             # # #
+;   |            #     #
+;   |           #       #
+; 0 |#         #         #
+;   | #       #    
+;   |  #     #
+;-1 |   # # #
+;  - - - - - - - - - - - - - - - > X
+
+;********************************************************
+;Asymmetrical trapezoid
+;********************************************************
+;y  
+; 1 |             # # #
+;   |            #     #
+;   |           #       #
+; 0 |#         #         #
+;   | #       #    
+;   |  #     #
+;-1 |   # # #
+;  - - - - - - - - - - - - - - - > X
+
+;********************************************************
+;Spiral
+;********************************************************
+;y  
+; 1 |
+;   |
+;   |
+; 0 | # # # # # # # # # # #
+;   |      #  #      #  #
+;   |     #    #    #    #
+;-1 |      #  #      #  #
+;  - - - - - - - - - - - - - - - > X
+
+;********************************************************
+;Double8
+;********************************************************
+;y  
+; 1 |    #  #     #  #
+;   |   #    #   #    #
+;   |    #  #     #  #
+; 0 | # # # # # # # # # # #
+;   |        #  #     #  #
+;   |       #    #   #    #
+;-1 |        #  #     #  #
+;  - - - - - - - - - - - - - - - > X
+;********************************************************
+;On Seam
+;********************************************************
+;y  
+; 1 |   
+;   |   
+;   |    
+; 0 | # <# <# <# <# <# <#
+;   |   
+;   |   
+;-1 |   
+;  - - - - - - - - - - - - - - - > X
+;ENDFOLD
+;********************************************************
+;                      UserFigure1
+;********************************************************
+;FOLD UserFigure1 Array[{cArcUserFigure1#%g}] Name = {ArcWeavePattern[cArcUserFigure1].Name[]}
+;ArcWeavePattern[cArcUserFigure1].Name[] = "UserDefined1"   ;Name of User pattern
+;********************************************************
+; .................... Tech1 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure1].Tech1.FCTCTRL.GEOREF = #Y ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure1].Tech1.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure1].Tech1.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure1].Tech1.CPS3.Y10 = 0.0      ;Control points 30
+
+;********************************************************
+; .................... Tech2 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure1].Tech2.FCTCTRL.GEOREF = #X ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure1].Tech2.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure1].Tech2.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure1].Tech2.CPS3.Y10 = 0.0      ;Control points 30
+
+;********************************************************
+; .................... Tech3 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure1].Tech3.FCTCTRL.GEOREF = #Z ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure1].Tech3.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure1].Tech3.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure1].Tech3.CPS3.Y10 = 0.0      ;Control points 30
+;ENDFOLD
+;********************************************************
+;                      UserFigure2
+;********************************************************
+;FOLD UserFigure2 Array[{cArcUserFigure2#%g}] Name = {ArcWeavePattern[cArcUserFigure2].Name[]}
+;ArcWeavePattern[cArcUserFigure2].Name[] = "UserDefined2"   ;Name of User pattern
+;********************************************************
+; .................... Tech1 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure2].Tech1.FCTCTRL.GEOREF = #Y ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure2].Tech1.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure2].Tech1.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure2].Tech1.CPS3.Y10 = 0.0      ;Control points 30
+
+;********************************************************
+; .................... Tech2 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure2].Tech2.FCTCTRL.GEOREF = #Z ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure2].Tech2.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure2].Tech2.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure2].Tech2.CPS3.Y10 = 0.0      ;Control points 30
+
+;********************************************************
+; .................... Tech3 ....................
+;********************************************************
+;GeoRef
+;#NONE         The programmed function is evaluated, but not carried out. The function value is written to the variable $TECHVAL.
+;#X, #Y, #Z    Axis of the reference coordinate system (programmed by means of $TECHSYS and $TECHANGLE) used for weaving or sensor correction
+;ArcWeavePattern[cArcUserFigure2].Tech3.FCTCTRL.GEOREF = #Z ;Axis of the reference coordinate system
+;ArcWeavePattern[cArcUserFigure2].Tech3.LDelay.Active = FALSE ;Weave Delay Left
+;ArcWeavePattern[cArcUserFigure2].Tech3.RDelay.Active = FALSE ;Weave Delay Right
+; --------------- CPS1 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.X1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.Y1 =  0.0      ;Control points 1
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.X2 =  1.0      ;Control points 2
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.Y2 =  0.0      ;Control points 2
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.X10 = 0.0      ;Control points 10
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS1.Y10 = 0.0      ;Control points 10
+; --------------- CPS2 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS2.X1 =  0.0      ;Control points 11
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS2.Y1 =  0.0      ;Control points 12
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS2.X10 = 0.0      ;Control points 20
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS2.Y10 = 0.0      ;Control points 20
+; --------------- CPS3 ---------------
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS3.X1 =  0.0      ;Control points 21
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS3.Y1 =  0.0      ;Control points 22
+;.......
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS3.X10 = 0.0      ;Control points 30
+;ArcWeavePattern[cArcUserFigure2].Tech3.CPS3.Y10 = 0.0      ;Control points 30
+;ENDFOLD
+END

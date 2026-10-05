@@ -1,0 +1,111 @@
+&ACCESS RVO
+&REL 192
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEFDAT  CIRCD2000_5MMTO10MM_R
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+
+DECL stArcDat_T WDAT1={WdatId[] "WDAT1",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 12.0000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0166667,Channel1 1.00000,Channel2 3086.00,Channel3 4.50000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP1={WdatId[] "WP1",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 1,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT2={WdatId[] "WDAT2",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 10.0000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0125000,Channel1 1.00000,Channel2 3086.00,Channel3 4.50000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP2={WdatId[] "WP2",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT3={WdatId[] "WDAT3",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 9.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833330,Channel1 1.00000,Channel2 3086.00,Channel3 5.50000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP3={WdatId[] "WP3",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT4={WdatId[] "WDAT4",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 8.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833330,Channel1 1.00000,Channel2 3086.00,Channel3 6.50000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP4={WdatId[] "WP4",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT5={WdatId[] "WDAT5",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 7.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833330,Channel1 1.00000,Channel2 3086.00,Channel3 7.00000,Channel4 3.50000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP5={WdatId[] "WP5",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+
+DECL PDAT PPDAT1={VEL 100.000,ACC 100.000,APO_DIST 1.00000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL LDAT LCPDAT1={VEL 2.00000,ACC 100.000,APO_DIST 1.00000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0,CB {AUX_PT {ORI #CONSIDER,E1 #CONSIDER,E2 #CONSIDER,E3 #CONSIDER,E4 #CONSIDER,E5 #CONSIDER,E6 #CONSIDER},TARGET_PT {ORI #INTERPOLATE,E1 #INTERPOLATE,E2 #INTERPOLATE,E3 #INTERPOLATE,E4 #INTERPOLATE,E5 #INTERPOLATE,E6 #INTERPOLATE}}}
+DECL FDAT FP1={TOOL_NO 1,BASE_NO 17,IPO_FRAME #BASE,POINT2[] " "}
+
+DECL E6POS XHOMEX={X 0.0,Y 1000.00,Z 1200.00,A 180.000,B 0.0,C 0.0,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+DECL E6POS XHOVERX={X 0.0,Y 1000.00,Z 1200.00,A 180.000,B 0.0,C 0.0,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+DECL E6POS Point[73]
+Point[1]={X 0.0,Y 1004.62500,Z 476.930,A -180.000,B 0.0,C 0.0,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[2]={X -87.5588303,Y 1000.80212,Z 476.930,A -175.000,B 0.0,C 0.0,S 18,T 3,E1 -5.00000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[3]={X -174.451294,Y 989.362488,Z 476.930,A -170.000,B 0.0,C 0.0,S 18,T 3,E1 -10.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[4]={X -260.016083,Y 970.393250,Z 476.930,A -165.000,B 0.0,C 0.0,S 18,T 3,E1 -15.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[5]={X -343.601959,Y 944.038696,Z 476.930,A -160.000,B 0.0,C 0.0,S 18,T 3,E1 -20.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[6]={X -424.572876,Y 910.499451,Z 476.930,A -155.000,B 0.0,C 0.0,S 18,T 3,E1 -25.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[7]={X -502.312500,Y 870.030762,Z 476.930,A -150.000,B 0.0,C 0.0,S 18,T 3,E1 -30.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[8]={X -576.229248,Y 822.940613,Z 476.930,A -145.000,B 0.0,C 0.0,S 18,T 3,E1 -35.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[9]={X -645.760498,Y 769.587402,Z 476.930,A -140.000,B 0.0,C 0.0,S 18,T 3,E1 -40.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[10]={X -710.377136,Y 710.377136,Z 476.930,A -135.000,B 0.0,C 0.0,S 18,T 3,E1 -45.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[11]={X -769.587402,Y 645.760498,Z 476.930,A -130.000,B 0.0,C 0.0,S 18,T 3,E1 -50.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[12]={X -822.940613,Y 576.229248,Z 476.930,A -125.000,B 0.0,C 0.0,S 18,T 3,E1 -55.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[13]={X -870.030823,Y 502.312469,Z 476.930,A -120.000,B 0.0,C 0.0,S 18,T 3,E1 -60.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[14]={X -910.499512,Y 424.572845,Z 476.930,A -115.000,B 0.0,C 0.0,S 18,T 3,E1 -65.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[15]={X -944.038696,Y 343.602,Z 476.930,A -110.000,B 0.0,C 0.0,S 18,T 3,E1 -70.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[16]={X -970.393250,Y 260.016113,Z 476.930,A -105.000,B 0.0,C 0.0,S 18,T 3,E1 -75.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[17]={X -989.362488,Y 174.451340,Z 476.930,A -100.000,B 0.0,C 0.0,S 18,T 3,E1 -80.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[18]={X -1000.80212,Y 87.5589,Z 476.930,A -95.0000,B 0.0,C 0.0,S 18,T 3,E1 -85.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[19]={X -1004.62500,Y 0.0,Z 476.930,A -90.0000,B 0.0,C 0.0,S 18,T 3,E1 -90.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[20]={X -1000.80212,Y -87.5588608,Z 476.930,A -85.0000,B 0.0,C 0.0,S 18,T 3,E1 -95.0000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[21]={X -989.362488,Y -174.451309,Z 476.930,A -80.0000,B 0.0,C 0.0,S 18,T 3,E1 -100.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[22]={X -970.393250,Y -260.016083,Z 476.930,A -75.0000,B 0.0,C 0.0,S 18,T 3,E1 -105.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[23]={X -944.038696,Y -343.601959,Z 476.930,A -70.0000,B 0.0,C 0.0,S 18,T 3,E1 -110.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[24]={X -910.499451,Y -424.572937,Z 476.930,A -65.0000,B 0.0,C 0.0,S 18,T 3,E1 -115.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[25]={X -870.030762,Y -502.312561,Z 476.930,A -60.0000,B 0.0,C 0.0,S 18,T 3,E1 -120.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[26]={X -822.940552,Y -576.229248,Z 476.930,A -55.0000,B 0.0,C 0.0,S 18,T 3,E1 -125.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[27]={X -769.587402,Y -645.760498,Z 476.930,A -50.0000,B 0.0,C 0.0,S 18,T 3,E1 -130.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[28]={X -710.377136,Y -710.377136,Z 476.930,A -45.0000,B 0.0,C 0.0,S 18,T 3,E1 -135.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[29]={X -645.760498,Y -769.587402,Z 476.930,A -40.0000,B 0.0,C 0.0,S 18,T 3,E1 -140.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[30]={X -576.229248,Y -822.940613,Z 476.930,A -35.0000,B 0.0,C 0.0,S 18,T 3,E1 -145.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[31]={X -502.312561,Y -870.030762,Z 476.930,A -30.0000,B 0.0,C 0.0,S 18,T 3,E1 -150.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[32]={X -424.572937,Y -910.499451,Z 476.930,A -25.0000,B 0.0,C 0.0,S 18,T 3,E1 -155.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[33]={X -343.602051,Y -944.038696,Z 476.930,A -20.0000,B 0.0,C 0.0,S 18,T 3,E1 -160.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[34]={X -260.016174,Y -970.393250,Z 476.930,A -15.0000,B 0.0,C 0.0,S 18,T 3,E1 -165.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[35]={X -174.451416,Y -989.362488,Z 476.930,A -10.0000,B 0.0,C 0.0,S 18,T 3,E1 -170.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[36]={X -87.5587387,Y -1000.80212,Z 476.930,A -5.00000,B 0.0,C 0.0,S 18,T 3,E1 -175.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[37]={X 0.0,Y -1004.62500,Z 476.930,A 0.0,B 0.0,C 0.0,S 18,T 3,E1 -180.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[38]={X 87.5589066,Y -1000.80212,Z 476.930,A 5.00000,B 0.0,C 0.0,S 18,T 3,E1 -185.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[39]={X 174.451340,Y -989.362488,Z 476.930,A 10.0000,B 0.0,C 0.0,S 18,T 3,E1 -190.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[40]={X 260.016113,Y -970.393250,Z 476.930,A 15.0000,B 0.0,C 0.0,S 18,T 3,E1 -195.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[41]={X 343.602,Y -944.038696,Z 476.930,A 20.0000,B 0.0,C 0.0,S 18,T 3,E1 -200.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[42]={X 424.572876,Y -910.499512,Z 476.930,A 25.0000,B 0.0,C 0.0,S 18,T 3,E1 -205.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[43]={X 502.312469,Y -870.030762,Z 476.930,A 30.0000,B 0.0,C 0.0,S 18,T 3,E1 -210.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[44]={X 576.229187,Y -822.940613,Z 476.930,A 35.0000,B 0.0,C 0.0,S 18,T 3,E1 -215.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[45]={X 645.760498,Y -769.587463,Z 476.930,A 40.0000,B 0.0,C 0.0,S 18,T 3,E1 -220.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[46]={X 710.377075,Y -710.377197,Z 476.930,A 45.0000,B 0.0,C 0.0,S 18,T 3,E1 -225.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[47]={X 769.587524,Y -645.760437,Z 476.930,A 50.0000,B 0.0,C 0.0,S 18,T 3,E1 -230.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[48]={X 822.940674,Y -576.229126,Z 476.930,A 55.0000,B 0.0,C 0.0,S 18,T 3,E1 -235.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[49]={X 870.030823,Y -502.312408,Z 476.930,A 60.0000,B 0.0,C 0.0,S 18,T 3,E1 -240.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[50]={X 910.499512,Y -424.572784,Z 476.930,A 65.0000,B 0.0,C 0.0,S 18,T 3,E1 -245.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[51]={X 944.038757,Y -343.601898,Z 476.930,A 70.0000,B 0.0,C 0.0,S 18,T 3,E1 -250.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[52]={X 970.393250,Y -260.016022,Z 476.930,A 75.0000,B 0.0,C 0.0,S 18,T 3,E1 -255.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[53]={X 989.362549,Y -174.451263,Z 476.930,A 80.0000,B 0.0,C 0.0,S 18,T 3,E1 -260.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[54]={X 1000.80212,Y -87.5588074,Z 476.930,A 85.0000,B 0.0,C 0.0,S 18,T 3,E1 -265.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[55]={X 1004.62500,Y 0.0,Z 476.930,A 90.0000,B 0.0,C 0.0,S 18,T 3,E1 -270.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[56]={X 1000.80212,Y 87.5588303,Z 476.930,A 95.0000,B 0.0,C 0.0,S 18,T 3,E1 -275.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[57]={X 989.362488,Y 174.451279,Z 476.930,A 100.000,B 0.0,C 0.0,S 18,T 3,E1 -280.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[58]={X 970.393250,Y 260.016052,Z 476.930,A 105.000,B 0.0,C 0.0,S 18,T 3,E1 -285.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[59]={X 944.038696,Y 343.601929,Z 476.930,A 110.000,B 0.0,C 0.0,S 18,T 3,E1 -290.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[60]={X 910.499512,Y 424.572784,Z 476.930,A 115.000,B 0.0,C 0.0,S 18,T 3,E1 -295.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[61]={X 870.030823,Y 502.312408,Z 476.930,A 120.000,B 0.0,C 0.0,S 18,T 3,E1 -300.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[62]={X 822.940674,Y 576.229126,Z 476.930,A 125.000,B 0.0,C 0.0,S 18,T 3,E1 -305.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[63]={X 769.587463,Y 645.760437,Z 476.930,A 130.000,B 0.0,C 0.0,S 18,T 3,E1 -310.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[64]={X 710.377258,Y 710.377,Z 476.930,A 135.000,B 0.0,C 0.0,S 18,T 3,E1 -315.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[65]={X 645.760620,Y 769.587280,Z 476.930,A 140.000,B 0.0,C 0.0,S 18,T 3,E1 -320.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[66]={X 576.229370,Y 822.940491,Z 476.930,A 145.000,B 0.0,C 0.0,S 18,T 3,E1 -325.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[67]={X 502.312683,Y 870.030701,Z 476.930,A 150.000,B 0.0,C 0.0,S 18,T 3,E1 -330.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[68]={X 424.573059,Y 910.499390,Z 476.930,A 155.000,B 0.0,C 0.0,S 18,T 3,E1 -335.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[69]={X 343.602203,Y 944.038635,Z 476.930,A 160.000,B 0.0,C 0.0,S 18,T 3,E1 -340.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[70]={X 260.015869,Y 970.393250,Z 476.930,A 165.000,B 0.0,C 0.0,S 18,T 3,E1 -345.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[71]={X 174.451096,Y 989.362549,Z 476.930,A 170.000,B 0.0,C 0.0,S 18,T 3,E1 -350.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[72]={X 87.5586472,Y 1000.80212,Z 476.930,A 175.000,B 0.0,C 0.0,S 18,T 3,E1 -355.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point[73]={X 0.0,Y 1004.62500,Z 479.560,A 180.000,B 0.0,C 0.0,S 18,T 3,E1 -360.000,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+DECL E6POS Point_1[73]
+ENDDAT

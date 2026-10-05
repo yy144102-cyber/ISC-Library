@@ -1,0 +1,379 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibRemote( )
+END
+;*****************************************************************************************
+;Remote Write Boolean Variable
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetVarB(tRemoteRobot[] :IN,tVar[] :IN,tValue :IN,tMsgType :IN)
+DECL BOOL tValue
+DECL BOOL tCmdOk
+DECL INT tPrError
+DECL CHAR tVar[],tRemoteRobot[],tVarWrite[128],tVarWrite1[256]
+DECL enArcMessageType_T tMsgType
+IF (tValue == TRUE) THEN
+  tVarWrite1[] = ArcStrAdd(tVar[],"=TRUE")
+ELSE
+  tVarWrite1[] = ArcStrAdd(tVar[],"=FALSE")
+ENDIF
+tVarWrite[] = tVarWrite1[]
+REPEAT
+  ON_ERROR_PROCEED
+  tCmdOk = REMOTECMD(tRemoteRobot[],tVarWrite[])
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN
+  ENDIF
+  IF (tCmdOk == FALSE) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN
+    ENDSWITCH
+  ENDIF
+UNTIL (tCmdOk == TRUE)
+END
+;*****************************************************************************************
+;Remote Write Integer Variable
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetVarI(tRemoteRobot[] :IN,tVar[] :IN,tValue :IN,tMsgType :IN)
+DECL INT tValue, tPrError
+DECL BOOL tCmdOk
+DECL CHAR tVar[],tRemoteRobot[],tVarWrite[128],tVarWrite1[256]
+DECL enArcMessageType_T tMsgType
+tVarWrite1[] = ArcStrAdd3(tVar[],"=",ArcIntToStr(tValue))
+tVarWrite[]=tVarWrite1[]
+REPEAT
+  ON_ERROR_PROCEED
+  tCmdOk = REMOTECMD(tRemoteRobot[],tVarWrite[])
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN
+  ENDIF
+  IF (tCmdOk == FALSE) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN
+    ENDSWITCH
+  ENDIF
+UNTIL (tCmdOk == TRUE)
+END
+;*****************************************************************************************
+;Remote Write Real Variable
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetVarR(tRemoteRobot[] :IN,tVar[] :IN,tValue :IN,tMsgType :IN)
+DECL REAL tValue
+DECL BOOL tCmdOk
+DECL INT tPrError
+DECL CHAR tVar[],tRemoteRobot[],tVarWrite[128],tVarWrite1[256]
+DECL enArcMessageType_T tMsgType
+tVarWrite1[] = ArcStrAdd3(tVar[],"=",ArcRealToStr(tValue))
+tVarWrite[]=tVarWrite1[]
+REPEAT
+  ON_ERROR_PROCEED
+  tCmdOk = REMOTECMD(tRemoteRobot[],tVarWrite[])
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN
+  ENDIF
+  IF (tCmdOk == FALSE) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN
+    ENDSWITCH
+  ENDIF
+UNTIL (tCmdOk == TRUE)
+END
+;*****************************************************************************************
+;Remote Write String Variable
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetVarS(tRemoteRobot[] :IN,tVar[] :IN,tValue[] :IN,tMsgType :IN)
+DECL CHAR tValue[]
+DECL BOOL tCmdOk
+DECL INT tPrError
+DECL CHAR tVar[],tRemoteRobot[],tVarWrite[128],tVarWrite1[256]
+DECL enArcMessageType_T tMsgType
+tVarWrite1[] = ArcStrAdd3(tVar[],"=",tValue[])
+tVarWrite[]=tVarWrite1[]
+REPEAT
+  ON_ERROR_PROCEED
+  tCmdOk = REMOTECMD(tRemoteRobot[],tVarWrite[])
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN
+  ENDIF
+  IF (tCmdOk == FALSE) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN
+    ENDSWITCH
+  ENDIF
+UNTIL (tCmdOk == TRUE)
+END
+;*****************************************************************************************
+;Remote Write CHAR Variable
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetChar(tRemoteRobot[] :IN,tVar[] :IN,tValue[] :IN,tMsgType :IN)
+DECL CHAR tValue[]
+DECL BOOL tCmdOk
+DECL INT tPrError
+DECL CHAR tVar[],tRemoteRobot[],tVarWrite[128],tVarWrite1[256]
+DECL enArcMessageType_T tMsgType
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  RETURN ;TODO Remove
+ENDIF  
+tVarWrite1[] = ArcStrAdd3("'"'",tValue[],"'"'")
+tVarWrite1[] = ArcStrAdd3(tVar[],"=",tVarWrite1[])
+tVarWrite[]=tVarWrite1[]
+REPEAT
+  ON_ERROR_PROCEED
+  tCmdOk = REMOTECMD(tRemoteRobot[],tVarWrite[])
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN
+  ENDIF
+  IF (tCmdOk == FALSE) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN
+    ENDSWITCH
+  ENDIF
+UNTIL (tCmdOk == TRUE)
+END
+;*****************************************************************************************
+;Remote Read Boolean Variable
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcRemoteGetVarB(tRemoteRobot[] :IN,tVar[] :IN,tMsgType :IN)
+DECL BOOL tB 
+DECL INT tError,tPrError
+DECL CHAR tVar[],tVar1[128],tRemoteRobot[],tVarRead[256]
+DECL enArcMessageType_T tMsgType
+REPEAT
+  tError = 0
+  tB = STRCOPY(tVarRead[]," ")  
+  tB = STRCOPY(tVar1[],tVar[])
+  ON_ERROR_PROCEED
+  tVarRead[] = REMOTEREAD(tRemoteRobot[],tVar1[], tError)
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN FALSE
+  ENDIF
+  IF (tError > 0) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN FALSE
+    ENDSWITCH
+  ENDIF
+UNTIL (tError == 0)
+IF STRLEN(tVarRead[]) < 1 THEN
+  RETURN FALSE
+ENDIF
+RETURN ArcStrToBool(tVarRead[])
+ENDFCT
+;*****************************************************************************************
+;Remote Read Integer Variable
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArcRemoteGetVarI(tRemoteRobot[] :IN,tVar[] :IN,tMsgType :IN)
+DECL BOOL tB
+DECL INT tError,tPrError
+DECL CHAR tVar[],tVar1[128],tRemoteRobot[],tVarRead[256]
+DECL enArcMessageType_T tMsgType
+REPEAT
+  tError = 0
+  tB = STRCOPY(tVarRead[]," ")
+  tB = STRCOPY(tVar1[],tVar[])
+  ON_ERROR_PROCEED
+  tVarRead[] = REMOTEREAD(tRemoteRobot[],tVar1[], tError)
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN 0
+  ENDIF
+  IF (tError > 0) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN 0
+    ENDSWITCH
+  ENDIF
+UNTIL (tError == 0)
+IF STRLEN(tVarRead[]) < 1 THEN
+  RETURN 0
+ENDIF
+RETURN ArcStrToInt(tVarRead[])
+ENDFCT
+;*****************************************************************************************
+;Remote Read Real Variable
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcRemoteGetVarR(tRemoteRobot[] :IN,tVar[] :IN,tMsgType :IN)
+DECL BOOL tB
+DECL INT tError,tPrError
+DECL CHAR tVar[],tVar1[128],tRemoteRobot[],tVarRead[256]
+DECL enArcMessageType_T tMsgType
+REPEAT
+  tError = 0
+  tB = STRCOPY(tVarRead[]," ")
+  tB = STRCOPY(tVar1[],tVar[])
+  ON_ERROR_PROCEED
+  tVarRead[] = REMOTEREAD(tRemoteRobot[],tVar1[], tError)
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN 0.0
+  ENDIF
+  IF (tError > 0) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN 0.0
+    ENDSWITCH
+  ENDIF
+UNTIL (tError == 0)
+IF STRLEN(tVarRead[]) < 1 THEN
+  RETURN 0.0
+ENDIF
+RETURN ArcStrToReal(tVarRead[])
+ENDFCT
+;*****************************************************************************************
+;Remote Read String Variable
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcRemoteGetVarS(tRemoteRobot[] :IN,tVar[] :IN,tMsgType :IN)
+DECL BOOL tB
+DECL INT tError,tPrError
+DECL CHAR tVar[],tVar1[128],tRemoteRobot[],tVarRead[256]
+DECL enArcMessageType_T tMsgType
+REPEAT
+  tError = 0
+  tB = STRCOPY(tVarRead[]," ")
+  tB = STRCOPY(tVar1[],tVar[])
+  ON_ERROR_PROCEED
+  tVarRead[] = REMOTEREAD(tRemoteRobot[],tVar1[], tError)
+  tPrError = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tPrError > 0) THEN
+    ;ArcMsg("Diag ERROR: REMOTECMD")
+    RETURN " "
+  ENDIF
+  IF (tError > 0) THEN
+    ArcMsgWriteS(,tMsgType,"Error on Remote Write to Robot: %1 Variable: %2","ARC",1,Opt_NOVLSTOP_NOLOG,tRemoteRobot[],tVar[])
+    SWITCH tMsgType
+      CASE #NONE, #NOTIFY
+        RETURN " "
+    ENDSWITCH    
+  ENDIF
+UNTIL (tError == 0)
+IF STRLEN(tVarRead[]) < 1 THEN
+  RETURN " "
+ENDIF
+RETURN tVarRead[]
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] RobotTeam program synchronization
+;*****************************************************************************************
+GLOBAL DEF ArcProgramSync(tProgSync[] :IN, tNumRobot :IN)
+DECL INT tNumRobot
+DECL CHAR tProgSync[] ; Name Max 64 Char
+IF tNumRobot > 1 THEN
+  SYNCCMD(#PROGSYNC, tProgSync[], tNumRobot)
+ENDIF
+END
+;*****************************************************************************************
+;[Global Routine] RobotTeam Motion synchronization
+;*****************************************************************************************
+GLOBAL DEF ArcMotionSync(tMotionSync[] :IN, tNumRobot :IN)
+DECL INT tNumRobot
+DECL CHAR tMotionSync[] ; Name Max 64 Char
+IF tNumRobot > 1 THEN
+  SYNCCMD(#MOTIONSYNC, tMotionSync[], tNumRobot)
+ENDIF
+END
+;*****************************************************************************************
+;[Global Message Routine] Set Clear KRL message from Remote
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteSetClearMsg(tMsgNumber :IN)
+DECL INT tI,tMsgNumber
+tI = 2
+WHILE ArcRTRobotExist(tI) == TRUE
+  ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcMsgRemoteClearNumber",tMsgNumber,#NONE)
+  tI = tI + 1
+ENDWHILE
+END
+;******************************************************************************
+;[Global Message Routine] Set Answer and Clear KRL Dialogue message from Remote
+;******************************************************************************
+GLOBAL DEF ArcRemoteSetDialogAnswer(tMsgDilogueNumber :IN,tAnswerNr :OUT)
+DECL INT tI,tMsgDilogueNumber,tAnswerNr
+IF (tAnswerNr > 0) THEN
+  tI = 2
+  WHILE ArcRTRobotExist(tI) == TRUE
+    ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcRemoteDialogAnswer",tAnswerNr,#NONE)
+    ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcRemoteDialogNumber",tMsgDilogueNumber,#NONE)
+    tI = tI + 1
+  ENDWHILE
+ELSE
+  tAnswerNr = gArcRemoteDialogAnswer
+ENDIF
+gArcRemoteDialogAnswer = 0
+END
+;******************************************************************************
+;[Global Message Routine] Clear specific KRL message from Remote
+;******************************************************************************
+GLOBAL DEF ArcRemoteClearMsg()
+IF (gArcMsgRemoteClearNumber > 0) THEN
+  ArcMsgWriteClearNumber(gArcMsgRemoteClearNumber)
+  gArcMsgRemoteClearNumber = 0
+ENDIF
+IF (gArcRemoteDialogNumber > 0) AND (gArcRemoteDialogAnswer > 0) THEN
+  ArcMsgWriteAnswerNumber(gArcRemoteDialogNumber)
+  gArcRemoteDialogNumber = 0
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Remote write Messagge
+;******************************************************************************
+GLOBAL DEF ArcRemoteWriteMsg(tEnable :IN,tMsgText[] :IN,tMsgNr :IN)
+DECL BOOL tEnable
+DECL INT tMsgNr,tI
+DECL CHAR tMsgText[]
+IF (tEnable == TRUE) THEN
+  tI = 2
+  WHILE ArcRTRobotExist(tI) == TRUE
+    ArcRemoteSetChar($COOP_KRC[tI].NAME[],"ArcErrorRemoteRobot[]",$COOP_KRC[1].NAME[],#NONE)
+    ArcRemoteSetChar($COOP_KRC[tI].NAME[],"ArcErrorRemoteMsg[]",tMsgText[],#NONE)
+    ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcRemoteMsgNum",tMsgNr,#NONE)
+    tI = tI + 1
+  ENDWHILE
+ENDIF
+END
+;******************************************************************************
+;[Global Message Routine] Remote write Messagge
+;******************************************************************************
+GLOBAL DEF ArcRemoteShowMsg()
+DECL CHAR tStr[128]
+DECL CHAR tStrInt[24]
+IF (gArcRemoteMsgNum > 0) THEN
+  tStr[] = ArcIntToStr(gArcRemoteMsgNum)
+  tStrInt[] = tStr[]
+  ArcMsgWriteS(,#NOTIFY,"ErrorOnRemoteRobot","ARC",20016,Opt_NOVLSTOP_LOG,ArcErrorRemoteRobot[],ArcErrorRemoteMsg[],tStrInt[])
+  gArcRemoteMsgNum = 0
+ENDIF
+END

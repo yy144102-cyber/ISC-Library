@@ -1,0 +1,3496 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF L0001_S1_CWGMA_ISC()
+;FOLD INI;%{PE}
+;FOLD BASISTECH INI
+GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+INTERRUPT ON 3
+BAS (#INITMOV,0 )
+;ENDFOLD (BASISTECH INI)
+;FOLD USER INI
+;Make your modifications here
+;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD Actual psition
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP $POS_ACT
+;ENDFOLD
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FWeld
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP Approach1
+
+; make sure arc start point is good
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS(0)
+LIN XP1
+WAIT SEC 1
+
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOnMoveStd, WDAT1, WPV) PRIO = -1
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WPV)
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, WDAT1.Weld.Velocity)
+SET_CD_PARAMS(0)
+LIN XP1
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WPV)
+
+;Layer 1
+LIN XP2 C_Dis
+
+;Layer 1
+LIN XP3 C_Dis
+
+;Layer 1
+LIN XP4 C_Dis
+
+;Layer 1
+LIN XP5 C_Dis
+
+;Layer 1
+LIN XP6 C_Dis
+
+;Layer 1
+LIN XP7 C_Dis
+
+;Layer 1
+LIN XP8 C_Dis
+
+;Layer 1
+LIN XP9 C_Dis
+
+;Layer 1
+LIN XP10 C_Dis
+
+;Layer 1
+LIN XP11 C_Dis
+
+;Layer 1
+LIN XP12 C_Dis
+
+;Layer 1
+LIN XP13 C_Dis
+
+;Layer 1
+LIN XP14 C_Dis
+
+;Layer 1
+LIN XP15 C_Dis
+
+;Layer 1
+LIN XP16 C_Dis
+
+;Layer 1
+LIN XP17 C_Dis
+
+;Layer 1
+LIN XP18 C_Dis
+
+;Layer 1
+LIN XP19 C_Dis
+
+;Layer 1
+LIN XP20 C_Dis
+
+;Layer 1
+LIN XP21 C_Dis
+
+;Layer 1
+LIN XP22 C_Dis
+
+;Layer 1
+LIN XP23 C_Dis
+
+;Layer 1
+LIN XP24 C_Dis
+
+;Layer 1
+LIN XP25 C_Dis
+
+;Layer 1
+LIN XP26 C_Dis
+
+;Layer 1
+LIN XP27 C_Dis
+
+;Layer 1
+CIRC XP28, XP29 C_Dis C_Dis
+
+;Layer 1
+LIN XP30 C_Dis
+
+;Layer 1
+LIN XP31 C_Dis
+
+;Layer 1
+LIN XP32 C_Dis
+
+;Layer 1
+LIN XP33 C_Dis
+
+;Layer 1
+LIN XP34 C_Dis
+
+;Layer 1
+LIN XP35 C_Dis
+
+;Layer 1
+LIN XP36 C_Dis
+
+;Layer 1
+LIN XP37 C_Dis
+
+;Layer 1
+LIN XP38 C_Dis
+
+;Layer 1
+LIN XP39 C_Dis
+
+;Layer 1
+LIN XP40 C_Dis
+
+;Layer 1
+LIN XP41 C_Dis
+
+;Layer 1
+LIN XP42 C_Dis
+
+;Layer 1
+LIN XP43 C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT44 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT44, WPV)
+BAS(#CP_PARAMS, WDAT44.Weld.Velocity)
+LIN XP44 C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT44, WPV)
+
+;Layer 2
+LIN XP45 C_Dis
+
+;Layer 2
+LIN XP46 C_Dis
+
+;Layer 2
+LIN XP47 C_Dis
+
+;Layer 2
+LIN XP48 C_Dis
+
+;Layer 2
+LIN XP49 C_Dis
+
+;Layer 2
+LIN XP50 C_Dis
+
+;Layer 2
+LIN XP51 C_Dis
+
+;Layer 2
+LIN XP52 C_Dis
+
+;Layer 2
+LIN XP53 C_Dis
+
+;Layer 2
+LIN XP54 C_Dis
+
+;Layer 2
+LIN XP55 C_Dis
+
+;Layer 2
+LIN XP56 C_Dis
+
+;Layer 2
+LIN XP57 C_Dis
+
+;Layer 2
+LIN XP58 C_Dis
+
+;Layer 2
+LIN XP59 C_Dis
+
+;Layer 2
+LIN XP60 C_Dis
+
+;Layer 2
+LIN XP61 C_Dis
+
+;Layer 2
+LIN XP62 C_Dis
+
+;Layer 2
+LIN XP63 C_Dis
+
+;Layer 2
+LIN XP64 C_Dis
+
+;Layer 2
+LIN XP65 C_Dis
+
+;Layer 2
+LIN XP66 C_Dis
+
+;Layer 2
+LIN XP67 C_Dis
+
+;Layer 2
+LIN XP68 C_Dis
+
+;Layer 2
+LIN XP69 C_Dis
+
+;Layer 2
+LIN XP70 C_Dis
+
+;Layer 2
+CIRC XP71, XP72 C_Dis C_Dis
+
+;Layer 2
+LIN XP73 C_Dis
+
+;Layer 2
+LIN XP74 C_Dis
+
+;Layer 2
+LIN XP75 C_Dis
+
+;Layer 2
+LIN XP76 C_Dis
+
+;Layer 2
+LIN XP77 C_Dis
+
+;Layer 2
+LIN XP78 C_Dis
+
+;Layer 2
+LIN XP79 C_Dis
+
+;Layer 2
+LIN XP80 C_Dis
+
+;Layer 2
+LIN XP81 C_Dis
+
+;Layer 2
+LIN XP82 C_Dis
+
+;Layer 2
+LIN XP83 C_Dis
+
+;Layer 2
+LIN XP84 C_Dis
+
+;Layer 2
+LIN XP85 C_Dis
+
+;Layer 2
+LIN XP86 C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT87 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT87, WPV)
+BAS(#CP_PARAMS, WDAT87.Weld.Velocity)
+LIN XP87 C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT87, WPV)
+
+;Layer 3
+LIN XP88 C_Dis
+
+;Layer 3
+LIN XP89 C_Dis
+
+;Layer 3
+LIN XP90 C_Dis
+
+;Layer 3
+LIN XP91 C_Dis
+
+;Layer 3
+LIN XP92 C_Dis
+
+;Layer 3
+LIN XP93 C_Dis
+
+;Layer 3
+LIN XP94 C_Dis
+
+;Layer 3
+LIN XP95 C_Dis
+
+;Layer 3
+LIN XP96 C_Dis
+
+;Layer 3
+LIN XP97 C_Dis
+
+;Layer 3
+LIN XP98 C_Dis
+
+;Layer 3
+LIN XP99 C_Dis
+
+;Layer 3
+LIN XP100 C_Dis
+
+;Layer 3
+LIN XP101 C_Dis
+
+;Layer 3
+LIN XP102 C_Dis
+
+;Layer 3
+LIN XP103 C_Dis
+
+;Layer 3
+LIN XP104 C_Dis
+
+;Layer 3
+LIN XP105 C_Dis
+
+;Layer 3
+LIN XP106 C_Dis
+
+;Layer 3
+LIN XP107 C_Dis
+
+;Layer 3
+LIN XP108 C_Dis
+
+;Layer 3
+LIN XP109 C_Dis
+
+;Layer 3
+LIN XP110 C_Dis
+
+;Layer 3
+LIN XP111 C_Dis
+
+;Layer 3
+LIN XP112 C_Dis
+
+;Layer 3
+LIN XP113 C_Dis
+
+;Layer 3
+CIRC XP114, XP115 C_Dis C_Dis
+
+;Layer 3
+LIN XP116 C_Dis
+
+;Layer 3
+LIN XP117 C_Dis
+
+;Layer 3
+LIN XP118 C_Dis
+
+;Layer 3
+LIN XP119 C_Dis
+
+;Layer 3
+LIN XP120 C_Dis
+
+;Layer 3
+LIN XP121 C_Dis
+
+;Layer 3
+LIN XP122 C_Dis
+
+;Layer 3
+LIN XP123 C_Dis
+
+;Layer 3
+LIN XP124 C_Dis
+
+;Layer 3
+LIN XP125 C_Dis
+
+;Layer 3
+LIN XP126 C_Dis
+
+;Layer 3
+LIN XP127 C_Dis
+
+;Layer 3
+LIN XP128 C_Dis
+
+;Layer 3
+LIN XP129 C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT130 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT130, WPV)
+BAS(#CP_PARAMS, WDAT130.Weld.Velocity)
+LIN XP130 C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT130, WPV)
+
+;Layer 4
+LIN XP131 C_Dis
+
+;Layer 4
+LIN XP132 C_Dis
+
+;Layer 4
+LIN XP133 C_Dis
+
+;Layer 4
+LIN XP134 C_Dis
+
+;Layer 4
+LIN XP135 C_Dis
+
+;Layer 4
+LIN XP136 C_Dis
+
+;Layer 4
+LIN XP137 C_Dis
+
+;Layer 4
+LIN XP138 C_Dis
+
+;Layer 4
+LIN XP139 C_Dis
+
+;Layer 4
+LIN XP140 C_Dis
+
+;Layer 4
+LIN XP141 C_Dis
+
+;Layer 4
+LIN XP142 C_Dis
+
+;Layer 4
+LIN XP143 C_Dis
+
+;Layer 4
+LIN XP144 C_Dis
+
+;Layer 4
+LIN XP145 C_Dis
+
+;Layer 4
+LIN XP146 C_Dis
+
+;Layer 4
+LIN XP147 C_Dis
+
+;Layer 4
+LIN XP148 C_Dis
+
+;Layer 4
+LIN XP149 C_Dis
+
+;Layer 4
+LIN XP150 C_Dis
+
+;Layer 4
+LIN XP151 C_Dis
+
+;Layer 4
+LIN XP152 C_Dis
+
+;Layer 4
+LIN XP153 C_Dis
+
+;Layer 4
+LIN XP154 C_Dis
+
+;Layer 4
+LIN XP155 C_Dis
+
+;Layer 4
+LIN XP156 C_Dis
+
+;Layer 4
+CIRC XP157, XP158 C_Dis C_Dis
+
+;Layer 4
+LIN XP159 C_Dis
+
+;Layer 4
+LIN XP160 C_Dis
+
+;Layer 4
+LIN XP161 C_Dis
+
+;Layer 4
+LIN XP162 C_Dis
+
+;Layer 4
+LIN XP163 C_Dis
+
+;Layer 4
+LIN XP164 C_Dis
+
+;Layer 4
+LIN XP165 C_Dis
+
+;Layer 4
+LIN XP166 C_Dis
+
+;Layer 4
+LIN XP167 C_Dis
+
+;Layer 4
+LIN XP168 C_Dis
+
+;Layer 4
+LIN XP169 C_Dis
+
+;Layer 4
+LIN XP170 C_Dis
+
+;Layer 4
+LIN XP171 C_Dis
+
+;Layer 4
+LIN XP172 C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT173 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT173, WPV)
+BAS(#CP_PARAMS, WDAT173.Weld.Velocity)
+LIN XP173 C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT173, WPV)
+
+;Layer 5
+LIN XP174 C_Dis
+
+;Layer 5
+LIN XP175 C_Dis
+
+;Layer 5
+LIN XP176 C_Dis
+
+;Layer 5
+LIN XP177 C_Dis
+
+;Layer 5
+LIN XP178 C_Dis
+
+;Layer 5
+LIN XP179 C_Dis
+
+;Layer 5
+LIN XP180 C_Dis
+
+;Layer 5
+LIN XP181 C_Dis
+
+;Layer 5
+LIN XP182 C_Dis
+
+;Layer 5
+LIN XP183 C_Dis
+
+;Layer 5
+LIN XP184 C_Dis
+
+;Layer 5
+LIN XP185 C_Dis
+
+;Layer 5
+LIN XP186 C_Dis
+
+;Layer 5
+LIN XP187 C_Dis
+
+;Layer 5
+LIN XP188 C_Dis
+
+;Layer 5
+LIN XP189 C_Dis
+
+;Layer 5
+LIN XP190 C_Dis
+
+;Layer 5
+LIN XP191 C_Dis
+
+;Layer 5
+LIN XP192 C_Dis
+
+;Layer 5
+LIN XP193 C_Dis
+
+;Layer 5
+LIN XP194 C_Dis
+
+;Layer 5
+LIN XP195 C_Dis
+
+;Layer 5
+LIN XP196 C_Dis
+
+;Layer 5
+LIN XP197 C_Dis
+
+;Layer 5
+LIN XP198 C_Dis
+
+;Layer 5
+LIN XP199 C_Dis
+
+;Layer 5
+CIRC XP200, XP201 C_Dis C_Dis
+
+;Layer 5
+LIN XP202 C_Dis
+
+;Layer 5
+LIN XP203 C_Dis
+
+;Layer 5
+LIN XP204 C_Dis
+
+;Layer 5
+LIN XP205 C_Dis
+
+;Layer 5
+LIN XP206 C_Dis
+
+;Layer 5
+LIN XP207 C_Dis
+
+;Layer 5
+LIN XP208 C_Dis
+
+;Layer 5
+LIN XP209 C_Dis
+
+;Layer 5
+LIN XP210 C_Dis
+
+;Layer 5
+LIN XP211 C_Dis
+
+;Layer 5
+LIN XP212 C_Dis
+
+;Layer 5
+LIN XP213 C_Dis
+
+;Layer 5
+LIN XP214 C_Dis
+
+;Layer 5
+LIN XP215 C_Dis
+
+;Layer 6
+LIN XP216 C_Dis
+
+;Layer 6
+LIN XP217 C_Dis
+
+;Layer 6
+LIN XP218 C_Dis
+
+;Layer 6
+LIN XP219 C_Dis
+
+;Layer 6
+LIN XP220 C_Dis
+
+;Layer 6
+LIN XP221 C_Dis
+
+;Layer 6
+LIN XP222 C_Dis
+
+;Layer 6
+LIN XP223 C_Dis
+
+;Layer 6
+LIN XP224 C_Dis
+
+;Layer 6
+LIN XP225 C_Dis
+
+;Layer 6
+LIN XP226 C_Dis
+
+;Layer 6
+LIN XP227 C_Dis
+
+;Layer 6
+LIN XP228 C_Dis
+
+;Layer 6
+LIN XP229 C_Dis
+
+;Layer 6
+LIN XP230 C_Dis
+
+;Layer 6
+LIN XP231 C_Dis
+
+;Layer 6
+LIN XP232 C_Dis
+
+;Layer 6
+LIN XP233 C_Dis
+
+;Layer 6
+LIN XP234 C_Dis
+
+;Layer 6
+LIN XP235 C_Dis
+
+;Layer 6
+LIN XP236 C_Dis
+
+;Layer 6
+LIN XP237 C_Dis
+
+;Layer 6
+LIN XP238 C_Dis
+
+;Layer 6
+LIN XP239 C_Dis
+
+;Layer 6
+LIN XP240 C_Dis
+
+;Layer 6
+LIN XP241 C_Dis
+
+;Layer 6
+LIN XP242 C_Dis
+
+;Layer 6
+CIRC XP243, XP244 C_Dis C_Dis
+
+;Layer 6
+LIN XP245 C_Dis
+
+;Layer 6
+LIN XP246 C_Dis
+
+;Layer 6
+LIN XP247 C_Dis
+
+;Layer 6
+LIN XP248 C_Dis
+
+;Layer 6
+LIN XP249 C_Dis
+
+;Layer 6
+LIN XP250 C_Dis
+
+;Layer 6
+LIN XP251 C_Dis
+
+;Layer 6
+LIN XP252 C_Dis
+
+;Layer 6
+LIN XP253 C_Dis
+
+;Layer 6
+LIN XP254 C_Dis
+
+;Layer 6
+LIN XP255 C_Dis
+
+;Layer 6
+LIN XP256 C_Dis
+
+;Layer 6
+LIN XP257 C_Dis
+
+;Layer 6
+LIN XP258 C_Dis
+
+;Layer 7
+LIN XP259 C_Dis
+
+;Layer 7
+LIN XP260 C_Dis
+
+;Layer 7
+LIN XP261 C_Dis
+
+;Layer 7
+LIN XP262 C_Dis
+
+;Layer 7
+LIN XP263 C_Dis
+
+;Layer 7
+LIN XP264 C_Dis
+
+;Layer 7
+LIN XP265 C_Dis
+
+;Layer 7
+LIN XP266 C_Dis
+
+;Layer 7
+LIN XP267 C_Dis
+
+;Layer 7
+LIN XP268 C_Dis
+
+;Layer 7
+LIN XP269 C_Dis
+
+;Layer 7
+LIN XP270 C_Dis
+
+;Layer 7
+LIN XP271 C_Dis
+
+;Layer 7
+LIN XP272 C_Dis
+
+;Layer 7
+LIN XP273 C_Dis
+
+;Layer 7
+LIN XP274 C_Dis
+
+;Layer 7
+LIN XP275 C_Dis
+
+;Layer 7
+LIN XP276 C_Dis
+
+;Layer 7
+LIN XP277 C_Dis
+
+;Layer 7
+LIN XP278 C_Dis
+
+;Layer 7
+LIN XP279 C_Dis
+
+;Layer 7
+LIN XP280 C_Dis
+
+;Layer 7
+LIN XP281 C_Dis
+
+;Layer 7
+LIN XP282 C_Dis
+
+;Layer 7
+LIN XP283 C_Dis
+
+;Layer 7
+LIN XP284 C_Dis
+
+;Layer 7
+LIN XP285 C_Dis
+
+;Layer 7
+CIRC XP286, XP287 C_Dis C_Dis
+
+;Layer 7
+LIN XP288 C_Dis
+
+;Layer 7
+LIN XP289 C_Dis
+
+;Layer 7
+LIN XP290 C_Dis
+
+;Layer 7
+LIN XP291 C_Dis
+
+;Layer 7
+LIN XP292 C_Dis
+
+;Layer 7
+LIN XP293 C_Dis
+
+;Layer 7
+LIN XP294 C_Dis
+
+;Layer 7
+LIN XP295 C_Dis
+
+;Layer 7
+LIN XP296 C_Dis
+
+;Layer 7
+LIN XP297 C_Dis
+
+;Layer 7
+LIN XP298 C_Dis
+
+;Layer 7
+LIN XP299 C_Dis
+
+;Layer 7
+LIN XP300 C_Dis
+
+;Layer 7
+LIN XP301 C_Dis
+
+;Layer 8
+LIN XP302 C_Dis
+
+;Layer 8
+LIN XP303 C_Dis
+
+;Layer 8
+LIN XP304 C_Dis
+
+;Layer 8
+LIN XP305 C_Dis
+
+;Layer 8
+LIN XP306 C_Dis
+
+;Layer 8
+LIN XP307 C_Dis
+
+;Layer 8
+LIN XP308 C_Dis
+
+;Layer 8
+LIN XP309 C_Dis
+
+;Layer 8
+LIN XP310 C_Dis
+
+;Layer 8
+LIN XP311 C_Dis
+
+;Layer 8
+LIN XP312 C_Dis
+
+;Layer 8
+LIN XP313 C_Dis
+
+;Layer 8
+LIN XP314 C_Dis
+
+;Layer 8
+LIN XP315 C_Dis
+
+;Layer 8
+LIN XP316 C_Dis
+
+;Layer 8
+LIN XP317 C_Dis
+
+;Layer 8
+LIN XP318 C_Dis
+
+;Layer 8
+LIN XP319 C_Dis
+
+;Layer 8
+LIN XP320 C_Dis
+
+;Layer 8
+LIN XP321 C_Dis
+
+;Layer 8
+LIN XP322 C_Dis
+
+;Layer 8
+LIN XP323 C_Dis
+
+;Layer 8
+LIN XP324 C_Dis
+
+;Layer 8
+LIN XP325 C_Dis
+
+;Layer 8
+LIN XP326 C_Dis
+
+;Layer 8
+LIN XP327 C_Dis
+
+;Layer 8
+LIN XP328 C_Dis
+
+;Layer 8
+CIRC XP329, XP330 C_Dis C_Dis
+
+;Layer 8
+LIN XP331 C_Dis
+
+;Layer 8
+LIN XP332 C_Dis
+
+;Layer 8
+LIN XP333 C_Dis
+
+;Layer 8
+LIN XP334 C_Dis
+
+;Layer 8
+LIN XP335 C_Dis
+
+;Layer 8
+LIN XP336 C_Dis
+
+;Layer 8
+LIN XP337 C_Dis
+
+;Layer 8
+LIN XP338 C_Dis
+
+;Layer 8
+LIN XP339 C_Dis
+
+;Layer 8
+LIN XP340 C_Dis
+
+;Layer 8
+LIN XP341 C_Dis
+
+;Layer 8
+LIN XP342 C_Dis
+
+;Layer 8
+LIN XP343 C_Dis
+
+;Layer 8
+LIN XP344 C_Dis
+
+;Layer 9
+LIN XP345 C_Dis
+
+;Layer 9
+LIN XP346 C_Dis
+
+;Layer 9
+LIN XP347 C_Dis
+
+;Layer 9
+LIN XP348 C_Dis
+
+;Layer 9
+LIN XP349 C_Dis
+
+;Layer 9
+LIN XP350 C_Dis
+
+;Layer 9
+LIN XP351 C_Dis
+
+;Layer 9
+LIN XP352 C_Dis
+
+;Layer 9
+LIN XP353 C_Dis
+
+;Layer 9
+LIN XP354 C_Dis
+
+;Layer 9
+LIN XP355 C_Dis
+
+;Layer 9
+LIN XP356 C_Dis
+
+;Layer 9
+LIN XP357 C_Dis
+
+;Layer 9
+LIN XP358 C_Dis
+
+;Layer 9
+LIN XP359 C_Dis
+
+;Layer 9
+LIN XP360 C_Dis
+
+;Layer 9
+LIN XP361 C_Dis
+
+;Layer 9
+LIN XP362 C_Dis
+
+;Layer 9
+LIN XP363 C_Dis
+
+;Layer 9
+LIN XP364 C_Dis
+
+;Layer 9
+LIN XP365 C_Dis
+
+;Layer 9
+LIN XP366 C_Dis
+
+;Layer 9
+LIN XP367 C_Dis
+
+;Layer 9
+LIN XP368 C_Dis
+
+;Layer 9
+LIN XP369 C_Dis
+
+;Layer 9
+LIN XP370 C_Dis
+
+;Layer 9
+LIN XP371 C_Dis
+
+;Layer 9
+CIRC XP372, XP373 C_Dis C_Dis
+
+;Layer 9
+LIN XP374 C_Dis
+
+;Layer 9
+LIN XP375 C_Dis
+
+;Layer 9
+LIN XP376 C_Dis
+
+;Layer 9
+LIN XP377 C_Dis
+
+;Layer 9
+LIN XP378 C_Dis
+
+;Layer 9
+LIN XP379 C_Dis
+
+;Layer 9
+LIN XP380 C_Dis
+
+;Layer 9
+LIN XP381 C_Dis
+
+;Layer 9
+LIN XP382 C_Dis
+
+;Layer 9
+LIN XP383 C_Dis
+
+;Layer 9
+LIN XP384 C_Dis
+
+;Layer 9
+LIN XP385 C_Dis
+
+;Layer 9
+LIN XP386 C_Dis
+
+;Layer 9
+LIN XP387 C_Dis
+
+;Layer 10
+LIN XP388 C_Dis
+
+;Layer 10
+LIN XP389 C_Dis
+
+;Layer 10
+LIN XP390 C_Dis
+
+;Layer 10
+LIN XP391 C_Dis
+
+;Layer 10
+LIN XP392 C_Dis
+
+;Layer 10
+LIN XP393 C_Dis
+
+;Layer 10
+LIN XP394 C_Dis
+
+;Layer 10
+LIN XP395 C_Dis
+
+;Layer 10
+LIN XP396 C_Dis
+
+;Layer 10
+LIN XP397 C_Dis
+
+;Layer 10
+LIN XP398 C_Dis
+
+;Layer 10
+LIN XP399 C_Dis
+
+;Layer 10
+LIN XP400 C_Dis
+
+;Layer 10
+LIN XP401 C_Dis
+
+;Layer 10
+LIN XP402 C_Dis
+
+;Layer 10
+LIN XP403 C_Dis
+
+;Layer 10
+LIN XP404 C_Dis
+
+;Layer 10
+LIN XP405 C_Dis
+
+;Layer 10
+LIN XP406 C_Dis
+
+;Layer 10
+LIN XP407 C_Dis
+
+;Layer 10
+LIN XP408 C_Dis
+
+;Layer 10
+LIN XP409 C_Dis
+
+;Layer 10
+LIN XP410 C_Dis
+
+;Layer 10
+LIN XP411 C_Dis
+
+;Layer 10
+LIN XP412 C_Dis
+
+;Layer 10
+LIN XP413 C_Dis
+
+;Layer 10
+LIN XP414 C_Dis
+
+;Layer 10
+CIRC XP415, XP416 C_Dis C_Dis
+
+;Layer 10
+LIN XP417 C_Dis
+
+;Layer 10
+LIN XP418 C_Dis
+
+;Layer 10
+LIN XP419 C_Dis
+
+;Layer 10
+LIN XP420 C_Dis
+
+;Layer 10
+LIN XP421 C_Dis
+
+;Layer 10
+LIN XP422 C_Dis
+
+;Layer 10
+LIN XP423 C_Dis
+
+;Layer 10
+LIN XP424 C_Dis
+
+;Layer 10
+LIN XP425 C_Dis
+
+;Layer 10
+LIN XP426 C_Dis
+
+;Layer 10
+LIN XP427 C_Dis
+
+;Layer 10
+LIN XP428 C_Dis
+
+;Layer 10
+LIN XP429 C_Dis
+
+;Layer 10
+LIN XP430 C_Dis
+
+;Layer 11
+LIN XP431 C_Dis
+
+;Layer 11
+LIN XP432 C_Dis
+
+;Layer 11
+LIN XP433 C_Dis
+
+;Layer 11
+LIN XP434 C_Dis
+
+;Layer 11
+LIN XP435 C_Dis
+
+;Layer 11
+LIN XP436 C_Dis
+
+;Layer 11
+LIN XP437 C_Dis
+
+;Layer 11
+LIN XP438 C_Dis
+
+;Layer 11
+LIN XP439 C_Dis
+
+;Layer 11
+LIN XP440 C_Dis
+
+;Layer 11
+LIN XP441 C_Dis
+
+;Layer 11
+LIN XP442 C_Dis
+
+;Layer 11
+LIN XP443 C_Dis
+
+;Layer 11
+LIN XP444 C_Dis
+
+;Layer 11
+LIN XP445 C_Dis
+
+;Layer 11
+LIN XP446 C_Dis
+
+;Layer 11
+LIN XP447 C_Dis
+
+;Layer 11
+LIN XP448 C_Dis
+
+;Layer 11
+LIN XP449 C_Dis
+
+;Layer 11
+LIN XP450 C_Dis
+
+;Layer 11
+LIN XP451 C_Dis
+
+;Layer 11
+LIN XP452 C_Dis
+
+;Layer 11
+LIN XP453 C_Dis
+
+;Layer 11
+LIN XP454 C_Dis
+
+;Layer 11
+LIN XP455 C_Dis
+
+;Layer 11
+LIN XP456 C_Dis
+
+;Layer 11
+LIN XP457 C_Dis
+
+;Layer 11
+CIRC XP458, XP459 C_Dis C_Dis
+
+;Layer 11
+LIN XP460 C_Dis
+
+;Layer 11
+LIN XP461 C_Dis
+
+;Layer 11
+LIN XP462 C_Dis
+
+;Layer 11
+LIN XP463 C_Dis
+
+;Layer 11
+LIN XP464 C_Dis
+
+;Layer 11
+LIN XP465 C_Dis
+
+;Layer 11
+LIN XP466 C_Dis
+
+;Layer 11
+LIN XP467 C_Dis
+
+;Layer 11
+LIN XP468 C_Dis
+
+;Layer 11
+LIN XP469 C_Dis
+
+;Layer 11
+LIN XP470 C_Dis
+
+;Layer 11
+LIN XP471 C_Dis
+
+;Layer 11
+LIN XP472 C_Dis
+
+;Layer 11
+LIN XP473 C_Dis
+
+;Layer 12
+LIN XP474 C_Dis
+
+;Layer 12
+LIN XP475 C_Dis
+
+;Layer 12
+LIN XP476 C_Dis
+
+;Layer 12
+LIN XP477 C_Dis
+
+;Layer 12
+LIN XP478 C_Dis
+
+;Layer 12
+LIN XP479 C_Dis
+
+;Layer 12
+LIN XP480 C_Dis
+
+;Layer 12
+LIN XP481 C_Dis
+
+;Layer 12
+LIN XP482 C_Dis
+
+;Layer 12
+LIN XP483 C_Dis
+
+;Layer 12
+LIN XP484 C_Dis
+
+;Layer 12
+LIN XP485 C_Dis
+
+;Layer 12
+LIN XP486 C_Dis
+
+;Layer 12
+LIN XP487 C_Dis
+
+;Layer 12
+LIN XP488 C_Dis
+
+;Layer 12
+LIN XP489 C_Dis
+
+;Layer 12
+LIN XP490 C_Dis
+
+;Layer 12
+LIN XP491 C_Dis
+
+;Layer 12
+LIN XP492 C_Dis
+
+;Layer 12
+LIN XP493 C_Dis
+
+;Layer 12
+LIN XP494 C_Dis
+
+;Layer 12
+LIN XP495 C_Dis
+
+;Layer 12
+LIN XP496 C_Dis
+
+;Layer 12
+LIN XP497 C_Dis
+
+;Layer 12
+LIN XP498 C_Dis
+
+;Layer 12
+LIN XP499 C_Dis
+
+;Layer 12
+LIN XP500 C_Dis
+
+;Layer 12
+CIRC XP501, XP502 C_Dis C_Dis
+
+;Layer 12
+LIN XP503 C_Dis
+
+;Layer 12
+LIN XP504 C_Dis
+
+;Layer 12
+LIN XP505 C_Dis
+
+;Layer 12
+LIN XP506 C_Dis
+
+;Layer 12
+LIN XP507 C_Dis
+
+;Layer 12
+LIN XP508 C_Dis
+
+;Layer 12
+LIN XP509 C_Dis
+
+;Layer 12
+LIN XP510 C_Dis
+
+;Layer 12
+LIN XP511 C_Dis
+
+;Layer 12
+LIN XP512 C_Dis
+
+;Layer 12
+LIN XP513 C_Dis
+
+;Layer 12
+LIN XP514 C_Dis
+
+;Layer 12
+LIN XP515 C_Dis
+
+;Layer 12
+LIN XP516 C_Dis
+
+;Layer 13
+LIN XP517 C_Dis
+
+;Layer 13
+LIN XP518 C_Dis
+
+;Layer 13
+LIN XP519 C_Dis
+
+;Layer 13
+LIN XP520 C_Dis
+
+;Layer 13
+LIN XP521 C_Dis
+
+;Layer 13
+LIN XP522 C_Dis
+
+;Layer 13
+LIN XP523 C_Dis
+
+;Layer 13
+LIN XP524 C_Dis
+
+;Layer 13
+LIN XP525 C_Dis
+
+;Layer 13
+LIN XP526 C_Dis
+
+;Layer 13
+LIN XP527 C_Dis
+
+;Layer 13
+LIN XP528 C_Dis
+
+;Layer 13
+LIN XP529 C_Dis
+
+;Layer 13
+LIN XP530 C_Dis
+
+;Layer 13
+LIN XP531 C_Dis
+
+;Layer 13
+LIN XP532 C_Dis
+
+;Layer 13
+LIN XP533 C_Dis
+
+;Layer 13
+LIN XP534 C_Dis
+
+;Layer 13
+LIN XP535 C_Dis
+
+;Layer 13
+LIN XP536 C_Dis
+
+;Layer 13
+LIN XP537 C_Dis
+
+;Layer 13
+LIN XP538 C_Dis
+
+;Layer 13
+LIN XP539 C_Dis
+
+;Layer 13
+LIN XP540 C_Dis
+
+;Layer 13
+LIN XP541 C_Dis
+
+;Layer 13
+LIN XP542 C_Dis
+
+;Layer 13
+LIN XP543 C_Dis
+
+;Layer 13
+CIRC XP544, XP545 C_Dis C_Dis
+
+;Layer 13
+LIN XP546 C_Dis
+
+;Layer 13
+LIN XP547 C_Dis
+
+;Layer 13
+LIN XP548 C_Dis
+
+;Layer 13
+LIN XP549 C_Dis
+
+;Layer 13
+LIN XP550 C_Dis
+
+;Layer 13
+LIN XP551 C_Dis
+
+;Layer 13
+LIN XP552 C_Dis
+
+;Layer 13
+LIN XP553 C_Dis
+
+;Layer 13
+LIN XP554 C_Dis
+
+;Layer 13
+LIN XP555 C_Dis
+
+;Layer 13
+LIN XP556 C_Dis
+
+;Layer 13
+LIN XP557 C_Dis
+
+;Layer 13
+LIN XP558 C_Dis
+
+;Layer 13
+LIN XP559 C_Dis
+
+;Layer 14
+LIN XP560 C_Dis
+
+;Layer 14
+LIN XP561 C_Dis
+
+;Layer 14
+LIN XP562 C_Dis
+
+;Layer 14
+LIN XP563 C_Dis
+
+;Layer 14
+LIN XP564 C_Dis
+
+;Layer 14
+LIN XP565 C_Dis
+
+;Layer 14
+LIN XP566 C_Dis
+
+;Layer 14
+LIN XP567 C_Dis
+
+;Layer 14
+LIN XP568 C_Dis
+
+;Layer 14
+LIN XP569 C_Dis
+
+;Layer 14
+LIN XP570 C_Dis
+
+;Layer 14
+LIN XP571 C_Dis
+
+;Layer 14
+LIN XP572 C_Dis
+
+;Layer 14
+LIN XP573 C_Dis
+
+;Layer 14
+LIN XP574 C_Dis
+
+;Layer 14
+LIN XP575 C_Dis
+
+;Layer 14
+LIN XP576 C_Dis
+
+;Layer 14
+LIN XP577 C_Dis
+
+;Layer 14
+LIN XP578 C_Dis
+
+;Layer 14
+LIN XP579 C_Dis
+
+;Layer 14
+LIN XP580 C_Dis
+
+;Layer 14
+LIN XP581 C_Dis
+
+;Layer 14
+LIN XP582 C_Dis
+
+;Layer 14
+LIN XP583 C_Dis
+
+;Layer 14
+LIN XP584 C_Dis
+
+;Layer 14
+LIN XP585 C_Dis
+
+;Layer 14
+LIN XP586 C_Dis
+
+;Layer 14
+CIRC XP587, XP588 C_Dis C_Dis
+
+;Layer 14
+LIN XP589 C_Dis
+
+;Layer 14
+LIN XP590 C_Dis
+
+;Layer 14
+LIN XP591 C_Dis
+
+;Layer 14
+LIN XP592 C_Dis
+
+;Layer 14
+LIN XP593 C_Dis
+
+;Layer 14
+LIN XP594 C_Dis
+
+;Layer 14
+LIN XP595 C_Dis
+
+;Layer 14
+LIN XP596 C_Dis
+
+;Layer 14
+LIN XP597 C_Dis
+
+;Layer 14
+LIN XP598 C_Dis
+
+;Layer 14
+LIN XP599 C_Dis
+
+;Layer 14
+LIN XP600 C_Dis
+
+;Layer 14
+LIN XP601 C_Dis
+
+;Layer 14
+LIN XP602 C_Dis
+
+;Layer 15
+LIN XP603 C_Dis
+
+;Layer 15
+LIN XP604 C_Dis
+
+;Layer 15
+LIN XP605 C_Dis
+
+;Layer 15
+LIN XP606 C_Dis
+
+;Layer 15
+LIN XP607 C_Dis
+
+;Layer 15
+LIN XP608 C_Dis
+
+;Layer 15
+LIN XP609 C_Dis
+
+;Layer 15
+LIN XP610 C_Dis
+
+;Layer 15
+LIN XP611 C_Dis
+
+;Layer 15
+LIN XP612 C_Dis
+
+;Layer 15
+LIN XP613 C_Dis
+
+;Layer 15
+LIN XP614 C_Dis
+
+;Layer 15
+LIN XP615 C_Dis
+
+;Layer 15
+LIN XP616 C_Dis
+
+;Layer 15
+LIN XP617 C_Dis
+
+;Layer 15
+LIN XP618 C_Dis
+
+;Layer 15
+LIN XP619 C_Dis
+
+;Layer 15
+LIN XP620 C_Dis
+
+;Layer 15
+LIN XP621 C_Dis
+
+;Layer 15
+LIN XP622 C_Dis
+
+;Layer 15
+LIN XP623 C_Dis
+
+;Layer 15
+LIN XP624 C_Dis
+
+;Layer 15
+LIN XP625 C_Dis
+
+;Layer 15
+LIN XP626 C_Dis
+
+;Layer 15
+LIN XP627 C_Dis
+
+;Layer 15
+LIN XP628 C_Dis
+
+;Layer 15
+LIN XP629 C_Dis
+
+;Layer 15
+CIRC XP630, XP631 C_Dis C_Dis
+
+;Layer 15
+LIN XP632 C_Dis
+
+;Layer 15
+LIN XP633 C_Dis
+
+;Layer 15
+LIN XP634 C_Dis
+
+;Layer 15
+LIN XP635 C_Dis
+
+;Layer 15
+LIN XP636 C_Dis
+
+;Layer 15
+LIN XP637 C_Dis
+
+;Layer 15
+LIN XP638 C_Dis
+
+;Layer 15
+LIN XP639 C_Dis
+
+;Layer 15
+LIN XP640 C_Dis
+
+;Layer 15
+LIN XP641 C_Dis
+
+;Layer 15
+LIN XP642 C_Dis
+
+;Layer 15
+LIN XP643 C_Dis
+
+;Layer 15
+LIN XP644 C_Dis
+
+;Layer 15
+LIN XP645 C_Dis
+
+;Layer 16
+LIN XP646 C_Dis
+
+;Layer 16
+LIN XP647 C_Dis
+
+;Layer 16
+LIN XP648 C_Dis
+
+;Layer 16
+LIN XP649 C_Dis
+
+;Layer 16
+LIN XP650 C_Dis
+
+;Layer 16
+LIN XP651 C_Dis
+
+;Layer 16
+LIN XP652 C_Dis
+
+;Layer 16
+LIN XP653 C_Dis
+
+;Layer 16
+LIN XP654 C_Dis
+
+;Layer 16
+LIN XP655 C_Dis
+
+;Layer 16
+LIN XP656 C_Dis
+
+;Layer 16
+LIN XP657 C_Dis
+
+;Layer 16
+LIN XP658 C_Dis
+
+;Layer 16
+LIN XP659 C_Dis
+
+;Layer 16
+LIN XP660 C_Dis
+
+;Layer 16
+LIN XP661 C_Dis
+
+;Layer 16
+LIN XP662 C_Dis
+
+;Layer 16
+LIN XP663 C_Dis
+
+;Layer 16
+LIN XP664 C_Dis
+
+;Layer 16
+LIN XP665 C_Dis
+
+;Layer 16
+LIN XP666 C_Dis
+
+;Layer 16
+LIN XP667 C_Dis
+
+;Layer 16
+LIN XP668 C_Dis
+
+;Layer 16
+LIN XP669 C_Dis
+
+;Layer 16
+LIN XP670 C_Dis
+
+;Layer 16
+LIN XP671 C_Dis
+
+;Layer 16
+LIN XP672 C_Dis
+
+;Layer 16
+CIRC XP673, XP674 C_Dis C_Dis
+
+;Layer 16
+LIN XP675 C_Dis
+
+;Layer 16
+LIN XP676 C_Dis
+
+;Layer 16
+LIN XP677 C_Dis
+
+;Layer 16
+LIN XP678 C_Dis
+
+;Layer 16
+LIN XP679 C_Dis
+
+;Layer 16
+LIN XP680 C_Dis
+
+;Layer 16
+LIN XP681 C_Dis
+
+;Layer 16
+LIN XP682 C_Dis
+
+;Layer 16
+LIN XP683 C_Dis
+
+;Layer 16
+LIN XP684 C_Dis
+
+;Layer 16
+LIN XP685 C_Dis
+
+;Layer 16
+LIN XP686 C_Dis
+
+;Layer 16
+LIN XP687 C_Dis
+
+;Layer 16
+LIN XP688 C_Dis
+
+;Layer 17
+LIN XP689 C_Dis
+
+;Layer 17
+LIN XP690 C_Dis
+
+;Layer 17
+LIN XP691 C_Dis
+
+;Layer 17
+LIN XP692 C_Dis
+
+;Layer 17
+LIN XP693 C_Dis
+
+;Layer 17
+LIN XP694 C_Dis
+
+;Layer 17
+LIN XP695 C_Dis
+
+;Layer 17
+LIN XP696 C_Dis
+
+;Layer 17
+LIN XP697 C_Dis
+
+;Layer 17
+LIN XP698 C_Dis
+
+;Layer 17
+LIN XP699 C_Dis
+
+;Layer 17
+LIN XP700 C_Dis
+
+;Layer 17
+LIN XP701 C_Dis
+
+;Layer 17
+LIN XP702 C_Dis
+
+;Layer 17
+LIN XP703 C_Dis
+
+;Layer 17
+LIN XP704 C_Dis
+
+;Layer 17
+LIN XP705 C_Dis
+
+;Layer 17
+LIN XP706 C_Dis
+
+;Layer 17
+LIN XP707 C_Dis
+
+;Layer 17
+LIN XP708 C_Dis
+
+;Layer 17
+LIN XP709 C_Dis
+
+;Layer 17
+LIN XP710 C_Dis
+
+;Layer 17
+LIN XP711 C_Dis
+
+;Layer 17
+LIN XP712 C_Dis
+
+;Layer 17
+LIN XP713 C_Dis
+
+;Layer 17
+LIN XP714 C_Dis
+
+;Layer 17
+LIN XP715 C_Dis
+
+;Layer 17
+CIRC XP716, XP717 C_Dis C_Dis
+
+;Layer 17
+LIN XP718 C_Dis
+
+;Layer 17
+LIN XP719 C_Dis
+
+;Layer 17
+LIN XP720 C_Dis
+
+;Layer 17
+LIN XP721 C_Dis
+
+;Layer 17
+LIN XP722 C_Dis
+
+;Layer 17
+LIN XP723 C_Dis
+
+;Layer 17
+LIN XP724 C_Dis
+
+;Layer 17
+LIN XP725 C_Dis
+
+;Layer 17
+LIN XP726 C_Dis
+
+;Layer 17
+LIN XP727 C_Dis
+
+;Layer 17
+LIN XP728 C_Dis
+
+;Layer 17
+LIN XP729 C_Dis
+
+;Layer 17
+LIN XP730 C_Dis
+
+;Layer 17
+LIN XP731 C_Dis
+
+;Layer 18
+LIN XP732 C_Dis
+
+;Layer 18
+LIN XP733 C_Dis
+
+;Layer 18
+LIN XP734 C_Dis
+
+;Layer 18
+LIN XP735 C_Dis
+
+;Layer 18
+LIN XP736 C_Dis
+
+;Layer 18
+LIN XP737 C_Dis
+
+;Layer 18
+LIN XP738 C_Dis
+
+;Layer 18
+LIN XP739 C_Dis
+
+;Layer 18
+LIN XP740 C_Dis
+
+;Layer 18
+LIN XP741 C_Dis
+
+;Layer 18
+LIN XP742 C_Dis
+
+;Layer 18
+LIN XP743 C_Dis
+
+;Layer 18
+LIN XP744 C_Dis
+
+;Layer 18
+LIN XP745 C_Dis
+
+;Layer 18
+LIN XP746 C_Dis
+
+;Layer 18
+LIN XP747 C_Dis
+
+;Layer 18
+LIN XP748 C_Dis
+
+;Layer 18
+LIN XP749 C_Dis
+
+;Layer 18
+LIN XP750 C_Dis
+
+;Layer 18
+LIN XP751 C_Dis
+
+;Layer 18
+LIN XP752 C_Dis
+
+;Layer 18
+LIN XP753 C_Dis
+
+;Layer 18
+LIN XP754 C_Dis
+
+;Layer 18
+LIN XP755 C_Dis
+
+;Layer 18
+LIN XP756 C_Dis
+
+;Layer 18
+LIN XP757 C_Dis
+
+;Layer 18
+LIN XP758 C_Dis
+
+;Layer 18
+CIRC XP759, XP760 C_Dis C_Dis
+
+;Layer 18
+LIN XP761 C_Dis
+
+;Layer 18
+LIN XP762 C_Dis
+
+;Layer 18
+LIN XP763 C_Dis
+
+;Layer 18
+LIN XP764 C_Dis
+
+;Layer 18
+LIN XP765 C_Dis
+
+;Layer 18
+LIN XP766 C_Dis
+
+;Layer 18
+LIN XP767 C_Dis
+
+;Layer 18
+LIN XP768 C_Dis
+
+;Layer 18
+LIN XP769 C_Dis
+
+;Layer 18
+LIN XP770 C_Dis
+
+;Layer 18
+LIN XP771 C_Dis
+
+;Layer 18
+LIN XP772 C_Dis
+
+;Layer 18
+LIN XP773 C_Dis
+
+;Layer 18
+LIN XP774 C_Dis
+
+;Layer 19
+LIN XP775 C_Dis
+
+;Layer 19
+LIN XP776 C_Dis
+
+;Layer 19
+LIN XP777 C_Dis
+
+;Layer 19
+LIN XP778 C_Dis
+
+;Layer 19
+LIN XP779 C_Dis
+
+;Layer 19
+LIN XP780 C_Dis
+
+;Layer 19
+LIN XP781 C_Dis
+
+;Layer 19
+LIN XP782 C_Dis
+
+;Layer 19
+LIN XP783 C_Dis
+
+;Layer 19
+LIN XP784 C_Dis
+
+;Layer 19
+LIN XP785 C_Dis
+
+;Layer 19
+LIN XP786 C_Dis
+
+;Layer 19
+LIN XP787 C_Dis
+
+;Layer 19
+LIN XP788 C_Dis
+
+;Layer 19
+LIN XP789 C_Dis
+
+;Layer 19
+LIN XP790 C_Dis
+
+;Layer 19
+LIN XP791 C_Dis
+
+;Layer 19
+LIN XP792 C_Dis
+
+;Layer 19
+LIN XP793 C_Dis
+
+;Layer 19
+LIN XP794 C_Dis
+
+;Layer 19
+LIN XP795 C_Dis
+
+;Layer 19
+LIN XP796 C_Dis
+
+;Layer 19
+LIN XP797 C_Dis
+
+;Layer 19
+LIN XP798 C_Dis
+
+;Layer 19
+LIN XP799 C_Dis
+
+;Layer 19
+LIN XP800 C_Dis
+
+;Layer 19
+LIN XP801 C_Dis
+
+;Layer 19
+CIRC XP802, XP803 C_Dis C_Dis
+
+;Layer 19
+LIN XP804 C_Dis
+
+;Layer 19
+LIN XP805 C_Dis
+
+;Layer 19
+LIN XP806 C_Dis
+
+;Layer 19
+LIN XP807 C_Dis
+
+;Layer 19
+LIN XP808 C_Dis
+
+;Layer 19
+LIN XP809 C_Dis
+
+;Layer 19
+LIN XP810 C_Dis
+
+;Layer 19
+LIN XP811 C_Dis
+
+;Layer 19
+LIN XP812 C_Dis
+
+;Layer 19
+LIN XP813 C_Dis
+
+;Layer 19
+LIN XP814 C_Dis
+
+;Layer 19
+LIN XP815 C_Dis
+
+;Layer 19
+LIN XP816 C_Dis
+
+;Layer 19
+LIN XP817 C_Dis
+
+;Layer 20
+LIN XP818 C_Dis
+
+;Layer 20
+LIN XP819 C_Dis
+
+;Layer 20
+LIN XP820 C_Dis
+
+;Layer 20
+LIN XP821 C_Dis
+
+;Layer 20
+LIN XP822 C_Dis
+
+;Layer 20
+LIN XP823 C_Dis
+
+;Layer 20
+LIN XP824 C_Dis
+
+;Layer 20
+LIN XP825 C_Dis
+
+;Layer 20
+LIN XP826 C_Dis
+
+;Layer 20
+LIN XP827 C_Dis
+
+;Layer 20
+LIN XP828 C_Dis
+
+;Layer 20
+LIN XP829 C_Dis
+
+;Layer 20
+LIN XP830 C_Dis
+
+;Layer 20
+LIN XP831 C_Dis
+
+;Layer 20
+LIN XP832 C_Dis
+
+;Layer 20
+LIN XP833 C_Dis
+
+;Layer 20
+LIN XP834 C_Dis
+
+;Layer 20
+LIN XP835 C_Dis
+
+;Layer 20
+LIN XP836 C_Dis
+
+;Layer 20
+LIN XP837 C_Dis
+
+;Layer 20
+LIN XP838 C_Dis
+
+;Layer 20
+LIN XP839 C_Dis
+
+;Layer 20
+LIN XP840 C_Dis
+
+;Layer 20
+LIN XP841 C_Dis
+
+;Layer 20
+LIN XP842 C_Dis
+
+;Layer 20
+LIN XP843 C_Dis
+
+;Layer 20
+LIN XP844 C_Dis
+
+;Layer 20
+CIRC XP845, XP846 C_Dis C_Dis
+
+;Layer 20
+LIN XP847 C_Dis
+
+;Layer 20
+LIN XP848 C_Dis
+
+;Layer 20
+LIN XP849 C_Dis
+
+;Layer 20
+LIN XP850 C_Dis
+
+;Layer 20
+LIN XP851 C_Dis
+
+;Layer 20
+LIN XP852 C_Dis
+
+;Layer 20
+LIN XP853 C_Dis
+
+;Layer 20
+LIN XP854 C_Dis
+
+;Layer 20
+LIN XP855 C_Dis
+
+;Layer 20
+LIN XP856 C_Dis
+
+;Layer 20
+LIN XP857 C_Dis
+
+;Layer 20
+LIN XP858 C_Dis
+
+;Layer 20
+LIN XP859 C_Dis
+
+;Layer 20
+LIN XP860 C_Dis
+
+;Layer 21
+LIN XP861 C_Dis
+
+;Layer 21
+LIN XP862 C_Dis
+
+;Layer 21
+LIN XP863 C_Dis
+
+;Layer 21
+LIN XP864 C_Dis
+
+;Layer 21
+LIN XP865 C_Dis
+
+;Layer 21
+LIN XP866 C_Dis
+
+;Layer 21
+LIN XP867 C_Dis
+
+;Layer 21
+LIN XP868 C_Dis
+
+;Layer 21
+LIN XP869 C_Dis
+
+;Layer 21
+LIN XP870 C_Dis
+
+;Layer 21
+LIN XP871 C_Dis
+
+;Layer 21
+LIN XP872 C_Dis
+
+;Layer 21
+LIN XP873 C_Dis
+
+;Layer 21
+LIN XP874 C_Dis
+
+;Layer 21
+LIN XP875 C_Dis
+
+;Layer 21
+LIN XP876 C_Dis
+
+;Layer 21
+LIN XP877 C_Dis
+
+;Layer 21
+LIN XP878 C_Dis
+
+;Layer 21
+LIN XP879 C_Dis
+
+;Layer 21
+LIN XP880 C_Dis
+
+;Layer 21
+LIN XP881 C_Dis
+
+;Layer 21
+LIN XP882 C_Dis
+
+;Layer 21
+LIN XP883 C_Dis
+
+;Layer 21
+LIN XP884 C_Dis
+
+;Layer 21
+LIN XP885 C_Dis
+
+;Layer 21
+LIN XP886 C_Dis
+
+;Layer 21
+LIN XP887 C_Dis
+
+;Layer 21
+CIRC XP888, XP889 C_Dis C_Dis
+
+;Layer 21
+LIN XP890 C_Dis
+
+;Layer 21
+LIN XP891 C_Dis
+
+;Layer 21
+LIN XP892 C_Dis
+
+;Layer 21
+LIN XP893 C_Dis
+
+;Layer 21
+LIN XP894 C_Dis
+
+;Layer 21
+LIN XP895 C_Dis
+
+;Layer 21
+LIN XP896 C_Dis
+
+;Layer 21
+LIN XP897 C_Dis
+
+;Layer 21
+LIN XP898 C_Dis
+
+;Layer 21
+LIN XP899 C_Dis
+
+;Layer 21
+LIN XP900 C_Dis
+
+;Layer 21
+LIN XP901 C_Dis
+
+;Layer 21
+LIN XP902 C_Dis
+
+;Layer 21
+LIN XP903 C_Dis
+
+;Layer 22
+LIN XP904 C_Dis
+
+;Layer 22
+LIN XP905 C_Dis
+
+;Layer 22
+LIN XP906 C_Dis
+
+;Layer 22
+LIN XP907 C_Dis
+
+;Layer 22
+LIN XP908 C_Dis
+
+;Layer 22
+LIN XP909 C_Dis
+
+;Layer 22
+LIN XP910 C_Dis
+
+;Layer 22
+LIN XP911 C_Dis
+
+;Layer 22
+LIN XP912 C_Dis
+
+;Layer 22
+LIN XP913 C_Dis
+
+;Layer 22
+LIN XP914 C_Dis
+
+;Layer 22
+LIN XP915 C_Dis
+
+;Layer 22
+LIN XP916 C_Dis
+
+;Layer 22
+LIN XP917 C_Dis
+
+;Layer 22
+LIN XP918 C_Dis
+
+;Layer 22
+LIN XP919 C_Dis
+
+;Layer 22
+LIN XP920 C_Dis
+
+;Layer 22
+LIN XP921 C_Dis
+
+;Layer 22
+LIN XP922 C_Dis
+
+;Layer 22
+LIN XP923 C_Dis
+
+;Layer 22
+LIN XP924 C_Dis
+
+;Layer 22
+LIN XP925 C_Dis
+
+;Layer 22
+LIN XP926 C_Dis
+
+;Layer 22
+LIN XP927 C_Dis
+
+;Layer 22
+LIN XP928 C_Dis
+
+;Layer 22
+LIN XP929 C_Dis
+
+;Layer 22
+LIN XP930 C_Dis
+
+;Layer 22
+CIRC XP931, XP932 C_Dis C_Dis
+
+;Layer 22
+LIN XP933 C_Dis
+
+;Layer 22
+LIN XP934 C_Dis
+
+;Layer 22
+LIN XP935 C_Dis
+
+;Layer 22
+LIN XP936 C_Dis
+
+;Layer 22
+LIN XP937 C_Dis
+
+;Layer 22
+LIN XP938 C_Dis
+
+;Layer 22
+LIN XP939 C_Dis
+
+;Layer 22
+LIN XP940 C_Dis
+
+;Layer 22
+LIN XP941 C_Dis
+
+;Layer 22
+LIN XP942 C_Dis
+
+;Layer 22
+LIN XP943 C_Dis
+
+;Layer 22
+LIN XP944 C_Dis
+
+;Layer 22
+LIN XP945 C_Dis
+
+;Layer 22
+LIN XP946 C_Dis
+
+;Layer 23
+LIN XP947 C_Dis
+
+;Layer 23
+LIN XP948 C_Dis
+
+;Layer 23
+LIN XP949 C_Dis
+
+;Layer 23
+LIN XP950 C_Dis
+
+;Layer 23
+LIN XP951 C_Dis
+
+;Layer 23
+LIN XP952 C_Dis
+
+;Layer 23
+LIN XP953 C_Dis
+
+;Layer 23
+LIN XP954 C_Dis
+
+;Layer 23
+LIN XP955 C_Dis
+
+;Layer 23
+LIN XP956 C_Dis
+
+;Layer 23
+LIN XP957 C_Dis
+
+;Layer 23
+LIN XP958 C_Dis
+
+;Layer 23
+LIN XP959 C_Dis
+
+;Layer 23
+LIN XP960 C_Dis
+
+;Layer 23
+LIN XP961 C_Dis
+
+;Layer 23
+LIN XP962 C_Dis
+
+;Layer 23
+LIN XP963 C_Dis
+
+;Layer 23
+LIN XP964 C_Dis
+
+;Layer 23
+LIN XP965 C_Dis
+
+;Layer 23
+LIN XP966 C_Dis
+
+;Layer 23
+LIN XP967 C_Dis
+
+;Layer 23
+LIN XP968 C_Dis
+
+;Layer 23
+LIN XP969 C_Dis
+
+;Layer 23
+LIN XP970 C_Dis
+
+;Layer 23
+LIN XP971 C_Dis
+
+;Layer 23
+LIN XP972 C_Dis
+
+;Layer 23
+LIN XP973 C_Dis
+
+;Layer 23
+CIRC XP974, XP975 C_Dis C_Dis
+
+;Layer 23
+LIN XP976 C_Dis
+
+;Layer 23
+LIN XP977 C_Dis
+
+;Layer 23
+LIN XP978 C_Dis
+
+;Layer 23
+LIN XP979 C_Dis
+
+;Layer 23
+LIN XP980 C_Dis
+
+;Layer 23
+LIN XP981 C_Dis
+
+;Layer 23
+LIN XP982 C_Dis
+
+;Layer 23
+LIN XP983 C_Dis
+
+;Layer 23
+LIN XP984 C_Dis
+
+;Layer 23
+LIN XP985 C_Dis
+
+;Layer 23
+LIN XP986 C_Dis
+
+;Layer 23
+LIN XP987 C_Dis
+
+;Layer 23
+LIN XP988 C_Dis
+
+;Layer 23
+LIN XP989 C_Dis
+
+;Layer 24
+LIN XP990 C_Dis
+
+;Layer 24
+LIN XP991 C_Dis
+
+;Layer 24
+LIN XP992 C_Dis
+
+;Layer 24
+LIN XP993 C_Dis
+
+;Layer 24
+LIN XP994 C_Dis
+
+;Layer 24
+LIN XP995 C_Dis
+
+;Layer 24
+LIN XP996 C_Dis
+
+;Layer 24
+LIN XP997 C_Dis
+
+;Layer 24
+LIN XP998 C_Dis
+
+;Layer 24
+LIN XP999 C_Dis
+
+;Layer 24
+LIN XP1000 C_Dis
+
+;Layer 24
+LIN XP1001 C_Dis
+
+;Layer 24
+LIN XP1002 C_Dis
+
+;Layer 24
+LIN XP1003 C_Dis
+
+;Layer 24
+LIN XP1004 C_Dis
+
+;Layer 24
+LIN XP1005 C_Dis
+
+;Layer 24
+LIN XP1006 C_Dis
+
+;Layer 24
+LIN XP1007 C_Dis
+
+;Layer 24
+LIN XP1008 C_Dis
+
+;Layer 24
+LIN XP1009 C_Dis
+
+;Layer 24
+LIN XP1010 C_Dis
+
+;Layer 24
+LIN XP1011 C_Dis
+
+;Layer 24
+LIN XP1012 C_Dis
+
+;Layer 24
+LIN XP1013 C_Dis
+
+;Layer 24
+LIN XP1014 C_Dis
+
+;Layer 24
+LIN XP1015 C_Dis
+
+;Layer 24
+LIN XP1016 C_Dis
+
+;Layer 24
+CIRC XP1017, XP1018 C_Dis C_Dis
+
+;Layer 24
+LIN XP1019 C_Dis
+
+;Layer 24
+LIN XP1020 C_Dis
+
+;Layer 24
+LIN XP1021 C_Dis
+
+;Layer 24
+LIN XP1022 C_Dis
+
+;Layer 24
+LIN XP1023 C_Dis
+
+;Layer 24
+LIN XP1024 C_Dis
+
+;Layer 24
+LIN XP1025 C_Dis
+
+;Layer 24
+LIN XP1026 C_Dis
+
+;Layer 24
+LIN XP1027 C_Dis
+
+;Layer 24
+LIN XP1028 C_Dis
+
+;Layer 24
+LIN XP1029 C_Dis
+
+;Layer 24
+LIN XP1030 C_Dis
+
+;Layer 24
+LIN XP1031 C_Dis
+
+;Layer 24
+LIN XP1032 C_Dis
+
+;Layer 25
+LIN XP1033 C_Dis
+
+;Layer 25
+LIN XP1034 C_Dis
+
+;Layer 25
+LIN XP1035 C_Dis
+
+;Layer 25
+LIN XP1036 C_Dis
+
+;Layer 25
+LIN XP1037 C_Dis
+
+;Layer 25
+LIN XP1038 C_Dis
+
+;Layer 25
+LIN XP1039 C_Dis
+
+;Layer 25
+LIN XP1040 C_Dis
+
+;Layer 25
+LIN XP1041 C_Dis
+
+;Layer 25
+LIN XP1042 C_Dis
+
+;Layer 25
+LIN XP1043 C_Dis
+
+;Layer 25
+LIN XP1044 C_Dis
+
+;Layer 25
+LIN XP1045 C_Dis
+
+;Layer 25
+LIN XP1046 C_Dis
+
+;Layer 25
+LIN XP1047 C_Dis
+
+;Layer 25
+LIN XP1048 C_Dis
+
+;Layer 25
+LIN XP1049 C_Dis
+
+;Layer 25
+LIN XP1050 C_Dis
+
+;Layer 25
+LIN XP1051 C_Dis
+
+;Layer 25
+LIN XP1052 C_Dis
+
+;Layer 25
+LIN XP1053 C_Dis
+
+;Layer 25
+LIN XP1054 C_Dis
+
+;Layer 25
+LIN XP1055 C_Dis
+
+;Layer 25
+LIN XP1056 C_Dis
+
+;Layer 25
+LIN XP1057 C_Dis
+
+;Layer 25
+LIN XP1058 C_Dis
+
+;Layer 25
+LIN XP1059 C_Dis
+
+;Layer 25
+CIRC XP1060, XP1061 C_Dis C_Dis
+
+;Layer 25
+LIN XP1062 C_Dis
+
+;Layer 25
+LIN XP1063 C_Dis
+
+;Layer 25
+LIN XP1064 C_Dis
+
+;Layer 25
+LIN XP1065 C_Dis
+
+;Layer 25
+LIN XP1066 C_Dis
+
+;Layer 25
+LIN XP1067 C_Dis
+
+;Layer 25
+LIN XP1068 C_Dis
+
+;Layer 25
+LIN XP1069 C_Dis
+
+;Layer 25
+LIN XP1070 C_Dis
+
+;Layer 25
+LIN XP1071 C_Dis
+
+;Layer 25
+LIN XP1072 C_Dis
+
+;Layer 25
+LIN XP1073 C_Dis
+
+;Layer 25
+LIN XP1074 C_Dis
+
+;Layer 25
+LIN XP1075 C_Dis
+
+;Layer 26
+LIN XP1076 C_Dis
+
+;Layer 26
+LIN XP1077 C_Dis
+
+;Layer 26
+LIN XP1078 C_Dis
+
+;Layer 26
+LIN XP1079 C_Dis
+
+;Layer 26
+LIN XP1080 C_Dis
+
+;Layer 26
+LIN XP1081 C_Dis
+
+;Layer 26
+LIN XP1082 C_Dis
+
+;Layer 26
+LIN XP1083 C_Dis
+
+;Layer 26
+LIN XP1084 C_Dis
+
+;Layer 26
+LIN XP1085 C_Dis
+
+;Layer 26
+LIN XP1086 C_Dis
+
+;Layer 26
+LIN XP1087 C_Dis
+
+;Layer 26
+LIN XP1088 C_Dis
+
+;Layer 26
+LIN XP1089 C_Dis
+
+;Layer 26
+LIN XP1090 C_Dis
+
+;Layer 26
+LIN XP1091 C_Dis
+
+;Layer 26
+LIN XP1092 C_Dis
+
+;Layer 26
+LIN XP1093 C_Dis
+
+;Layer 26
+LIN XP1094 C_Dis
+
+;Layer 26
+LIN XP1095 C_Dis
+
+;Layer 26
+LIN XP1096 C_Dis
+
+;Layer 26
+LIN XP1097 C_Dis
+
+;Layer 26
+LIN XP1098 C_Dis
+
+;Layer 26
+LIN XP1099 C_Dis
+
+;Layer 26
+LIN XP1100 C_Dis
+
+;Layer 26
+LIN XP1101 C_Dis
+
+;Layer 26
+LIN XP1102 C_Dis
+
+;Layer 26
+CIRC XP1103, XP1104 C_Dis C_Dis
+
+;Layer 26
+LIN XP1105 C_Dis
+
+;Layer 26
+LIN XP1106 C_Dis
+
+;Layer 26
+LIN XP1107 C_Dis
+
+;Layer 26
+LIN XP1108 C_Dis
+
+;Layer 26
+LIN XP1109 C_Dis
+
+;Layer 26
+LIN XP1110 C_Dis
+
+;Layer 26
+LIN XP1111 C_Dis
+
+;Layer 26
+LIN XP1112 C_Dis
+
+;Layer 26
+LIN XP1113 C_Dis
+
+;Layer 26
+LIN XP1114 C_Dis
+
+;Layer 26
+LIN XP1115 C_Dis
+
+;Layer 26
+LIN XP1116 C_Dis
+
+;Layer 26
+LIN XP1117 C_Dis
+
+;Layer 26
+LIN XP1118 C_Dis
+
+;Layer 27
+LIN XP1119 C_Dis
+
+;Layer 27
+LIN XP1120 C_Dis
+
+;Layer 27
+LIN XP1121 C_Dis
+
+;Layer 27
+LIN XP1122 C_Dis
+
+;Layer 27
+LIN XP1123 C_Dis
+
+;Layer 27
+LIN XP1124 C_Dis
+
+;Layer 27
+LIN XP1125 C_Dis
+
+;Layer 27
+LIN XP1126 C_Dis
+
+;Layer 27
+LIN XP1127 C_Dis
+
+;Layer 27
+LIN XP1128 C_Dis
+
+;Layer 27
+LIN XP1129 C_Dis
+
+;Layer 27
+LIN XP1130 C_Dis
+
+;Layer 27
+LIN XP1131 C_Dis
+
+;Layer 27
+LIN XP1132 C_Dis
+
+;Layer 27
+LIN XP1133 C_Dis
+
+;Layer 27
+LIN XP1134 C_Dis
+
+;Layer 27
+LIN XP1135 C_Dis
+
+;Layer 27
+LIN XP1136 C_Dis
+
+;Layer 27
+LIN XP1137 C_Dis
+
+;Layer 27
+LIN XP1138 C_Dis
+
+;Layer 27
+LIN XP1139 C_Dis
+
+;Layer 27
+LIN XP1140 C_Dis
+
+;Layer 27
+LIN XP1141 C_Dis
+
+;Layer 27
+LIN XP1142 C_Dis
+
+;Layer 27
+LIN XP1143 C_Dis
+
+;Layer 27
+LIN XP1144 C_Dis
+
+;Layer 27
+LIN XP1145 C_Dis
+
+;Layer 27
+CIRC XP1146, XP1147 C_Dis C_Dis
+
+;Layer 27
+LIN XP1148 C_Dis
+
+;Layer 27
+LIN XP1149 C_Dis
+
+;Layer 27
+LIN XP1150 C_Dis
+
+;Layer 27
+LIN XP1151 C_Dis
+
+;Layer 27
+LIN XP1152 C_Dis
+
+;Layer 27
+LIN XP1153 C_Dis
+
+;Layer 27
+LIN XP1154 C_Dis
+
+;Layer 27
+LIN XP1155 C_Dis
+
+;Layer 27
+LIN XP1156 C_Dis
+
+;Layer 27
+LIN XP1157 C_Dis
+
+;Layer 27
+LIN XP1158 C_Dis
+
+;Layer 27
+LIN XP1159 C_Dis
+
+;Layer 27
+LIN XP1160 C_Dis
+
+;Layer 27
+LIN XP1161 C_Dis
+
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1162) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1162, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1162) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1162, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1162) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1162, WPV) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT1162, WPV)
+BAS(#CP_PARAMS,WDAT1162.Weld.Velocity)
+LIN XP1162
+ArcMainNG(#ArcOffAfterMoveStd, WDAT1162, WPV)
+
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.1)
+SET_CD_PARAMS(0)
+LIN Retract1162
+
+WAIT SEC 0
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+END
+

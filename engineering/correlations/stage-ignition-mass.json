@@ -1,0 +1,47 @@
+{
+  "key": "stage-ignition-mass",
+  "form": "m0 = m_upper + m_dry + m_prop",
+  "variables": {
+    "m0": "その段の点火時全備質量（上段＋ペイロード込み）[kg]",
+    "m_upper": "上載質量（上段の全備質量＋ペイロード）[kg]",
+    "m_dry": "段の乾燥質量 [kg]",
+    "m_prop": "段の推進剤質量 [kg]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "93",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "42-43",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "composition": "計上するのは上載質量・段乾燥質量・段推進剤質量の3項のみ（rocket.py:93）",
+    "inherits": "m_dry と m_prop の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "3項のみの和であり、フェアリング・残留推進剤・ウルッジ/マージン方針は未導入である。したがって m0 は実機より小さく出る側に偏る。",
+  "limitations_ref": "lim",
+  "limitations_basis": "inferred",
+  "limitations_inference": "P-1 は『フェアリング・残留推進剤・ウルッジ/マージン方針も未導入』とモデル全体について述べている（06:42-43）。質量を計上している式は本式のみであるため、未導入分は本式の m0 に現れない（＝過小評価になる）と対応づけた。",
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "定義は rocket.py:44（StageResult.m0_kg のコメント）。"
+}

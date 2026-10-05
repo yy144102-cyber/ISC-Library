@@ -1,0 +1,160 @@
+&ACCESS RV
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEFDAT layer1_S1
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+
+DECL FDAT FHome = {TOOL_NO 1,BASE_NO 17,IPO_FRAME #BASE}
+DECL FDAT FWeld = {TOOL_NO 1,BASE_NO 17,IPO_FRAME #BASE}
+DECL PDAT PPDAT={VEL 100.0000,ACC 100.000,APO_DIST 1.000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL LDAT LCPDAT={VEL 2.00000,ACC 100.000,APO_DIST 1.000,APO_FAC 50.000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0,CB {AUX_PT {ORI #CONSIDER,E1 #CONSIDER,E2 #CONSIDER,E3 #CONSIDER,E4 #CONSIDER,E5 #CONSIDER,E6 #CONSIDER},TARGET_PT {ORI #INTERPOLATE,E1 #INTERPOLATE,E2 #INTERPOLATE,E3 #INTERPOLATE,E4 #INTERPOLATE,E5 #INTERPOLATE,E6 #INTERPOLATE}}}
+DECL stArcDat_T WPV={WdatId[] "WPV",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+
+DECL E6POS XHOMEX = {X 0, Y -300, Z 300, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS Approach1 = {X 0, Y -100, Z 50.2, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL stArcDat_T WDAT1={WdatId[] "WDAT1",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 4490, Channel3 8, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0083, Channel1 1.00000, Channel2 4490, Channel3 8, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL E6POS XP1 = {X 0, Y -100, Z 0.2, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP2 = {X -50, Y -86.603, Z 0.364, A 150, B 0, C 0, S 22, T 18, E1 -330, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP3 = {X -86.603, Y -50, Z 0.527, A 120, B 0, C 0, S 22, T 18, E1 -300, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP4 = {X -100, Y -0, Z 0.691, A 90, B 0, C 0, S 22, T 18, E1 -270, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP5 = {X -86.603, Y 50, Z 0.855, A 60, B 0, C 0, S 22, T 18, E1 -240, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP6 = {X -50, Y 86.603, Z 1.018, A 30, B 0, C 0, S 22, T 18, E1 -210, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP7 = {X 0, Y 100, Z 1.182, A 0, B 0, C 0, S 22, T 18, E1 -180, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP8 = {X 50, Y 86.603, Z 1.345, A -30, B 0, C 0, S 22, T 18, E1 -150, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP9 = {X 86.603, Y 50, Z 1.509, A -60, B 0, C 0, S 22, T 18, E1 -120, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP10 = {X 100, Y 0, Z 1.673, A -90, B 0, C 0, S 22, T 18, E1 -90, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP11 = {X 86.603, Y -50, Z 1.836, A -120, B 0, C 0, S 22, T 18, E1 -60, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP12 = {X 50, Y -86.603, Z 2, A -150, B 0, C 0, S 22, T 18, E1 -30, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP13 = {X 0, Y -100, Z 2, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL stArcDat_T WDAT13={WdatId[] "WDAT13",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 4490, Channel3 7, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0125, Channel1 1.00000, Channel2 4490, Channel3 7, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+
+DECL E6POS XP14 = {X -50, Y -86.603, Z 2.164, A 150, B 0, C 0, S 22, T 18, E1 -330, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP15 = {X -86.603, Y -50, Z 2.327, A 120, B 0, C 0, S 22, T 18, E1 -300, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP16 = {X -100, Y -0, Z 2.491, A 90, B 0, C 0, S 22, T 18, E1 -270, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP17 = {X -86.603, Y 50, Z 2.655, A 60, B 0, C 0, S 22, T 18, E1 -240, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP18 = {X -50, Y 86.603, Z 2.818, A 30, B 0, C 0, S 22, T 18, E1 -210, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP19 = {X 0, Y 100, Z 2.982, A 0, B 0, C 0, S 22, T 18, E1 -180, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP20 = {X 50, Y 86.603, Z 3.145, A -30, B 0, C 0, S 22, T 18, E1 -150, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP21 = {X 86.603, Y 50, Z 3.309, A -60, B 0, C 0, S 22, T 18, E1 -120, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP22 = {X 100, Y 0, Z 3.473, A -90, B 0, C 0, S 22, T 18, E1 -90, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP23 = {X 86.603, Y -50, Z 3.636, A -120, B 0, C 0, S 22, T 18, E1 -60, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP24 = {X 50, Y -86.603, Z 3.8, A -150, B 0, C 0, S 22, T 18, E1 -30, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP25 = {X 0, Y -100, Z 3.8, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL stArcDat_T WDAT25={WdatId[] "WDAT25",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 4490, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0125, Channel1 1.00000, Channel2 4490, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+
+DECL E6POS XP26 = {X -50, Y -86.603, Z 3.964, A 150, B 0, C 0, S 22, T 18, E1 -330, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP27 = {X -86.603, Y -50, Z 4.127, A 120, B 0, C 0, S 22, T 18, E1 -300, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP28 = {X -100, Y -0, Z 4.291, A 90, B 0, C 0, S 22, T 18, E1 -270, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP29 = {X -86.603, Y 50, Z 4.455, A 60, B 0, C 0, S 22, T 18, E1 -240, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP30 = {X -50, Y 86.603, Z 4.618, A 30, B 0, C 0, S 22, T 18, E1 -210, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP31 = {X 0, Y 100, Z 4.782, A 0, B 0, C 0, S 22, T 18, E1 -180, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP32 = {X 50, Y 86.603, Z 4.945, A -30, B 0, C 0, S 22, T 18, E1 -150, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP33 = {X 86.603, Y 50, Z 5.109, A -60, B 0, C 0, S 22, T 18, E1 -120, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP34 = {X 100, Y 0, Z 5.273, A -90, B 0, C 0, S 22, T 18, E1 -90, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP35 = {X 86.603, Y -50, Z 5.436, A -120, B 0, C 0, S 22, T 18, E1 -60, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP36 = {X 50, Y -86.603, Z 5.6, A -150, B 0, C 0, S 22, T 18, E1 -30, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP37 = {X 0, Y -100, Z 5.6, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL stArcDat_T WDAT37={WdatId[] "WDAT37",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 4490, Channel3 5, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0167, Channel1 1.00000, Channel2 4490, Channel3 5, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+
+DECL E6POS XP38 = {X -50, Y -86.603, Z 5.764, A 150, B 0, C 0, S 22, T 18, E1 -330, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP39 = {X -86.603, Y -50, Z 5.927, A 120, B 0, C 0, S 22, T 18, E1 -300, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP40 = {X -100, Y -0, Z 6.091, A 90, B 0, C 0, S 22, T 18, E1 -270, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP41 = {X -86.603, Y 50, Z 6.255, A 60, B 0, C 0, S 22, T 18, E1 -240, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP42 = {X -50, Y 86.603, Z 6.418, A 30, B 0, C 0, S 22, T 18, E1 -210, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP43 = {X 0, Y 100, Z 6.582, A 0, B 0, C 0, S 22, T 18, E1 -180, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP44 = {X 50, Y 86.603, Z 6.745, A -30, B 0, C 0, S 22, T 18, E1 -150, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP45 = {X 86.603, Y 50, Z 6.909, A -60, B 0, C 0, S 22, T 18, E1 -120, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP46 = {X 100, Y 0, Z 7.073, A -90, B 0, C 0, S 22, T 18, E1 -90, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP47 = {X 86.603, Y -50, Z 7.236, A -120, B 0, C 0, S 22, T 18, E1 -60, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP48 = {X 50, Y -86.603, Z 7.4, A -150, B 0, C 0, S 22, T 18, E1 -30, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP49 = {X 0, Y -100, Z 7.4, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL stArcDat_T WDAT49={WdatId[] "WDAT49",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 3727, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0167, Channel1 1.00000, Channel2 3727, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+
+DECL E6POS XP50 = {X -50, Y -86.603, Z 7.4, A 150, B 0, C 0, S 22, T 18, E1 -330, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP51 = {X -86.603, Y -50, Z 7.4, A 120, B 0, C 0, S 22, T 18, E1 -300, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP52 = {X -100, Y -0, Z 7.4, A 90, B 0, C 0, S 22, T 18, E1 -270, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP53 = {X -86.603, Y 50, Z 7.4, A 60, B 0, C 0, S 22, T 18, E1 -240, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP54 = {X -50, Y 86.603, Z 7.4, A 30, B 0, C 0, S 22, T 18, E1 -210, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP55 = {X 0, Y 100, Z 7.4, A 0, B 0, C 0, S 22, T 18, E1 -180, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP56 = {X 50, Y 86.603, Z 7.4, A -30, B 0, C 0, S 22, T 18, E1 -150, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP57 = {X 86.603, Y 50, Z 7.4, A -60, B 0, C 0, S 22, T 18, E1 -120, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP58 = {X 100, Y 0, Z 7.4, A -90, B 0, C 0, S 22, T 18, E1 -90, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP59 = {X 86.603, Y -50, Z 7.4, A -120, B 0, C 0, S 22, T 18, E1 -60, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP60 = {X 50, Y -86.603, Z 7.4, A -150, B 0, C 0, S 22, T 18, E1 -30, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+DECL E6POS XP61 = {X 0, Y -100, Z 7.4, A 180, B 0, C 0, S 22, T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+DECL stArcDat_T WDAT61={WdatId[] "WDAT61",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0, PreFlowTime 2, Channel1 1.00000, Channel2 3727, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0, PurgeTime 0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0167, Channel1 1.00000, Channel2 3727, Channel3 6, Channel4 0, Channel5 0, Channel6 0, Channel7 0.0, Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0, PostflowTime 2, Channel1 1.00000, Channel2 3727, Channel3 3, Channel4 0, Channel5 0 ,Channel6 0, Channel7 0.0, Channel8 0.0, BurnBackTime 0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+
+DECL E6POS Retract61 = {X 0, Y -100, Z 57.4, A 180, B 0, C 0, S 22,T 18, E1 0, E2 0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+
+ENDDAT
+

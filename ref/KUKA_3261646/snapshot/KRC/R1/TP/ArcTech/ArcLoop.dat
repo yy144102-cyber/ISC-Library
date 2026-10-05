@@ -1,0 +1,92 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEFDAT  ARCLOOP
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mArcChecksumMsgSet=FALSE ;CheckSum ArcLinkXT
+DECL BOOL mArcChecksumMsgSave=FALSE ;Saved CheckSum ArcLinkXT
+DECL BOOL mArcClearedOutputFlag=TRUE ;Flag to clear output once
+DECL BOOL mArcStatKeyHotBuffer=FALSE ;Storage of Statuskey Hot
+DECL BOOL mArcStatKeyHotRising=FALSE ;Rising Edge of Status Key Hot
+DECL BOOL mArcStatKeyHotFalling=FALSE ;Falling Edge of Status Key Hot
+DECL BOOL mFroniusTwinOpModeOk=FALSE ;Fronius Twin Configuration mode Ok
+DECL BOOL mOriTypeErrorFired=FALSE ;Message when Weaving and Circ and ORI_TYPE = JOINT
+DECL BOOL mArcTMActive=FALSE ;TeachMode Active
+DECL BOOL mExeLineSel=FALSE ;Execute Line Select
+DECL BOOL mSigState[4]
+mSigState[1]=FALSE
+mSigState[2]=FALSE
+mSigState[3]=FALSE
+mSigState[4]=FALSE
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL INT mArcModeOP=1 ;Coded $MODEOP State
+DECL INT mArcModeOPSave=1 ;Coded storage of $MODEOP State
+DECL INT mProModeState=1 ;Coded $ProMode state
+DECL INT mProModeStateBuffer=1 ;Coded storage of $MODE_OP State
+DECL INT mArcCollisionDlgHandle=0 ;Collision Monitoring Dialog handle
+DECL INT mArcCollisionSta1Handle=0 ;Collision Monitoring Message handle
+DECL INT mArcCollisionSta2Handle=0 ;Collision Monitoring Message handle
+DECL INT mArcCollisionStep=0 ;Collision Monitoring Steps
+DECL INT mArcCollisionSec=0 ;Collision Monitoring Show Message every sec
+DECL INT mArcCollisionSecOn=0 ;Collision Monitoring Restore 
+DECL INT mArcCollisionActTimeOut=0 ;Collision Monitoring Actual Time Out in sec
+DECL INT mHandleOnWrongWelder=0 ;Handle for message wrong selection on ILF
+DECL INT mArcTimeGasStamp=0 ;Time stamp gas purge
+DECL INT mArcTeachModeTimeOut=0 ;Memmory TechMode Timer
+DECL INT mArcSigTCPSpeedFilter[20]
+mArcSigTCPSpeedFilter[1]=0
+mArcSigTCPSpeedFilter[2]=0
+mArcSigTCPSpeedFilter[3]=0
+mArcSigTCPSpeedFilter[4]=0
+mArcSigTCPSpeedFilter[5]=0
+mArcSigTCPSpeedFilter[6]=0
+mArcSigTCPSpeedFilter[7]=0
+mArcSigTCPSpeedFilter[8]=0
+mArcSigTCPSpeedFilter[9]=0
+mArcSigTCPSpeedFilter[10]=0
+mArcSigTCPSpeedFilter[11]=0
+mArcSigTCPSpeedFilter[12]=0
+mArcSigTCPSpeedFilter[13]=0
+mArcSigTCPSpeedFilter[14]=0
+mArcSigTCPSpeedFilter[15]=0
+mArcSigTCPSpeedFilter[16]=0
+mArcSigTCPSpeedFilter[17]=0
+mArcSigTCPSpeedFilter[18]=0
+mArcSigTCPSpeedFilter[19]=0
+mArcSigTCPSpeedFilter[20]=0
+DECL INT mSigNr[4]
+mSigNr[1]=0
+mSigNr[2]=0
+mSigNr[3]=0
+mSigNr[4]=0
+DECL INT mWelderId[4]
+mWelderId[1]=0
+mWelderId[2]=0
+mWelderId[3]=0
+mWelderId[4]=0
+DECL INT mArcInitEnd=0 ;Handle for message on initialization of arc
+DECL INT mArcInitTimeStart=69017 ;Mem rob time on start
+DECL INT mArcInitTimeCycle=808 ;Calc initialization time
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL REAL mGasPurge=0.0 ;Real compatibiliy to CONST IFC
+DECL REAL mOutSec=5.00000 ;Collision Monitoring Show Message every X sec 
+DECL REAL mInputRestoreTimeOut=1.00000 ;Collision Monitoring Show 
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+ENUM enIntMsgState Begin,Finish
+;***************************************************
+;STRUC
+;***************************************************
+DECL stArcSignal_T mFroniusTwinOpModeInit={InitState FALSE,State FALSE,SignNr 0} ;Fronius Init
+DECL stArcSignal_T mFroniusTwinOpModeBit1={InitState FALSE,State FALSE,SignNr 0} ;Fronius Twin mode bit1 Selection 
+DECL stArcSignal_T mFroniusTwinOpModeBit2={InitState FALSE,State FALSE,SignNr 0} ;Fronius Twin mode bit2 Selection 
+ENDDAT
+

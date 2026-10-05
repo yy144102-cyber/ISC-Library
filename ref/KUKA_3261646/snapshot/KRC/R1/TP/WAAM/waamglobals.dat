@@ -1,0 +1,217 @@
+&ACCESS RV2
+&REL 38
+&COMMENT WAAM Globals
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEFDAT  WAAMGLOBALS PUBLIC
+;************************************************ 
+;* Description: Globals ()                      * 
+;*                                              *
+;*              Global Variable Declarations    *
+;*                                              *
+;************************************************
+;*      System: 1236682                         *
+;************************************************
+;*    Modified: KUKA UK                         *
+;*        Date: 2020.03.03                      *
+;*     Version: 01.01.08                        *  
+;************************************************ 
+
+
+GLOBAL CHAR chRSIContext[1024] ; RSI Context Name
+chRSIContext[]="RSI_WAAMCtrl "
+GLOBAL CHAR chRSIContextTrim[1024]
+chRSIContextTrim[]="RSI_WAAMCtrl"
+
+
+GLOBAL REAL rGasFlow
+GLOBAL BOOL bUseRSI=TRUE
+GLOBAL BOOL bCycleStopped=FALSE
+GLOBAL BOOL bFlash=FALSE ; System Flasher 0.5 Hz
+GLOBAL BOOL bLampTestPB=FALSE ; Lamp Test PB, HMI Easy
+GLOBAL BOOL bCycleStopPB=TRUE ; Cycle Stop PB, HMI Easy
+GLOBAL BOOL bCycleStartPB=FALSE ; Cycle Start PB, HMI Easy
+GLOBAL BOOL bRequestToEnterPB=FALSE ; Request To Enter PB, HMI Easy
+GLOBAL BOOL BRequestToEnter=FALSE ; Request To Enter has been pressed
+GLOBAL BOOL BRequestToEnterR2=FALSE ; Request To Enter has been pressed
+GLOBAL BOOL bCycleStopLP=TRUE ; Cycle Stop; HMI Easy
+GLOBAL BOOL bCycleStop=FALSE ; Cycle Stop Requested.
+GLOBAL BOOL bSheildingMain=TRUE ; Use Main Chamber Sheilding Gas
+GLOBAL BOOL bSheildingSide=TRUE ; Use Side Chamber Sheilding Gas
+GLOBAL BOOL bCycleStart=FALSE ; Cycle Start
+GLOBAL BOOL bCycleStartR2=FALSE ; Cycle Start
+GLOBAL BOOL bRSIEnable=TRUE ; Enable RSI Control 
+GLOBAL BOOL bWireFree=FALSE ; Wire is free from weld pool.
+
+GLOBAL INT nCurrentActual=33 ; Actual Current (Amps)
+GLOBAL INT nJobNumber=3086 ; Actual JobNumber for HMI Easy
+GLOBAL INT nCurrent=0 ; Current Demand (Amps)
+GLOBAL INT nJobNumberMem=3086 ; Last Job Number set
+GLOBAL INT nLayerQty=3 ; Layer Quantity to Process
+GLOBAL INT nErrorNumber=0 ; Last EWM Error Number
+
+GLOBAL REAL rSheildingPurgeTime=10.0000 ; Sheilding Gas Off Dwell Time  
+GLOBAL REAL rSheildingDwellTime=5.00000 ; Sheilding Gas Purge Time in seconds 
+GLOBAL REAL rVoltageActual=4.72426367 ; Actual Voltage (Volts)
+GLOBAL REAL rWirefeedActual=0.723898828 ; Actual Wirefeed Speed (m/min)
+GLOBAL REAL rWirefeed=0.0915540 ; Wirefeed Demand (m
+
+GLOBAL CHAR chErrorMessage[255] ; EWM Error Message
+
+GLOBAL STRUC EWM_DATA INT ErrorNum,CHAR Error[255],BOOL Resetable
+
+DECL GLOBAL EWM_DATA EwmData[255]
+EwmData[4]={ErrorNum 4,Error[] "Wire feed error",Resetable TRUE}
+EwmData[5]={ErrorNum 5,Error[] "Inverter emergency stop circuit temperature error",Resetable FALSE}
+EwmData[6]={ErrorNum 6,Error[] "Excess mains voltage",Resetable FALSE}
+EwmData[7]={ErrorNum 7,Error[] "Insufficient mains voltage",Resetable FALSE}
+EwmData[8]={ErrorNum 8,Error[] "Low water level",Resetable FALSE}
+EwmData[9]={ErrorNum 9,Error[] "Gas Error",Resetable TRUE}
+EwmData[10]={ErrorNum 10,Error[] "Excess secondary circuit voltage",Resetable FALSE}
+EwmData[11]={ErrorNum 11,Error[] "Protective conductor error",Resetable FALSE}
+EwmData[12]={ErrorNum 12,Error[] "System quick stop",Resetable TRUE}
+EwmData[13]={ErrorNum 13,Error[] "Internal error, please contact EWM",Resetable FALSE}
+EwmData[17]={ErrorNum 17,Error[] "Error in pilot current module",Resetable TRUE}
+EwmData[18]={ErrorNum 18,Error[] "Wire feed problem in cold wire unit",Resetable TRUE}
+EwmData[19]={ErrorNum 19,Error[] "Gas error, external gas 1",Resetable TRUE}
+EwmData[20]={ErrorNum 20,Error[] "Gas error, external gas 2",Resetable TRUE}
+EwmData[21]={ErrorNum 21,Error[] "Error in flow of external coolant circuit",Resetable TRUE}
+EwmData[22]={ErrorNum 22,Error[] "Error in external network",Resetable TRUE}
+EwmData[23]={ErrorNum 23,Error[] "Excess temperature of external coolant circuit",Resetable TRUE}
+EwmData[24]={ErrorNum 24,Error[] "External HF choke excess temperature",Resetable TRUE}
+EwmData[49]={ErrorNum 49,Error[] "Process ignition error",Resetable TRUE}
+
+GLOBAL STRUC MESSAGES_DATA INT Handle,CHAR Msg[128],BOOL Active
+
+DECL GLOBAL MESSAGES_DATA MessageData[10]
+MessageData[1]={Handle 0,Msg[] "E-Stop Relay Not Healthy. Press E-Stop Reset PB",Active FALSE}
+MessageData[2]={Handle 0,Msg[] "LH Access Gate Relay Not Healthy",Active FALSE}
+MessageData[3]={Handle 0,Msg[] "RH Access Gate Relay Not Healthy",Active FALSE}
+MessageData[4]={Handle 0,Msg[] "Robot 2 is NOT in HOME",Active FALSE}
+MessageData[5]={Handle 0,Msg[] "Collision Device Tripped.",Active FALSE}
+MessageData[6]={Handle 0,Msg[] "Cell Air Pressure Missing or Low",Active FALSE}
+MessageData[7]={Handle 0,Msg[] "Request To Enter Cell Pressed. Open the Access Door.",Active FALSE}
+MessageData[8]={Handle 0,Msg[] "Masterkey Removed.",Active FALSE}
+
+GLOBAL SIGNAL iEStopRelayTripped $IN[1] ; E-Stop Safety Relay Tripped
+GLOBAL SIGNAL iLHAccessRelayTripped $IN[2] ; LH Access Door Safety Relay Tripped
+GLOBAL SIGNAL iRHAccessRelayTripped $IN[3] ; RH Access Door Safety Relay Tripped
+GLOBAL SIGNAL iRobotSafetyZone1 $IN[4] ; Robot 1 Safety Zone 1 Tripped
+GLOBAL SIGNAL iRobotSafetyZone2 $IN[5] ; Robot 2 Safety Zone 1 Tripped
+GLOBAL SIGNAL iRobotCollision $IN[7] ; Robot 1 Collision Relay Tripped
+GLOBAL SIGNAL iEStopResetPB $IN[7] ; E-Stop Reset Push Button
+GLOBAL SIGNAL iOpSafetyResetPB $IN[8] ; Operator Safety Reset Push Button
+GLOBAL SIGNAL iMainAirOK $IN[9] ; Main Air Pressure OK
+GLOBAL SIGNAL iCycleStartPB $IN[10] ; Cycle Start Push Button
+GLOBAL SIGNAL iCycleStopPB $IN[11] ; Cycle Stop Push Button
+GLOBAL SIGNAL iRequestToEnterPB $IN[12] ; Request To Enter Push Button
+GLOBAL SIGNAL iDrivesOn $IN[13] ; Drives On (Linked from oDrivesOn)
+GLOBAL SIGNAL iConfMess $IN[14] ; Confirm Message (Linked from oConfMess)
+GLOBAL SIGNAL iExtStart $IN[15] ; External Start (Linked from oExtStart)
+GLOBAL SIGNAL iMoveEnable $IN[16] ; Move Enable (Linked from oMoveEnable) 
+GLOBAL SIGNAL iDKPPartPresent $IN[17] ; DKP Part Present
+GLOBAL SIGNAL iOxygenSensor $IN[18] ; Oxygen Sensor on DKP                                                       
+GLOBAL SIGNAL iMasterKeyRemoved $IN[19] ; Master Key Removed
+
+GLOBAL SIGNAL iCurrentFlows $IN[2004] ; 
+GLOBAL SIGNAL iReadyForWelding $IN[2001] ; 
+GLOBAL SIGNAL iWireSticking $IN[515] ; 
+GLOBAL SIGNAL iGeneralError $IN[516] ; 
+GLOBAL SIGNAL iCollisionSignal $IN[517] ; 
+GLOBAL SIGNAL iMainCurrent $IN[518] ; 
+GLOBAL SIGNAL iProcessActive $IN[519] ; 
+GLOBAL SIGNAL iAuxProcess $IN[520] ; 
+GLOBAL SIGNAL iErrorNumber $IN[2128]  TO $IN[2143] ; 
+GLOBAL SIGNAL iMonitoring $IN[529]  TO $IN[532] ; 
+GLOBAL SIGNAL iReserved533 $IN[533] ; 
+GLOBAL SIGNAL iReserved534 $IN[534] ; 
+GLOBAL SIGNAL iReserved535 $IN[535] ; 
+GLOBAL SIGNAL iReserved536 $IN[536] ; 
+GLOBAL SIGNAL iPhaseMonitoringOK $IN[537] ; 
+GLOBAL SIGNAL iUserDefinedInput $IN[538] ; 
+GLOBAL SIGNAL iNoEStop $IN[539] ; 
+GLOBAL SIGNAL iReserved540 $IN[540] ; 
+GLOBAL SIGNAL iWireAvailable $IN[541] ; 
+GLOBAL SIGNAL iWirefeederOK $IN[542] ; 
+GLOBAL SIGNAL iGasOK $IN[543] ; 
+GLOBAL SIGNAL iCoolantOK $IN[544] ; 
+GLOBAL SIGNAL iVoltage $IN[2064]  TO $IN[2079] ; 
+GLOBAL SIGNAL iCurrent $IN[2080]  TO $IN[2095] ; 
+GLOBAL SIGNAL iWirefeedSpeed $IN[2096]  TO $IN[2111] ; 
+GLOBAL SIGNAL iWirefeedCurrent $IN[593]  TO $IN[608] ; 
+GLOBAL SIGNAL iGasFlow $IN[609]  TO $IN[624]
+
+GLOBAL SIGNAL oTravelSpeed $OUT[721]  TO $OUT[752] ; For RSI's knowledge
+GLOBAL SIGNAL oSideNum $OUT[753]  TO $OUT[760] ; For RSI/WAAMCtrl
+GLOBAL SIGNAL oLayerNum $OUT[761]  TO $OUT[776]
+GLOBAL SIGNAL oLayerCompleted $OUT[777]
+GLOBAL SIGNAL oCpiLineNum $OUT[778]  TO $OUT[793]
+GLOBAL SIGNAL oLayerType $OUT[794]  TO $OUT[809]
+GLOBAL SIGNAL oIsScanning $OUT[810]
+GLOBAL SIGNAL oLayerIndex $OUT[811]  TO $OUT[826]
+GLOBAL SIGNAL OIsPyroTempScanning $OUT[827]
+GLOBAL SIGNAL oDepositionType $OUT[858]  TO $OUT[873]
+
+GLOBAL REAL iWFHMotorCurrent1=0.0
+GLOBAL REAL iWFHMotorCurrent2=0.0
+GLOBAL REAL iWFCMotorCurrent1=0.0
+GLOBAL REAL iWFCMotorCurrent2=0.0
+
+GLOBAL SIGNAL iWFHMotorCurrent1_UINT $IN[2160]  TO $IN[2175]
+GLOBAL SIGNAL iWFHMotorCurrent2_UINT $IN[2176]  TO $IN[2191]
+
+
+GLOBAL SIGNAL oWireInput $OUT[53]
+GLOBAL SIGNAL iWireShortSignal $IN[303]
+
+GLOBAL SIGNAL PYROTEMPACCEPTABLE $IN[1199]
+
+GLOBAL SIGNAL oRequestToEnterLP $OUT[6] ; Request To Enter LAmp
+GLOBAL SIGNAL oEStopResetLP $OUT[7] ; E-Stop Reset Lamp
+GLOBAL SIGNAL oOpSafetyResetLP $OUT[8] ; Op Safety Reset Lamp
+GLOBAL SIGNAL oSystemHealthyLP $OUT[9] ; System Healthy Beacon (White)
+GLOBAL SIGNAL oCycleStatusLP $OUT[10] ; Cycle Status Beacon (Amber)
+GLOBAL SIGNAL oFaultStatusLP $OUT[11] ; Fault Status Beacon (Red)
+GLOBAL SIGNAL oSafeToEnterLP $OUT[12] ; Safe To Enter Beacon (Green)
+GLOBAL SIGNAL oDrivesOn $OUT[13] ; Drives On (Linked to iDrivesOn)
+GLOBAL SIGNAL oConfMess $OUT[14] ; Confirm Message (Linked to iConfMess) 
+GLOBAL SIGNAL oExtStart $OUT[15] ; Ext Start (Linked to iExtStart)
+GLOBAL SIGNAL oMoveEnable $OUT[16] ; Move Enable (Linked to iMoveEnable)
+GLOBAL SIGNAL oSheildingMain $OUT[17] ; Main Chamber Sheilding Gas
+GLOBAL SIGNAL oSheildingSide $OUT[18] ; Side Chamber Sheilding Gas
+GLOBAL SIGNAL oMasterKeyRelease $OUT[19] ; Master Key Solonoid
+
+GLOBAL SIGNAL oStartWelding $OUT[513] ; 
+GLOBAL SIGNAL oRobotReady $OUT[514] ; 
+GLOBAL SIGNAL oGasTest1 $OUT[515] ; 
+GLOBAL SIGNAL oGasTest2 $OUT[516] ; 
+GLOBAL SIGNAL oWireForward $OUT[402] ; 
+GLOBAL SIGNAL oWireReverse $OUT[404] ; 
+GLOBAL SIGNAL oPositionSearch $OUT[519] ; 
+GLOBAL SIGNAL oErrorReset $OUT[2011] ; 
+GLOBAL SIGNAL oStartAuxProcess $OUT[521] ; 
+GLOBAL SIGNAL oUserDefined $OUT[522] ; 
+GLOBAL SIGNAL oWeldingSimulation $OUT[523] ; 
+
+GLOBAL SIGNAL oWeldingSimulationMIG $OUT[1515] ; 
+GLOBAL SIGNAL oMontoringCheck $OUT[524] ; 
+GLOBAL SIGNAL oReserved525 $OUT[525] ; 
+GLOBAL SIGNAL oReserved526 $OUT[526] ; 
+GLOBAL SIGNAL oWeldMode $OUT[527]  TO $OUT[528] ; 
+GLOBAL SIGNAL oWirefeedSwitch $OUT[529] ; 
+GLOBAL SIGNAL oFillerWire $OUT[530] ; 
+GLOBAL SIGNAL oReserved531 $OUT[531] ; 
+GLOBAL SIGNAL oReserved532 $OUT[532] ; 
+GLOBAL SIGNAL oReserved533 $OUT[533] ; 
+GLOBAL SIGNAL oReserved534 $OUT[534] ; 
+GLOBAL SIGNAL oReserved535 $OUT[535] ; 
+GLOBAL SIGNAL oReserved536 $OUT[536] ; 
+GLOBAL SIGNAL oJobNumber $OUT[2064]  TO $OUT[2079] ; 
+GLOBAL SIGNAL oMainCurrent $OUT[545]  TO $OUT[560] ; 
+GLOBAL SIGNAL oSecondaryCurrent $OUT[561]  TO $OUT[576] ; 
+GLOBAL SIGNAL oWirefeedSpeed $OUT[2080]  TO $OUT[2092] ; 
+GLOBAL SIGNAL oGasFlowRate $IN[593]  TO $IN[608]
+GLOBAL SIGNAL oErrorMessage $OUT[217]  TO $OUT[232] ; 
+GLOBAL BOOL bForceReset=FALSE
+
+ENDDAT

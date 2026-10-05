@@ -1,0 +1,134 @@
+&ACCESS RVO
+&COMMENT WAAM Process
+DEF WAAMProcess( )
+   ;************************************************ 
+   ;* Description: WAAMHMI ()                      * 
+   ;*                                              *
+   ;*            Logic required for WAAM           *
+   ;*            HMIEasy Window                    *
+   ;************************************************
+   ;*      System: 1236682                         *
+   ;************************************************
+   ;*    Modified: KUKA UK                         *
+   ;*        Date: 2021.06.15                      *
+   ;*     Version: 01.01.09                        *  
+   ;************************************************ 
+   ;FOLD DECLARATIONS
+      ;FOLD BASISTECH DECL
+         ;Automatik extern
+         DECL STATE_T STAT
+         DECL MODUS_T MODE
+      ;ENDFOLD (BASISTECH DECL)
+      ;FOLD USER DECL
+         ; Please insert user defined declarations
+         
+         DECL BOOL _bResult
+         DECL INT _nIndex
+         
+      ;ENDFOLD (USER DECL)
+   ;ENDFOLD (DECLARATIONS)
+   ;FOLD INI
+      ;FOLD BACKUPMANAGER PLC INIT
+         BM_ENABLED = FALSE
+         BM_OUTPUTVALUE = 0
+      ;ENDFOLD (BACKUPMANAGER PLC INIT)
+      ;FOLD USER INIT
+         _bResult = FALSE
+      ;ENDFOLD (USER INIT)
+    ;ENDFOLD (INI)
+     
+   LOOP
+
+      ;FOLD HMI EASY CONTROL
+         
+         nCurrentActual = iCurrent * 0.03051851
+         rVoltageActual = iVoltage * 0.00305185
+         rWirefeedActual = iWirefeedSpeed * 0.00122074
+         rGasFlow = iGasFlow * 0.00030518509
+         
+         ; Need to define the outputs from ArcTech       
+         nCurrent = oMainCurrent * 0.01678518
+         rWirefeed = oWirefeedSpeed * 0.00015259
+         nJobNumber = oJobNumber
+         
+         IF iErrorNumber > 0 THEN
+            
+            IF iErrorNumber <> nErrorNumber THEN
+               
+               ; Store LAst Message Number  
+               nErrorNumber = iErrorNumber
+               
+               ; Clear Old Message
+               _bResult = STRCLEAR (chErrorMessage[])  
+               
+               ; Display a Message
+               SWITCH nErrorNumber
+                  CASE 4,5,6,7,8,9,10,11,12,13,17,18,19,20,21,22,23,24,49,50,51,52,53,54,99,255
+                     _bResult = STRCOPY (chErrorMessage[], EwmData[nErrorNumber].Error[])
+                  DEFAULT
+                     chErrorMessage[] = "Undefined EWM Error Message"
+               ENDSWITCH
+               
+            ENDIF
+            
+         ELSE
+            
+            nErrorNumber=0
+            
+            ; Clear last Message
+            _bResult = STRCLEAR (chErrorMessage[])
+            
+         ENDIF
+         
+         SWITCH $PRO_STATE1
+            CASE #P_FREE, #P_RESET, #P_END
+               _bResult = STRCLEAR (chCurrentSeam[])   
+               _bResult = STRCLEAR (chCurrentPoint[])
+               _bResult = STRCLEAR (chMotionType[])
+               _bResult = STRCLEAR (chCurrentMotion[]) 
+            DEFAULT
+               
+         ENDSWITCH
+         
+      ;ENDFOLD (HMIEasy Control)
+      ;FOLD EWM CONTROL
+         
+         ; Set Simulation Mode
+         oWeldingSimulation = (skArcStatusKeyHot == FALSE)
+         
+         ; Store Job Number
+         IF oJobNumber > 0 THEN
+            nJobNumberMem = oJobNumber
+         ELSE
+            oJobNumber = nJobNumberMem
+         ENDIF
+         
+         ; Sheilding Gas
+         SWITCH $PRO_STATE1
+            CASE #P_FREE, #P_RESET, #P_END
+               oSheildingMain = FALSE
+               oSheildingSide = FALSE
+            DEFAULT
+         ENDSWITCH
+         
+      ;ENDFOLD (EWM Control)
+      ;FOLD RSI CONTROL
+         
+         ; Tell RSI What Layer we are on  
+         $SEN_PINT[1] = nCurrentLayer  
+         
+         $SEN_PINT[2] = iCurrent
+         
+         $SEN_PINT[3] = iVoltage
+         
+         $SEN_PINT[4] = iWirefeedSpeed
+         
+         $SEN_PINT[5] = oMainCurrent
+         
+         $SEN_PINT[6] = oWirefeedSpeed
+         
+      ;ENDFOLD (RSI Control)   
+      
+   ENDLOOP
+
+ END

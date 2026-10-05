@@ -1,0 +1,57 @@
+&ACCESS R2
+&REL 1
+&COMMENT Generated from WOV
+DEFDAT  ARCWOVW1MODES PUBLIC
+
+DECL GLOBAL stArcModeCoding_T wArcW1ModiCoding[16]
+wArcW1ModiCoding[1]={ModusName[] "WAAM3D CwMIG",Coding 0,InUse TRUE,JobModeId[] "WAAM3D CwMIG",StrikeParamDisable FALSE}
+
+DECL GLOBAL stParameter_T wArcW1ParamDef[16,25]
+wArcW1ParamDef[1,1]={Active TRUE,IsInteger TRUE,Name[] "Channel 1",Unit[] "-",KrlId #Channel1,Min 0.0,DefaultVal 1.00000,Max 1.00000,Step 1.00000}
+wArcW1ParamDef[1,2]={Active TRUE,IsInteger TRUE,Name[] "Job Number",Unit[] "-",KrlId #Channel2,Min 0.0,DefaultVal 0.0,Max 65535.0,Step 1.00000}
+wArcW1ParamDef[1,3]={Active TRUE,IsInteger FALSE,Name[] "Hot Wire Feed Speed",Unit[] "m/min",KrlId #Channel3,Min -327.680,DefaultVal 0.0,Max 327.670,Step 0.100000}
+wArcW1ParamDef[1,4]={Active TRUE,IsInteger FALSE,Name[] "Cold Wire Feed Seed",Unit[] "m/min",KrlId #Channel4,Min 0.0,DefaultVal 0.0,Max 19.8000,Step 0.100000}
+wArcW1ParamDef[1,5]={Active TRUE,IsInteger FALSE,Name[] "Arclength Correction",Unit[] "-",KrlId #Channel5,Min -10.0000,DefaultVal 0.0,Max 10.0000,Step 1.00000}
+wArcW1ParamDef[1,6]={Active TRUE,IsInteger FALSE,Name[] "Dynamic Correction",Unit[] "-",KrlId #Channel6,Min -10.0000,DefaultVal 0.0,Max 10.0000,Step 1.00000}
+wArcW1ParamDef[1,7]={Active FALSE,IsInteger FALSE,Name[] "Channel 7",Unit[] "-",KrlId #Channel7,Min 0.0,DefaultVal 0.0,Max 255.000,Step 1.00000}
+wArcW1ParamDef[1,8]={Active FALSE,IsInteger FALSE,Name[] "Channel 8",Unit[] "-",KrlId #Channel8,Min 0.0,DefaultVal 0.0,Max 255.000,Step 1.00000}
+wArcW1ParamDef[1,9]={Active FALSE,IsInteger FALSE,Name[] "On-the-fly gas preflow time",Unit[] "s",KrlId #PurgeTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,10]={Active TRUE,IsInteger FALSE,Name[] "Wait time after ignition",Unit[] "s",KrlId #StartTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,11]={Active TRUE,IsInteger FALSE,Name[] "Gas preflow time",Unit[] "s",KrlId #PreFlowTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,12]={Active TRUE,IsInteger FALSE,Name[] "Robot velocity",Unit[] "m/s",KrlId #Velocity,Min 0.000800000,DefaultVal 0.00830000,Max 2.00000,Step 1.00000E-04}
+wArcW1ParamDef[1,13]={Active TRUE,IsInteger FALSE,Name[] "Weave pattern",Unit[] " ",KrlId #Pattern,Min 0.0,DefaultVal -1.00000,Max 13.0000,Step 1.00000}
+wArcW1ParamDef[1,14]={Active TRUE,IsInteger FALSE,Name[] "Weave length",Unit[] "mm",KrlId #Length,Min 0.200000,DefaultVal 4.00000,Max 25.0000,Step 0.100000}
+wArcW1ParamDef[1,15]={Active TRUE,IsInteger FALSE,Name[] "Weave frequency",Unit[] "Hz",KrlId #Frequency,Min 0.100000,DefaultVal 2.08333302,Max 15.0000,Step 0.100000}
+wArcW1ParamDef[1,16]={Active TRUE,IsInteger FALSE,Name[] "Weave amplitude",Unit[] "mm",KrlId #Amplitude,Min 0.200000,DefaultVal 2.00000,Max 25.0000,Step 0.100000}
+wArcW1ParamDef[1,17]={Active TRUE,IsInteger FALSE,Name[] "Weave angle",Unit[] "?",KrlId #Angle,Min -179.900,DefaultVal 0.0,Max 179.900,Step 1.00000}
+wArcW1ParamDef[1,18]={Active TRUE,IsInteger FALSE,Name[] "End crater time",Unit[] "s",KrlId #CraterTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,19]={Active TRUE,IsInteger FALSE,Name[] "Gas postflow time",Unit[] "s",KrlId #PostFlowTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,20]={Active TRUE,IsInteger FALSE,Name[] "Burnfree wait time after ignition",Unit[] "s",KrlId #wArcBurnFreeTimePulse,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,21]={Active TRUE,IsInteger FALSE,Name[] "Burnfree preflow time",Unit[] "s",KrlId #wArcBurnFreeGasFlowTime,Min 0.0,DefaultVal 0.100000,Max 2.00000,Step 0.100000}
+wArcW1ParamDef[1,22]={Active TRUE,IsInteger TRUE,Name[] "Burnfree max. number of ignition attempts",Unit[] "x",KrlId #wArcBurnFreeMaxRetries,Min 0.0,DefaultVal 3.00000,Max 255.000,Step 1.00000}
+wArcW1ParamDef[1,23]={Active TRUE,IsInteger FALSE,Name[] "Weave delay, left",Unit[] "s",KrlId #WeaveDelayLeft,Min 0.0,DefaultVal 0.0,Max 2.50000,Step 0.01000000}
+wArcW1ParamDef[1,24]={Active TRUE,IsInteger FALSE,Name[] "Weave delay, right",Unit[] "s",KrlId #WeaveDelayRight,Min 0.0,DefaultVal 0.0,Max 2.50000,Step 0.01000000}
+
+DECL GLOBAL stArcClChannel_T wArcW1OChannel[16,8]
+wArcW1OChannel[1,1]={IntValue TRUE,UsedInArcCommand 7,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 1.00000,Val 1.00000},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,2]={IntValue TRUE,UsedInArcCommand 7,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 65535.0,Val 65535.0},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,3]={IntValue FALSE,UsedInArcCommand 7,NrPoints 2,P1 {Para -327.680,Val -32768.0},P2 {Para 327.670,Val 32767.0},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,4]={IntValue FALSE,UsedInArcCommand 7,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 19.8000,Val 65535.0},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,5]={IntValue FALSE,UsedInArcCommand 7,NrPoints 2,P1 {Para -10.0000,Val -100.000},P2 {Para 10.0000,Val 100.000},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,6]={IntValue FALSE,UsedInArcCommand 7,NrPoints 2,P1 {Para -10.0000,Val -100.000},P2 {Para 10.0000,Val 100.000},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,7]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 0.0,Val 0.0},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+wArcW1OChannel[1,8]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 0.0,Val 0.0},P3 {Para 0.0,Val 0.0},P4 {Para 0.0,Val 0.0},P5 {Para 0.0,Val 0.0}}
+
+DECL GLOBAL stArcClChannel_T wArcW1IChannel[8]
+wArcW1IChannel[1]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para -327.680,Val -32768.0},P2 {Para 327.680,Val 32767.0}}
+wArcW1IChannel[2]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 65535.5,Val 65535.0}}
+wArcW1IChannel[3]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 655.350,Val 65535.0}}
+wArcW1IChannel[4]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para -327.680,Val -32768.0},P2 {Para 327.680,Val 32767.0}}
+wArcW1IChannel[5]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para -327.680,Val -32768.0},P2 {Para 327.680,Val 32767.0}}
+wArcW1IChannel[6]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para -327.680,Val -32768.0},P2 {Para 327.680,Val 32767.0}}
+wArcW1IChannel[7]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 0.0,Val 0.0}}
+wArcW1IChannel[8]={IntValue FALSE,UsedInArcCommand 0,NrPoints 2,P1 {Para 0.0,Val 0.0},P2 {Para 0.0,Val 0.0}}
+
+DECL GLOBAL stArcSlopeActive_T wArcW1SlopeActive[16]
+wArcW1SlopeActive[1]={C1 FALSE,C2 FALSE,C3 FALSE,C4 FALSE,C5 FALSE,C6 FALSE,C7 FALSE,C8 FALSE,Velocity FALSE,Length FALSE,Amplitude FALSE,Angle FALSE}
+ENDDAT

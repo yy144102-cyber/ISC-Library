@@ -1,0 +1,1511 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcSense()
+END
+;********************************************************
+;Start Rsi Weaving without ArcSense
+;********************************************************
+GLOBAL DEF ArcStartRsiWeaving(tWeld:IN, tWeave:IN)
+DECL stWeave_T tWeave
+DECL stWeld_T tWeld
+DECL INT tRet
+
+mSigGenStop = FALSE
+SWITCH tWeave.Pattern
+  CASE #Triangle,#Trapecoid,#UnsymetricTrapecoid
+  DEFAULT
+    RETURN
+ENDSWITCH
+
+tRet = ArsRSI_CREATE("RSI_ArcSense",gArcSenseContId)
+ArsAnalyseRsiError(tRet,"UnableToCreateRSI"," ",30013)
+
+IF (tRet <> cArsRSIOK) THEN
+  RETURN
+ENDIF
+
+$SEN_PINT[gArsIO1] = 2
+
+ArsSetToolDirection()
+ArsSetIO(6)
+ArsSetSenpIntValues()
+ArsSetSignalGenValues(tWeld, tWeave)
+
+IF ((IsAnySpline()) AND (stArcWeldErrSet.WeldErrReaction == #MoveBackward)) THEN
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MoveBackwardOn[],1)
+ELSE
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MoveBackwardOn[],0)
+ENDIF
+
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_DelayCalc[], Ars_IgnoreDelay[], 1)
+
+ArsResetIO(1)
+ArsStartSigGen()
+gArcRsiWeavingActive = TRUE
+ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Start")
+END
+;********************************************************
+;Switch Rsi Weaving without ArcSense
+;********************************************************
+GLOBAL DEF ArcSwiRsiWeaving(tWeld:IN, tWeave:IN)
+DECL INT tRet
+DECL BOOL tDisable
+DECL stWeave_T tWeave
+DECL stWeld_T tWeld
+
+;ArcSense is active
+IF (gArcSensorActive == TRUE) THEN
+  RETURN
+ENDIF
+IF (gArcRsiWeavingActive == TRUE) THEN
+  tDisable = FALSE
+  SWITCH tWeave.Pattern
+    CASE #Triangle,#Trapecoid,#UnsymetricTrapecoid
+    DEFAULT
+      tDisable = TRUE
+  ENDSWITCH
+  IF (skArcDryRun == TRUE) THEN
+    tDisable = TRUE
+  ENDIF
+  IF (tDisable == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Swi Stop")
+    ArcReduceRsiSigGenOff()
+    ArsStopSigGen()
+    RETURN
+  ENDIF
+ENDIF
+
+IF (ArsRSI_CHECKID(gArcSenseContId) == FALSE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Swi Start")
+  ArcStartRsiWeaving(tWeld, tWeave)
+  ArsOn(#RSIWEAVE)
+ELSE
+  ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Swi Change")
+  ArsSetSignalGenValues(tWeld, tWeave)
+  ArsStartSigGen()
+ENDIF
+END
+;********************************************************
+;Switch Rsi Weaving without ArcSense
+;********************************************************
+GLOBAL DEF ArcStopRsiWeaving()
+IF (gArcRsiWeavingActive == TRUE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Stop")
+  ArcReduceRsiSigGenOff()
+  ArsStopSigGen()
+ENDIF
+END
+;********************************************************
+;Reduce Weaving on ArcOff without ArcSense
+;********************************************************
+GLOBAL DEF ArcReduceRsiSigGenOff()
+DECL INT tRet
+IF (CheckArcRsi()) THEN
+  IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave ReduceSigGen")
+    ArsReduceWeaveSigGen()
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Stop Weaving signal generator without ArcSense
+;********************************************************
+GLOBAL DEF ArcStopSigGen()
+IF ((CheckArcRsi()) AND (mSigGenStop == FALSE)) THEN
+  mSigGenStop = TRUE
+  ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Stop SigGen")
+  ArsStopSigGen()
+ENDIF
+END
+;********************************************************
+;Create RSI and set the parameters of the input und output objects
+;********************************************************
+GLOBAL DEF ArsInitWeaving(tDeployCall:IN, tTrack:IN)
+DECL INT tRet, tDigInSigIndex, tDigInDataType
+DECL enArcArsCall_T tDeployCall
+DECL stTrack_T tTrack
+DECL stArcSignal_T tArcSenseSignals
+IF (($MODE_OP == #T1) OR ($MODE_OP == #T2)) THEN
+  IF (gArcRsiWeavingActive == FALSE) THEN
+    ArsOff()
+  ENDIF
+  IF (tDeployCall == #ARSON) THEN
+    IF (stArcCallState.MoveType <> #SplBlock) THEN 
+      IF (skArsCorrectionOn == TRUE) THEN
+        ArcMsgWrite(,#QUIT,"RSIStartErrMsg","ARCS",30012,Opt_VLSTOP_LOG)
+        ArcRemoteSetClearMsg(30012)
+      ELSE
+        ArcMsgWrite(,#QUIT,"RSITrackingOff","ARCS",30043,Opt_VLSTOP_LOG)
+        ArcRemoteSetClearMsg(30043)
+      ENDIF
+    ELSE
+      ;Stop when spline
+      IF (gArcSyncList > 1) THEN
+        SyncCmd(#ProgSync,"StartRSI_1",gArcSyncList)
+      ENDIF
+      BRAKE
+      IF (skArsCorrectionOn == TRUE) THEN
+        ArcMsgWrite(,#QUIT,"RSIStartErrMsg","ARCS",30012,Opt_VLSTOP_LOG)
+        ArcRemoteSetClearMsg(30012)
+      ELSE
+        ArcMsgWrite(,#QUIT,"RSITrackingOff","ARCS",30043,Opt_VLSTOP_LOG)
+        ArcRemoteSetClearMsg(30043)
+      ENDIF
+      IF (gArcSyncList > 1) THEN
+        SyncCmd(#ProgSync,"StartRSI_2",gArcSyncList)
+      ENDIF
+    ENDIF
+  ELSE
+    IF (skArsCorrectionOn == TRUE) THEN
+      ArcMsgWrite(,#NOTIFY,"RSIStartErrMsg","ARCS",30012,Opt_VLSTOP_LOG)
+    ELSE
+      ArcMsgWrite(,#NOTIFY,"RSITrackingOff","ARCS",30043,Opt_VLSTOP_LOG)
+    ENDIF
+  ENDIF
+ENDIF
+;RSI Initialisieren--->
+IF (gArcRsiWeavingActive == FALSE) THEN
+  tRet = ArsRSI_CREATE("RSI_ArcSense",gArcSenseContId)
+  ArsAnalyseRsiError(tRet,"UnableToCreateRSI"," ",30013)
+ENDIF
+;ArcOff Triggerdistance
+
+ArsSetSenpIntValues()
+
+tArcSenseSignals = wsArcISenseSignals[gArcActIlfWelder]
+IF (tArcSenseSignals.Active == FALSE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[AS] Error Signal Active")
+  ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"ARS Error Signal Active")
+  RETURN
+ENDIF
+SWITCH tArcSenseSignals.SigType
+  CASE #AIN ;Analog
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,ArcSenseAnaIn[], ArcSenseSensorIO_Idx[], tArcSenseSignals.AnaIndex)
+  CASE #GIN ;Input from to
+    IF (tArcSenseSignals.Offset.FromIndex == 1) THEN
+      tDigInSigIndex = 1
+    ELSE
+      tDigInSigIndex = ((tArcSenseSignals.Offset.FromIndex - 1) / 8) + 1
+    ENDIF
+    
+    SWITCH tArcSenseSignals.Length
+    CASE 8
+      tDigInDataType = 1
+    CASE 16
+      tDigInDataType = 3
+    CASE 32
+      tDigInDataType = 5
+    DEFAULT
+      tDigInDataType = 1
+    ENDSWITCH
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,ArcSenseDigIn[], ArcSenseSensorIO_Idx[], tDigInSigIndex)
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,ArcSenseDigIn[], ArcSenseDigitalDataType[], tDigInDataType)
+  DEFAULT
+    ArcWriteDiag(gArcGeneralDebug,"[AS] Error Signal Type")
+    ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"ARS Error Signal Type")
+ENDSWITCH
+
+;Multilayer Schnittstelle
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_MultilayerY[], Ars_MultilayerIndex[], cArsMultilayerY)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_MultilayerZ[], Ars_MultilayerIndex[], cArsMultilayerZ)
+$CYCFLAG[cfArcRestartRSISub] = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000001000') == 'B0000000000001000')
+GLOBAL INTERRUPT DECL irtArcThresholdInterNr WHEN $CYCFLAG[cfArcRestartRSISub] == TRUE DO ArsCheckThreshold()
+;flag for move backward strategy messages
+gArcSenseModErrStrat = TRUE
+END
+;********************************************************
+;Delete the RSI container
+;********************************************************
+GLOBAL DEF ArsOff()
+DECL INT tRet
+WAIT FOR TRUE
+IF CheckArcOffRsi() THEN
+  IF (gArcSyncList > 1) OR (gArcTmpSyncCmdSim > 0) THEN
+    IF (wArcWeldingMaster == FALSE) THEN
+      ArsStopLkSlave()
+      WAIT SEC 0.048
+    ENDIF
+  ENDIF
+  ;ArcMsg("Debug Reset RSI")
+  ArsResetRsi(TRUE)
+ENDIF
+END
+;********************************************************
+;Start RSI Container
+;********************************************************
+GLOBAL DEF ArsOn(tDeployCall:IN)
+DECL enArcArsCall_T tDeployCall
+DECL INT tRet
+DECL BOOL tSwitchRsiOn
+
+tSwitchRsiOn = FALSE
+SWITCH tDeployCall
+  CASE #ARSON
+    tSwitchRsiOn = TRUE
+  CASE #ARSSWI
+    WAIT FOR $TECHVAL[1] == 0
+    IF (gArcRsiWeavingActive == FALSE) THEN
+      tSwitchRsiOn = TRUE
+    ENDIF
+  CASE #RSIWEAVE
+    tSwitchRsiOn = TRUE
+ENDSWITCH
+IF CheckArcSenseRsi() OR CheckArcRsi() OR CheckArcRsiOnIgnError() THEN
+  IF (tSwitchRsiOn == TRUE) THEN
+    IF (CheckArcRsiOnIgnError() == FALSE) THEN
+      WAIT FOR enArcCurrentState == #WELDING
+    ENDIF
+    tRet = ArsRSI_ON(#Relative,,,#TTS)
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] On")
+    IF (tRet <> cArsRSIOK) THEN
+      ArcMsgWrite(,#NOTIFY,"UnableToStartRSI","ARCS",30044,Opt_VLSTOP_LOG)
+      HALT
+    ENDIF
+  ENDIF
+  IF CheckArcSenseRsi() THEN
+    ArsInitialStart()
+  ENDIF
+  IF (CheckArcRsiOnIgnError() == TRUE) THEN
+    ArsStopSigGen()
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Reset RSI Container
+;********************************************************
+GLOBAL DEF ArsLineSel()
+DECL INT tRet
+ArsResetRsi(FALSE)
+mControlIsOff = FALSE
+END
+;********************************************************
+;Reset RSI Container
+;********************************************************
+GLOBAL DEF ArcRsiLineSel()
+DECL INT tRet
+ArsResetRsi(FALSE)
+END
+;********************************************************
+; Initialization of the blocks in RSI
+;********************************************************
+GLOBAL DEF ArsDeployWeaving(tDeployCall:IN, tTrack:IN, tWeaveDef:IN, tArcSenseWeldPar:IN)
+DECL enArcArsCall_T tDeployCall
+DECL stWeave_T tWeaveDef ;ATB Struc Pattern,Length,Amplitude,Angle
+DECL stTrack_T tTrack
+DECL stWeld_T tArcSenseWeldPar
+DECL INT tRet, tFindSeamMiddle
+DECL REAL temp
+DECL BOOL tInitWeaving
+
+ArcWriteDiag(gArcGeneralDebug,"[AS] ArsDeployWeaving")
+
+tInitWeaving = FALSE
+SWITCH tDeployCall
+  CASE #ARSON
+    tInitWeaving = TRUE
+    stArcActSenseParamOn = tTrack
+  CASE #ARSSWI
+    IF (gArcSensorActive == TRUE) THEN
+      tInitWeaving = FALSE
+    ELSE
+      stArcActSenseParam.FindSeamMiddle = stArcActSenseParamOn.FindSeamMiddle
+      tInitWeaving = TRUE
+    ENDIF
+ENDSWITCH
+
+IF (tInitWeaving == TRUE) THEN
+  ArsInitWeaving(tDeployCall, tTrack)
+  stArcSenseWeaveBufferOn = tWeaveDef
+ENDIF
+
+IF (tWeaveDef.Amplitude > 100) THEN
+  tWeaveDef.Amplitude = tWeaveDef.Amplitude - 100 ;STT Issue
+ENDIF
+
+stArcActSenseWeaveDef = tWeaveDef       ;ATB Struc Pattern,Length,Amplitude,Angle
+stArcActSenseWeldSet = tArcSenseWeldPar ;ATB Struc Velocity + 8 Channels
+;TrackingDelay
+IF (tDeployCall == #ARSON) THEN
+  IF (wArcTrackingDelayVis == FALSE) THEN
+    stArcActSenseParam.TrackingDelay = 0
+  ENDIF
+ELSE
+  stArcActSenseParam.TrackingDelay = 0
+ENDIF
+;FindSeamMiddle
+tFindSeamMiddle = 0
+IF (stArcActSenseParam.FindSeamMiddle == TRUE) THEN
+  tFindSeamMiddle = 1
+ENDIF
+IF (enArcFindSeamMiddleVis == #ALWAYS) THEN
+  tFindSeamMiddle = 1
+ENDIF
+IF (enArcFindSeamMiddleVis == #NEVER) THEN
+  tFindSeamMiddle = 0
+ENDIF
+IF ((tDeployCall == #ARSON) AND (tFindSeamMiddle == 0)) THEN
+  stArcActSenseParam.Bias = 0
+ENDIF
+IF (tWeaveDef.Pattern == #NONE) THEN
+  ;Param for HeightControl Only
+  ArsLoadSQParameters(gArcSenseParam[2])
+ELSE
+  ArsLoadSQParameters(gArcSenseParam[1])
+  ;HeightCorrValue also for Side
+  ;stArcActSenseParam.HeightCorrValue = 0
+ENDIF
+
+; Height Corr by value
+IF (wArcHeightCorrValueVis == FALSE) THEN
+  stArcActSenseParam.HeightCorrValue = 0
+ENDIF
+
+IF (gArcSenseSimSig == TRUE) THEN
+  ArsSetIO(19)
+ELSE
+  ArsResetIO(19)
+ENDIF
+
+IF ((stArcActSenseParam.FindSeamMiddle == TRUE) AND (stArcActSenseWeaveDef.RightSideDelay <> stArcActSenseWeaveDef.LeftSideDelay)) THEN
+  LOOP
+    ArcMsgWrite(,#QUIT,"FindSeamMiddleNotPossibleWithDifferentRightSideAndLeftSideDelay","ARCS",10615,Opt_VLSTOP_LOG)
+    HALT
+  ENDLOOP
+ENDIF
+IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+  SWITCH gArsSigQualSensitivity
+    CASE 0 ;OFF No Detection possible
+      mSigQualSanity        = 0
+      mSigQualFreqRange     = 0
+      mSigQualTimeoutSec    = 0
+    CASE 1 ;Default
+      mSigQualSanity        = 0.175
+      mSigQualFreqRange     = 0.1
+      mSigQualTimeoutSec    = 10
+    CASE 2 ;Lower sensitivity
+      mSigQualSanity        = 0.25
+      mSigQualFreqRange     = 0.25
+      mSigQualTimeoutSec    = 10
+    CASE 3 ;Lowest sensitivity
+      mSigQualSanity        = 0.5
+      mSigQualFreqRange     = 0.4
+      mSigQualTimeoutSec    = 20
+  ENDSWITCH
+  
+  ArsSetToolDirection()
+
+  ArsSetSignalGenValues(stArcActSenseWeldSet, stArcActSenseWeaveDef)
+
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_FindSeamMiddle[], tFindSeamMiddle)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_FreqRange[], mSigQualFreqRange)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_TimeoutSec[], mSigQualTimeoutSec)
+  IF (tDeployCall == #ARSON) THEN
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_ArcOnTrackDelaySec[], stArcActSenseParam.TrackingDelay)
+  ELSE
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_ArcOnTrackDelaySec[], 0)
+  ENDIF
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_HeightCorrValue[], stArcActSenseParam.HeightCorrValue)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_MinInputValue[], gArsMinInputValue)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_Frequency[], mSigQualPeriodOfWeave)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SigQualSanity[], mSigQualSanity)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SigQualAmplitude[], stArcActSenseWeaveDef.Amplitude)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SigQualWindow[], gArcSenseParam[1].TrigWindowPerc)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SigQualWindowZero[], (gArcSenseParam[1].TrigWindowPercZero))
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_MinRefCycleOn[], gArsMinRefCycleOn)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_MinRefCycleSwi[], gArsMinRefCycleSwi)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_WindowZero[], (gArcSenseParam[1].TrigWindowPercZero))
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Control[], Ars_HeightCorrValue[], stArcActSenseParam.HeightCorrValue)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Control[], Ars_MinInputValue[], gArsMinInputValue)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_Window[], gArcSenseParam[1].TrigWindowPerc)
+  ; if weave pattern #NONE is selected
+  IF (tWeaveDef.Pattern == #NONE) THEN
+    ;parameter mode ist set for sigquality height
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SQMode[], mSigQualHeight)
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_SigGenAmp[], mMaxHeigthCorCyc)
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_Mode[], mControlHeight)
+  ELSE
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_SigGenAmp[], stArcActSenseWeaveDef.Amplitude)
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_Mode[], mControlSide)
+  ENDIF
+  IF (tWeaveDef.Pattern == #TRIANGLE) THEN
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SQMode[], mSigQualTria)
+  ENDIF
+  IF (tWeaveDef.Pattern == #TRAPECOID) THEN
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigQuality1[], Ars_SQMode[], mSigQualTrap)
+  ENDIF
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Threshold3D[], Ars_SQMode[], mThresholdSen)
+  ;parameter for control block
+  ArsDeployUserControlPar(stArcActSenseParam)
+
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MaxCorrWeaveSide[], gArsMaxCorrWeaveSide)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MaxCorrWeaveHeight[], gArsMaxCorrWeaveHeight)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_ControlSelection[], gArsControlSelection)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_PeriodsCorrSlow[], gArsPeriodsCorrSlow)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_Amplitude[], mMaxAmpControl)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_NrCycRefMidVal[], gArsNrCycRefMidVal)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MidValRefPercent[], gArsMidValRefPercent)
+  IF ((IsAnySpline()) AND (stArcWeldErrSet.WeldErrReaction == #MoveBackward)) THEN
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MoveBackwardOn[],1)
+  ELSE
+    tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_MoveBackwardOn[],0)
+  ENDIF
+  stArcSenseParamBuffer = stArcActSenseParam
+  gArcSensorActive = TRUE
+ENDIF
+END
+;********************************************************
+;Arc Parameter Changed
+;********************************************************
+GLOBAL DEF ArsSigGenParamChange()
+DECL INT tRet
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_ArcParamChgd[], 1)
+WAIT SEC 0.048
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_ArcParamChgd[], 0)
+END
+;********************************************************
+;Communication with RSI
+;Set input signal to start und stop RSI blocks from KRL
+;********************************************************
+GLOBAL DEF ArsSetIO(tSetin:IN)
+DECL INT tSetin
+SWITCH tSetin
+  CASE 1
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000000001'
+  CASE 2
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000000010'
+  CASE 3
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000000100'
+  CASE 4
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000001000'
+  CASE 5
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000010000'
+  CASE 6
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000000100000'
+  CASE 7
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000001000000'
+  CASE 8
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000010000000'
+  CASE 9
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000000100000000'
+  CASE 10
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000001000000000'
+  CASE 11
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000010000000000'
+  CASE 12
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0000100000000000'
+  CASE 13
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0001000000000000'
+  CASE 14
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0010000000000000'
+  CASE 15
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B0100000000000000'
+  CASE 16
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_OR 'B1000000000000000'
+    ;Second Block
+  CASE 17
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_OR 'B0000000000000001'
+  CASE 18
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_OR 'B0000000000000010'
+  CASE 19
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_OR 'B0000000000000100'
+ENDSWITCH
+END
+;********************************************************
+;Communication with RSI
+;Set input signal back to start und stop RSI blocks from KRL
+;********************************************************
+GLOBAL DEF ArsResetIO(tSetin:IN)
+DECL INT tSetin
+SWITCH tSetin
+  CASE 1
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111111110'
+  CASE 2
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111111101'
+  CASE 3
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111111011'
+  CASE 4
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111110111'
+  CASE 5
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111101111'
+  CASE 6
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111111011111'
+  CASE 7
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111110111111'
+  CASE 8
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111101111111'
+  CASE 9
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111111011111111'
+  CASE 10
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111110111111111'
+  CASE 11
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111101111111111'
+  CASE 12
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1111011111111111'
+  CASE 13
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1110111111111111'
+  CASE 14
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1101111111111111'
+  CASE 15
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B1011111111111111'
+  CASE 16
+    $SEN_PINT[gArsIO1] = $SEN_PINT[gArsIO1] B_AND 'B0111111111111111'
+    ;Second Block
+  CASE 17
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_AND 'B1111111111111110'
+  CASE 18
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_AND 'B1111111111111101'
+  CASE 19
+    $SEN_PINT[gArsIO2] = $SEN_PINT[gArsIO2] B_AND 'B1111111111111011'
+ENDSWITCH
+END
+;********************************************************
+;Communication with RSI
+;Check the input signal if its set
+;********************************************************
+GLOBAL DEFFCT BOOL ArsCheckInput(tSetin:IN)
+DECL INT tSetin
+DECL INT tRetVal
+SWITCH tSetin
+  CASE 1
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000000001'
+  CASE 2
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000000010'
+  CASE 3
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000000100'
+  CASE 4
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000001000'
+  CASE 5
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000010000'
+  CASE 6
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000000100000'
+  CASE 7
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000001000000'
+  CASE 8
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000010000000'
+  CASE 9
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000000100000000'
+  CASE 10
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000001000000000'
+  CASE 11
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000010000000000'
+  CASE 12
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0000100000000000'
+  CASE 13
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0001000000000000'
+  CASE 14
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0010000000000000'
+  CASE 15
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B0100000000000000'
+  CASE 16
+    tRetVal = $SEN_PINT[gArsIO1] B_AND 'B1000000000000000'
+    ;Second Block
+  CASE 17
+    tRetVal = $SEN_PINT[gArsIO2] B_AND 'B0000000000000001'
+  CASE 18
+    tRetVal = $SEN_PINT[gArsIO2] B_AND 'B0000000000000010'
+  CASE 19
+    tRetVal = $SEN_PINT[gArsIO2] B_AND 'B0000000000000100'
+ENDSWITCH
+IF (tRetVal > 0) THEN
+  RETURN TRUE
+ELSE
+  RETURN FALSE
+ENDIF
+ENDFCT
+;********************************************************
+;Interface to communicate with RSI
+;Check the output signal from RSI
+;********************************************************
+GLOBAL DEFFCT BOOL ArsCheckOutput(tSetin:IN)
+DECL INT tSetin
+DECL BOOL tRetVal
+SWITCH tSetin
+  CASE 1
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000000001') == 'B0000000000000001')
+  CASE 2
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000000010') == 'B0000000000000010')
+  CASE 3
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000000100') == 'B0000000000000100')
+  CASE 4
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000001000') == 'B0000000000001000')
+  CASE 5
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000010000') == 'B0000000000010000')
+  CASE 6
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000000100000') == 'B0000000000100000')
+  CASE 7
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000001000000') == 'B0000000001000000')
+  CASE 8
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000010000000') == 'B0000000010000000')
+  CASE 9
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000000100000000') == 'B0000000100000000')
+  CASE 10
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000001000000000') == 'B0000001000000000')
+  CASE 11
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000010000000000') == 'B0000010000000000')
+  CASE 12
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0000100000000000') == 'B0000100000000000')
+  CASE 13
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0001000000000000') == 'B0001000000000000')
+  CASE 14
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0010000000000000') == 'B0010000000000000')
+  CASE 15
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B0100000000000000') == 'B0100000000000000')
+  CASE 16
+    tRetVal = (($SEN_PINT[gArsStateIO] B_AND 'B1000000000000000') == 'B1000000000000000')
+ENDSWITCH
+RETURN tRetVal
+ENDFCT
+;********************************************************
+;Activate the process to reduce the weaving offset, bevor restart
+;********************************************************
+GLOBAL DEF ArsReduceWeaveCorr(tRedSigGen:IN)
+DECL BOOL tRedSigGen, tRsiWeaveActive, tArsActive
+
+tRsiWeaveActive = FALSE
+tArsActive = FALSE
+
+IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN 
+  IF (gArcRsiWeavingActive == TRUE) THEN
+  ;IF (CheckArcRsi()) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] ReduceWeave")
+    tRsiWeaveActive = TRUE
+    $OV_APPL = 0
+  ENDIF
+  IF (CheckArcSenseRsi()) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] ReduceWeave")
+    tArsActive = TRUE
+    gArcSenseModErrStrat = TRUE
+    $OV_APPL = 0
+  ENDIF
+ENDIF
+
+IF ((gArsReduceWeaveDone == FALSE) AND ((tRsiWeaveActive == TRUE) OR (tArsActive == TRUE))) THEN
+  IF (tRedSigGen == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] ReduceWeave SigGen")
+    ArsReduceWeaveSigGen()
+    IF (tArsActive == TRUE) THEN
+      ArsStopSigQuality()
+    ENDIF
+    ArsStopSigGen()
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[AS] ReduceWeave")
+    ArsStopSigGen()
+    IF (tArsActive == TRUE) THEN
+      ArsReduceWeaveOffset()
+    ENDIF
+    IF (tRsiWeaveActive == TRUE) THEN
+      ArsSetIO(3)
+      WAIT FOR ArsCheckOutput(2) == TRUE
+      ArsResetIO(3)
+    ENDIF
+    gArsReduceWeaveDone = TRUE
+  ENDIF
+
+  IF (tArsActive == TRUE) THEN
+    IF (ArsCheckIFWeaveActive() == TRUE) THEN
+      stArcSenseFailurePointMB = $POS_ACT
+    ELSE
+      IF ((stArcActSenseWeaveDef.Pattern == #None) AND (skArcDryRun == FALSE)) THEN
+        stArcSenseFailurePointMB = $POS_ACT
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+
+IF ((tRsiWeaveActive == TRUE) OR (tArsActive == TRUE)) THEN
+  IF (($MODE_OP == #T1) AND (skArcStatusKeyHot == FALSE) AND (skArsCorrectionOn == FALSE) AND (tRedSigGen == FALSE)) THEN
+    skArsManualCorrActive = TRUE
+    skArsManualCorrFinished = FALSE
+  ENDIF
+  IF (skArsManualCorrActive == TRUE) THEN
+    ArsManualCorr()
+  ENDIF
+  $OV_APPL = cOvApplDefault
+ENDIF
+END
+;********************************************************
+;Manual Correction with Statuskeys
+;********************************************************
+GLOBAL DEF ArsManualCorr()
+DECL Modus_T tMode
+DECL State_T tState
+;ArcMsg("Debug AS ManualCorr")
+ArcWriteDiag(gArcGeneralDebug,"[AS] ManualCorr")
+WHILE ($MODE_OP <> #T1)
+  ArcMsgWrite(,#NOTIFY,"ManualCorrActiveModeNoT1","ARCS",30003,Opt_VLSTOP_LOG)
+  CWRITE($CMD,tState,tMode,"STOP 1")
+ENDWHILE
+ArsResetIO(5)
+ArsResetIO(8)
+ArcMsgWrite(,#NOTIFY,"MoveWithStatkeyToPosition","ARCS",30007,Opt_VLSTOP_LOG)
+ArsSetIO(5)
+WAIT FOR ArsCheckOutput(5)
+ArsSetIO(8)
+WHILE (skArsManualCorrFinished == FALSE)
+  IF (skArsMoveYPlus == TRUE) THEN
+    ArsSetIO(9)
+  ELSE
+    ArsResetIO(9)
+  ENDIF
+  IF (skArsMoveYMinus == TRUE) THEN
+    ArsSetIO(10)
+  ELSE
+    ArsResetIO(10)
+  ENDIF
+  IF (skArsMoveZPlus == TRUE) THEN
+    ArsSetIO(11)
+  ELSE
+    ArsResetIO(11)
+  ENDIF
+  IF (skArsMoveZMinus == TRUE) THEN
+    ArsSetIO(12)
+  ELSE
+    ArsResetIO(12)
+  ENDIF
+  IF (ArsCheckOutput(5) == FALSE) THEN
+    ArsResetIO(5)
+    ArsResetIO(8)
+    wait sec 0.5
+    ArcMsgWrite(,#NOTIFY,"MoveWithStatkeyToPosition","ARCS",30007,Opt_VLSTOP_LOG)
+    ArsSetIO(5)
+    wait for ArsCheckOutput(5)
+    ArsSetIO(8)
+  ENDIF
+  WHILE ($MODE_OP <> #T1)
+    ArcMsgWrite(,#NOTIFY,"ManualCorrActiveModeNoT1","ARCS",30003,Opt_VLSTOP_LOG)
+    CWRITE($CMD,tState,tMode,"STOP 1")
+    WAIT SEC 0.0
+  ENDWHILE
+ENDWHILE
+IF (wArcDeviationErrorOutNr >0) THEN
+  $OUT[wArcDeviationErrorOutNr] = FALSE
+ENDIF
+ArsResetIO(5)
+ArsResetIO(8)
+gArcIgnoreWeldErrStrat = TRUE
+skArsManualCorrActive = FALSE
+ArcMsgWrite(,#NOTIFY,"ManualCorrFinished","ARCS",30005,Opt_VLSTOP_LOG)
+CWRITE($CMD,tState,tMode,"STOP 1")
+END
+;********************************************************
+;the process to reduce the weaving offset, bevor process ends (ArcOFF)
+;********************************************************
+GLOBAL DEF ArcOffReduceCorr()
+IF (ArsRSI_CHECKID(gArcSenseContId)== TRUE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[AS] ArcOffReduceCorr")
+  ArsStopSigQuality()
+  ArsReduceWeaveSigGen()
+  gArcSenseModErrStrat = FALSE
+ENDIF
+END
+;********************************************************
+;Restart is requestes - Interface in ATB
+;********************************************************
+GLOBAL DEF ArsRequestRestart()
+DECL BOOL tRsiWeaving
+
+;ArcTech Weaving with RSI
+IF (gArcRsiWeavingActive == TRUE) THEN
+  IF ((stArcActWeaveSet.Pattern == #None) OR (skArcDryRun == TRUE) ) THEN
+    ;Stop weave signal generator
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Stop SigGen RequStart")
+    ArsStopSigGen()
+  ELSE
+    ;Start weave signal generator
+    ArcWriteDiag(gArcGeneralDebug,"[RSI] Weave Start SigGen RequStart")
+    mSigGenStop = FALSE
+    ArsStartSigGen()
+  ENDIF
+  RETURN
+ENDIF
+
+IF CheckArcSenseRsi() THEN
+  IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+    ;ArcMsg("Debug AS ArsRequestRestart")
+    ArsStartWeaving()
+    IF ((stArcWeldErrSet.WeldErrReaction == #MoveBackward) AND (IsAnySpline())) THEN
+      gArcSenseIsReqRestart = TRUE
+    ELSE
+      IF ((stArcActSenseParam.IsArcSenseEnabled == TRUE) AND (stArcActSenseParam.ControlEnabled == TRUE)) THEN
+        ArsStartSignalCheck()
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+END
+;********************************************************
+; Initial startprocess RSI_ON
+;********************************************************
+GLOBAL DEF ArsInitialStart()
+$SEN_PINT[gArsIO1] = 2
+;Set the connection Type of SQ
+IF (wsArcISenseSignals[gArcActIlfWelder].SigType == #AIN) THEN
+  ArsSetIO(15)
+ELSE
+  ArsResetIO(15)
+ENDIF
+;MaxDeviation Stuff for Threshhold element
+IF (wArcErrorMaxDeviation == TRUE) THEN
+  ArsResetIO(6)
+ELSE
+  ArsSetIO(6)
+ENDIF
+ArsStartWeaving()
+ArsStartSignalCheck()
+END
+;********************************************************
+; Start weaving signal if the conditions are true
+;********************************************************
+GLOBAL DEF ArsStartWeaving()
+;Deactivate pause weaving
+;ArcMsg("Debug AS ArsStartWeaving")
+ArsResetIO(1)
+IF (VARSTATE("stArcActSenseWeaveDef") == #Initialized) THEN
+  IF ((stArcActSenseWeaveDef.Pattern == #None) OR (skArcDryRun == TRUE) ) THEN
+    ; Stop weave signal generator
+    ArsStopSigGen()
+  ELSE
+    ;3D Control is active
+    IF (skArsManualCorrActive == FALSE) THEN
+      ArsStartSigGen()
+    ENDIF
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Stops the weaving signal
+;********************************************************
+GLOBAL DEF ArsStartSigGen()
+ArsResetIO(2)
+gArsReduceWeaveDone = FALSE
+END
+;********************************************************
+;Stops the weaving signal
+;********************************************************
+GLOBAL DEF ArsStopSigGen()
+ArsSetIO(2)
+END
+;********************************************************
+;Starts the Signalquality, ParameterDetection and Controls
+;********************************************************
+GLOBAL DEF ArsStartSigQuality()
+ArsSetIO(4)
+END
+;********************************************************
+;Stops the Signalquality, ParameterDetection and Controls
+;********************************************************
+GLOBAL DEF ArsStopSigQuality()
+ArsResetIO(4)
+END
+;********************************************************
+;Start RSI-Process if conditions are true
+;********************************************************
+GLOBAL DEF ArsStartSignalCheck()
+IF (wArcSensorErrorOutNr > 0) THEN
+  $OUT[wArcSensorErrorOutNr] = FALSE
+ENDIF
+IF (wArcDeviationErrorOutNr > 0) THEN
+  $OUT[wArcDeviationErrorOutNr] = FALSE
+ENDIF
+IF ((ArcWeldCondition(gArcActIlfWelder) == TRUE) AND (enArcCurrentState == #Welding)) THEN
+  ;Start RSI Process (Parameterdetection, SignalQuality,Control)
+  IF (skArsCorrectionOn == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] Start SignalQuality")
+    ArsStartSigQuality()
+    IF (gArcSenseBackCondActive == FALSE) THEN
+      Interrupt ON irtArcThresholdInterNr
+    ENDIF
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[AS] SignalQuality OFF")
+  ENDIF
+ELSE
+  ;Stop RSI Process (Parameterdetection, SignalQuality,Control)
+  ArcWriteDiag(gArcGeneralDebug,"[AS] Stop SignalQuality")
+  ArsStopSigQuality()
+ENDIF
+END
+;********************************************************
+;Check if weaving already active
+;********************************************************
+GLOBAL DEFFCT BOOL ArsCheckIFWeaveActive()
+RETURN NOT((stArcActSenseWeaveDef.Pattern == #None) OR (skArcDryRun == TRUE))
+ENDFCT
+;********************************************************
+; Stop the all Process and Reset Signals
+;********************************************************
+GLOBAL DEF ArsStopSignalFlow()
+IF CheckArcSenseRsi() AND (gArcColdSeam == FALSE) THEN
+  ;ArcMsg("Debug ArsStopSignalFlow")
+  ArsStopSigQuality()
+  ArsStopSigGen()
+ENDIF
+END
+;********************************************************
+;Starts the Signal flow
+;********************************************************
+GLOBAL DEF ArsStartSignalFlow()
+ArsStartWeaving()
+ArsStartSignalCheck()
+END
+;********************************************************
+;Max deviation Dialog
+;********************************************************
+GLOBAL DEF ArsMaxDeviationDialog()
+INT Answer
+DECL Modus_T tMode
+DECL State_T tState
+Answer = 0
+Answer = ArcMsgWriteDialog(,"MaximumDeviationDialog","ARCS",30006,Opt_VLSTOP_LOG,"Cancel","GoOn","Manual")
+WAIT SEC 0.2
+IF Answer == 1 THEN
+  ; Cancel
+  IF (wArcDeviationErrorOutNr>0) THEN
+    $OUT[wArcDeviationErrorOutNr] = FALSE
+  ENDIF
+  LOOP
+    ArcMsgWrite(,#NOTIFY,"ProgDeselectOrResetNeeded","ARCS",30041,Opt_VLSTOP_LOG)
+    HALT
+  ENDLOOP
+ENDIF
+IF Answer == 2 THEN
+  ; GoOn
+  IF (wArcDeviationErrorOutNr>0) THEN
+    $OUT[wArcDeviationErrorOutNr] = FALSE
+  ENDIF
+  ArsSetIO(6)
+  WAIT SEC 0.2
+ENDIF
+IF Answer == 3 THEN
+  ; Manual Correction
+  IF ($MODE_OP <> #T1) THEN
+    ArcMsgWrite(,#NOTIFY,"ManualCorrActiveModeNoT1","ARCS",30003,Opt_VLSTOP_LOG)
+  ELSE
+    ArcMsgWrite(,#NOTIFY,"ManualCorrActiveModeT1","ARCS",30004,Opt_VLSTOP_LOG)
+  ENDIF
+  ;ArcMsg("Debug AS skArsManualCorrActive = TRUE")
+  skArsManualCorrActive = TRUE
+  skArsManualCorrFinished = FALSE
+  ArsResetIO(6)
+  CWRITE($CMD,tState,tMode,"STOP 1")
+ENDIF
+END
+;********************************************************
+;Deploy the user control parameters
+;********************************************************
+GLOBAL DEF ArsDeployUserControlPar(tTrack:In)
+DECL stTrack_T tTrack
+DECL INT tRet
+IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+  ; BIAS
+  IF stArcActSenseParam.Bias > 100 THEN
+    stArcActSenseParam.Bias = 100
+  ENDIF
+  IF stArcActSenseParam.Bias < -100 THEN
+    stArcActSenseParam.Bias = -100
+  ENDIF
+  
+  ; Control OFF
+  IF (gArsHeightControlOn == FALSE) THEN
+    stArcActSenseParam.ControlSensibilityHeight = 0
+  ENDIF
+  IF (gArsSideControlOn == FALSE) THEN
+    stArcActSenseParam.ControlSensibility = 0
+  ENDIF
+  
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_Bias[], (stArcActSenseParam.Bias / 1000))
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Threshold3D[], Ars_ThreshLim[], tTrack.MaxDeviation)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Control[], Ars_UserGainSide[], stArcActSenseParam.ControlSensibility)
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Control[], Ars_UserGainHeight[], stArcActSenseParam.ControlSensibilityHeight)
+  stArcSenseParamBuffer = stArcActSenseParam
+ENDIF
+END
+;********************************************************
+;Set RSI parameters if its needed by ArcSwi
+;********************************************************
+GLOBAL DEF ArsSwiParameterChanged(tTrack:In, tWeaveDef:IN, tArcSenseWeldPar:IN)
+DECL stTrack_T tTrack
+DECL stWeave_T tWeaveDef
+DECL stWeld_T tArcSenseWeldPar
+DECL BOOL tWeaveParamChanged, tArcParamChanged, tArcSenseParamChanged
+DECL INT tRet
+
+IF ((stArcSenseWeaveBufferOn.Pattern <> #NONE) AND (tWeaveDef.Pattern == #NONE)) THEN
+  ;ArcSense Weaving Off
+  tWeaveDef.Amplitude = 0
+  tTrack.ControlEnabled = FALSE
+ENDIF
+
+IF (tWeaveDef.Amplitude > 100) THEN
+  tWeaveDef.Amplitude = tWeaveDef.Amplitude - 100 ;STT Issue
+ENDIF
+
+IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+  tWeaveParamChanged      = FALSE
+  tArcParamChanged        = FALSE
+  tArcSenseParamChanged   = FALSE
+  IF (ArsArcParChanged(tArcSenseWeldPar)) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] tArcParamChanged")
+    tArcParamChanged = TRUE
+  ENDIF
+  IF (ArsWeaveParChanged(tWeaveDef, tArcSenseWeldPar)) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] tWeaveParamChanged")
+    tWeaveParamChanged = TRUE
+  ENDIF
+  IF (ArsSenseParChanged(tWeaveDef, tTrack)) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] tArcSenseParamChanged")
+    tArcSenseParamChanged = TRUE
+  ENDIF
+  IF (gArsSwiDontChangeParam == TRUE) THEN
+    tWeaveParamChanged      = FALSE
+    tArcParamChanged        = FALSE
+    tArcSenseParamChanged   = FALSE
+  ENDIF
+  IF ((mControlIsOff == TRUE) AND (tTrack.ControlEnabled == TRUE)) THEN
+    mControlIsOff = FALSE
+    ArcWriteDiag(gArcGeneralDebug,"[AS] Start After Control OFF")
+    ArsStartSignalCheck()
+  ENDIF
+  IF (tTrack.ControlEnabled == TRUE) THEN
+    IF ((tArcParamChanged == TRUE) OR (tWeaveParamChanged == TRUE) OR (tArcSenseParamChanged == TRUE)) THEN
+      ArsStopSigQuality()
+      ArsDeployUserControlPar(tTrack)
+      IF (tTrack.KeepOffset == FALSE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = FALSE")
+        ArsReduceCorrOffset()
+      ELSE
+        ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = TRUE")
+      ENDIF
+      ;New Parameter is deployed
+      IF (tWeaveParamChanged == TRUE) OR (tArcSenseParamChanged == TRUE) THEN
+        ArsDeployWeaving(#ARSSWI,tTrack, tWeaveDef, tArcSenseWeldPar)
+      ENDIF
+      IF (tArcParamChanged == TRUE) THEN
+        ;ArcMsg("Debug AS ArsSigGenParamChange")
+        ArsSigGenParamChange()
+      ENDIF
+      WAIT SEC 0.048
+      ArsStartSignalCheck()
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[AS] No Parameter changed")
+      IF ((tTrack.KeepOffset == FALSE) OR ((tTrack.KeepOffset == TRUE) AND (tTrack.TeachNew == TRUE))) THEN
+        ArsStopSigQuality()
+        ArsDeployUserControlPar(tTrack)
+        IF (tTrack.KeepOffset == FALSE) THEN
+          ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = FALSE")
+          ArsReduceCorrOffset()
+        ELSE
+          ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = TRUE")
+        ENDIF
+        WAIT SEC 0.048
+        ArsStartSignalCheck()
+      ELSE
+        ArsDeployUserControlPar(tTrack)
+      ENDIF
+    ENDIF
+  ELSE
+    mControlIsOff = TRUE
+    ArcWriteDiag(gArcGeneralDebug,"[AS] Control = FALSE")
+    ArsStopSigQuality()
+    ArsDeployUserControlPar(tTrack)
+    IF (tWeaveParamChanged == TRUE) OR (tArcSenseParamChanged == TRUE) THEN
+      ArsDeployWeaving(#ARSSWI,tTrack, tWeaveDef, tArcSenseWeldPar)
+    ENDIF
+    IF (tTrack.KeepOffset == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = FALSE")
+      ArsReduceCorrOffset()
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[AS] KeepOffset = TRUE")
+    ENDIF
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Analyse RSI Error
+;********************************************************
+GLOBAL DEF ArsAnalyseRsiError(tRsiErrNr:IN, tText[]:IN, tTextParam[]:IN, tMsgNr:IN)
+DECL INT tRsiErrNr, tMsgNr
+DECL CHAR tText[], tTextParam[]
+IF (tRsiErrNr <> cArsRSIOK) THEN
+  SWITCH ArcCallFromRoutine()
+    CASE 1,2 ;Call from Robot / Call Robot Trigger
+      LOOP
+        ArcMsgWriteS(,#QUIT,tText[],"ARCS",tMsgNr,Opt_VLSTOP_LOG,tTextParam[])
+        HALT
+      ENDLOOP
+  ENDSWITCH
+ENDIF
+END
+;********************************************************
+;Check if weld parameter is changed
+;********************************************************
+DEFFCT BOOL ArsArcParChanged(tArcSenseWeldPar:OUT)
+DECL stWeld_T tArcSenseWeldPar
+BOOL tRetVal
+tRetVal = FALSE
+;Pattern,Length,Amplitude,Angle Weave Parameter Changed
+IF (ArcWeldCondition(gArcActIlfWelder) == TRUE) THEN
+  IF ((STRCOMP(tArcSenseWeldPar.JobModeId[],stArcActSenseWeldSet.JobModeId[],#NOT_CASE_SENS)) == FALSE) THEN ;ToDo Check. Now Id is String#
+    ;ArcMsg("Debug AS JobModeId changed")
+    tRetVal = TRUE
+  ENDIF
+  IF ((STRCOMP(tArcSenseWeldPar.ParamSetId[],stArcActSenseWeldSet.ParamSetId[],#NOT_CASE_SENS)) == FALSE) THEN ;ToDo Check. Now Id is String
+    ;ArcMsg("Debug AS ParamSetId changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel1 <> stArcActSenseWeldSet.Channel1) THEN
+    ;ArcMsg("Debug AS Channel1 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel2 <> stArcActSenseWeldSet.Channel2) THEN
+    ;ArcMsg("Debug AS Channel2 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel3 <> stArcActSenseWeldSet.Channel3) THEN
+    ;ArcMsg("Debug AS Channel3 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel4 <> stArcActSenseWeldSet.Channel4) THEN
+    ;ArcMsg("Debug AS Channel4 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel5 <> stArcActSenseWeldSet.Channel5) THEN
+    ;ArcMsg("Debug AS Channel5 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel6 <> stArcActSenseWeldSet.Channel6) THEN
+    ;ArcMsg("Debug AS Channel6 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel7 <> stArcActSenseWeldSet.Channel7) THEN
+    ;ArcMsg("Debug AS Channel7 changed")
+    tRetVal = TRUE
+  ENDIF
+  IF (tArcSenseWeldPar.Channel8 <> stArcActSenseWeldSet.Channel8) THEN
+    ;ArcMsg("Debug AS Channel8 changed")
+    tRetVal = TRUE
+  ENDIF
+ENDIF
+IF (tArcSenseWeldPar.Velocity <> stArcActSenseWeldSet.Velocity) THEN
+  ;ArcMsg("Debug AS Velocity changed")
+  tRetVal = TRUE
+ENDIF
+stArcActSenseWeldSet = tArcSenseWeldPar
+RETURN tRetVal
+ENDFCT
+;********************************************************
+;Check if weave paramter
+;********************************************************
+DEFFCT BOOL ArsWeaveParChanged(tWeaveDef:OUT, tArcSenseWeldPar:OUT)
+DECL stWeld_T tArcSenseWeldPar
+DECL stWeave_T tWeaveDef
+DECL BOOL tRetVal
+tRetVal = FALSE
+IF (tWeaveDef.Pattern <> stArcActSenseWeaveDef.Pattern) THEN
+  tRetVal = TRUE
+ENDIF
+IF (tArcSenseWeldPar.Velocity <> stArcActSenseWeldSet.Velocity) THEN
+  tRetVal = TRUE
+ENDIF
+IF (tWeaveDef.Angle <> stArcActSenseWeaveDef.Angle) THEN
+  tRetVal = TRUE
+ENDIF
+IF (tWeaveDef.Pattern <> #NONE) THEN
+  IF (tWeaveDef.Length <> stArcActSenseWeaveDef.Length) THEN
+    tRetVal = TRUE
+  ENDIF
+  IF (tWeaveDef.Amplitude <> stArcActSenseWeaveDef.Amplitude) THEN
+    tRetVal = TRUE
+  ENDIF
+  IF (tWeaveDef.RightSideDelay <> stArcActSenseWeaveDef.RightSideDelay) THEN
+    tRetVal = TRUE
+  ENDIF
+  IF (tWeaveDef.LeftSideDelay <> stArcActSenseWeaveDef.LeftSideDelay) THEN
+    tRetVal = TRUE
+  ENDIF
+ENDIF
+stArcActSenseWeaveDef = tWeaveDef
+RETURN tRetVal
+ENDFCT
+;********************************************************
+;Check if sense parameter is changed
+;********************************************************
+DEFFCT BOOL ArsSenseParChanged(tWeaveDef:OUT, tSenseParas:OUT)
+DECL stTrack_T tSenseParas
+DECL stWeave_T tWeaveDef
+DECL BOOL tRetVal
+DECL INT tRet
+tRetVal = FALSE
+IF (tSenseParas.WeaveOffset <> stArcSenseParamBuffer.WeaveOffset) THEN
+  tRetVal = TRUE
+ENDIF
+IF (wArcHeightCorrValueVis == TRUE) THEN
+  IF (tWeaveDef.Pattern == #NONE) THEN
+    IF (tSenseParas.HeightCorrValue <> stArcSenseParamBuffer.HeightCorrValue) THEN
+      tRetVal = TRUE
+    ENDIF
+  ELSE
+    IF (tSenseParas.HeightCorrValue > 0) THEN
+      ;Send Height value to controller block without new calibration
+      tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId, Ars_Control[], Ars_HeightCorrValue[], tSenseParas.HeightCorrValue)
+    ELSE
+      ;New calibration when HeightCorrValue is getting to 0
+      IF (tSenseParas.HeightCorrValue <> stArcSenseParamBuffer.HeightCorrValue) THEN
+        tRetVal = TRUE
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+stArcSenseParamBuffer = tSenseParas
+RETURN tRetVal
+ENDFCT
+;********************************************************
+;Check if ArcSenseRsi available
+;********************************************************
+DEFFCT BOOL CheckArcSenseRsi()
+  ;RETURN ((stArcFeatureState.Act.Sense == TRUE) AND (gArcSensorActive == TRUE))
+  RETURN (gArcSensorActive == TRUE)
+ENDFCT
+;********************************************************
+;Check if ArcTechRsi available
+;********************************************************
+DEFFCT BOOL CheckArcRsi()
+  ;RETURN ((stArcFeatureState.Act.WeaveRsi == TRUE) AND (gArcRsiWeavingActive == TRUE))
+  RETURN (gArcRsiWeavingActive == TRUE)
+ENDFCT
+;********************************************************
+;Ignition error and MoveForward strategy selected do load context  
+;********************************************************
+DEFFCT BOOL CheckArcRsiOnIgnError()
+  RETURN ((enArcActiveStrategy == #MoveForward) AND ((CheckArcSenseRsi() == TRUE) OR (CheckArcRsi() == TRUE)))
+ENDFCT
+;********************************************************
+;Check if ArcTechRsi available at ArcOff
+;********************************************************
+DEFFCT BOOL CheckArcOffRsi()
+  RETURN ((CheckArcSenseRsi() == TRUE) OR (CheckArcRsi() == TRUE))
+ENDFCT
+;********************************************************
+;Set Tool Direction and Tool positve or Tool negative control
+;********************************************************
+DEF ArsSetToolDirection()
+DECL BOOL tToolDirPositive
+DECL INT tRet
+tToolDirPositive = wArcToolSenseDirPositive
+IF (tToolDirPositive) THEN
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_ToolDirection[],0)
+ELSE
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_ToolDirection[],1)
+ENDIF
+END
+;********************************************************
+;Set TCP Couple
+;********************************************************
+DEF ArsSetTcpCouple(tOn:IN)
+DECL BOOL tOn
+IF (tOn == TRUE) THEN
+  ;ArcMsg("Debug ArsSetTcpCouple TRUE")
+  ArsSetIO(18)
+ELSE
+  ;ArcMsg("Debug ArsSetTcpCouple FALSE")
+  ArsResetIO(18)
+ENDIF
+END
+;********************************************************
+;Set Parameter for $SEN_PINT[] Communication Blocks
+;********************************************************
+DEF ArsSetSenpIntValues(tWeld:IN, tWeave:IN)
+DECL stWeave_T tWeave
+DECL stWeld_T tWeld
+DECL INT tRet
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_DecodeBlock[], Ars_DecodeBlock_Idx[], gArsStateIO)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,ArcSenseIO_1B[], ArcSenseIO_1B_Idx[], gArsIO1)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,ArcSenseIO_2B[], ArcSenseIO_2B_Idx[], gArsIO2)
+END
+;********************************************************
+;Reset RSI Values
+;********************************************************
+GLOBAL DEF ArsResetRsi(tMsg:IN)
+DECL BOOL tMsg
+DECL INT tRet
+IF CheckArcOffRsi() THEN
+  IF (ArsRSI_CHECKID(gArcSenseContId) == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[AS] RSI OFF")
+    tRet = ArsRSI_OFF()
+    IF (tMsg == TRUE) THEN
+      ArsAnalyseRsiError(tRet,"UnableToStopRSI"," ",30013)
+    ENDIF
+    tRet = ArsRSI_DELETE(gArcSenseContId)
+    IF (tMsg == TRUE) THEN
+      ArsAnalyseRsiError(tRet,"UnableToDeleteRSI"," ",30014)
+    ENDIF
+  ENDIF
+ENDIF
+$SEN_PINT[gArsIO1] = 0
+$SEN_PINT[gArsIO2] = 0
+$SEN_PINT[gArsStateIO] = 0
+gArcSenseContId = -1
+gArcRsiWeavingActive = FALSE
+gArcSensorActive = FALSE
+END
+;********************************************************
+;Set Parameter for SignalGenerator Block
+;********************************************************
+DEF ArsSetSignalGenValues(tWeld:IN, tWeave:IN)
+DECL stWeave_T tWeave
+DECL stWeld_T tWeld
+DECL INT tRet
+DECL REAL tRightSideDelay, tLeftSideDelay
+
+IF (tWeave.Amplitude > 100) THEN
+  tWeave.Amplitude = tWeave.Amplitude - 100 ;STT Issue
+ENDIF
+
+tRightSideDelay = tWeave.RightSideDelay
+tLeftSideDelay = tWeave.LeftSideDelay
+
+gArsWeaveDelayMode = 0 ;Stop at side
+IF (tWeave.Pattern == #TRAPECOID) THEN
+  gArsWeaveDelayMode = 1 ;Don't stop at side
+  IF ((tRightSideDelay == 0) AND (tLeftSideDelay == 0)) THEN
+    tRightSideDelay = 0.2 ;Default Delay
+    tLeftSideDelay = 0.2 ;Default Delay
+  ENDIF
+ENDIF
+
+IF (tWeave.Pattern == #UNSYMETRICTRAPECOID) THEN
+  gArsWeaveDelayMode = 1 ;Don't stop at side
+  IF ((tRightSideDelay == 0) AND (tLeftSideDelay == 0)) THEN
+    tRightSideDelay = 0.1 ;Default Delay
+    tLeftSideDelay = 0.3 ;Default Delay
+;    IF (tWeave.Angle == 0) THEN
+;      tRightSideDelay = 0.1 ;Default Delay
+;      tLeftSideDelay = 0.3 ;Default Delay
+;    ENDIF
+;    IF ((tWeave.Angle == 179.9) OR (tWeave.Angle == -179.9)) THEN
+;      tRightSideDelay = 0.3 ;Default Delay
+;      tLeftSideDelay = 0.1 ;Default Delay
+;    ENDIF
+  ENDIF
+ENDIF
+
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_DelayCalc[], Ars_IgnoreDelay[], gArsInWeaveShiftCycle)
+
+ArsSetTcpCouple(FALSE)
+IF ((tRightSideDelay > 0) OR (tLeftSideDelay > 0)) THEN
+  tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_DelayCalc[], Ars_IgnoreDelay[], 1)
+  IF (gArsWeaveDelayMode == 0) THEN
+    ArsSetTcpCouple(TRUE)
+  ENDIF
+ENDIF
+
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_Type[], mSigGenTriangle)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_Velocity[], tWeld.Velocity)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_Amplitude[], tWeave.Amplitude)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_Period[], tWeave.Length)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_SoftStartCtn[], gArsSoftStartCtn)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_WeaveOffset[], 0)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_WeaveDelMode[], gArsWeaveDelayMode)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_WeaveDelRight[], tRightSideDelay * 1000)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_WeaveDelLeft[], tLeftSideDelay * 1000)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_AmpMaxOutIdx[], gArsAmpMaxOutIdx)
+
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_AngleCalc[], Ars_Angle[], tWeave.Angle)
+END
+;********************************************************
+;the process to reduce only sensor offset
+;********************************************************
+DEF ArsReduceCorrOffset()
+ArsStopSigQuality()
+;Reduce Offset  Z
+ArsSetIO(13)
+IF (ArsCheckIFWeaveActive() == TRUE) THEN
+  ;Reduce Offset Z finished
+  WAIT FOR ArsCheckOutput(7) == TRUE
+ENDIF
+ArsResetIO(13)
+;Reduce Offset Y
+ArsSetIO(14)
+IF (ArsCheckIFWeaveActive() == TRUE) THEN
+  ;Reduce Offset Y finished
+  WAIT FOR ArsCheckOutput(8) == TRUE
+ENDIF
+ArsResetIO(14)
+END
+;********************************************************
+;the process to reduce only weave offset
+;********************************************************
+DEF ArsReduceWeaveOffset()
+ArcWriteDiag(gArcGeneralDebug,"[AS] ArsReduceWeaveOffset")
+ArsSetIO(3)
+IF (ArsCheckIFWeaveActive() == TRUE) THEN
+  IF (gArcLineSelected == FALSE) THEN
+    WAIT FOR ArsCheckOutput(2) == TRUE
+  ENDIF
+ENDIF
+ArsResetIO(3)
+END
+;********************************************************
+;the process to reduce only weave offset in signal generator
+;********************************************************
+DEF ArsReduceWeaveSigGen()
+DECL INT tRet
+ArcWriteDiag(gArcGeneralDebug,"[AS] ArsReduceWeaveSigGen")
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_ReduceOffset[], 1)
+IF (gArcLineSelected == FALSE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[AS] WAIT ArsReduceWeaveSigGen")
+  WAIT FOR ArsCheckOutput(11) == TRUE
+ENDIF
+ArsStopSigGen()
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_SigGen[], Ars_SigGen_ReduceOffset[], 0)
+ArcWriteDiag(gArcGeneralDebug,"[AS] END ArsReduceWeaveSigGen")
+END
+;********************************************************
+;Position Adjustment for LK Slave
+;********************************************************
+DEF ArsStopLkSlave( )
+WAIT FOR TRUE
+mResumeTrigger = FALSE
+WAIT SEC 0.06
+INTERRUPT DECL irtArcPosAdjust WHEN mResumeTrigger DO ArsResumeUp()
+INTERRUPT ON irtArcPosAdjust
+ArsStopLkSlaveTrigger()
+END
+;********************************************************
+;Position Adjustment for LK Slave
+;********************************************************
+DEF ArsStopLkSlaveTrigger()
+WAIT SEC 0.06
+mResumeTrigger = TRUE
+WAIT FOR FALSE
+END
+;********************************************************
+;Position Adjustment for LK Slave
+;********************************************************
+DEF ArsResumeUp()
+BRAKE
+WAIT SEC 0.06
+RESUME
+END
+;********************************************************
+;Load Control Parameters for Control Block
+;********************************************************
+DEF ArsLoadSQParameters(tStructureSQ:in)
+DECL stArcSenseSQ_T tStructureSQ
+DECL INT tRet
+
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_KpSide[], tStructureSQ.KpSide)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_KiSide[], tStructureSQ.KiSide)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_TaSide[], tStructureSQ.TaSide)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_KpHeight[], tStructureSQ.KpHeight)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_KiHeight[], tStructureSQ.KiHeight)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_TaHeight[], tStructureSQ.TaHeight)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_DZSide[], tStructureSQ.DeadZoneSide)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_DZHeight[], tStructureSQ.DeadZoneHeight)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_AsymHeightUp[], tStructureSQ.AsymetricHeightUp)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_AsymHeightDown[], tStructureSQ.AsymetricHeightDown)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_SanityValue[], tStructureSQ.SanityValue)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_WeldBreakDecay[], tStructureSQ.WeldBreakDecay)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_WeldBreakMax[], tStructureSQ.WeldBreakMax)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_HeightCycle[], tStructureSQ.HeightCycle)
+tRet = ArsRSI_SETPUBLICPAR(gArcSenseContId,Ars_Control[], Ars_HeightRefCycle[], tStructureSQ.HeightRefCycle)
+END

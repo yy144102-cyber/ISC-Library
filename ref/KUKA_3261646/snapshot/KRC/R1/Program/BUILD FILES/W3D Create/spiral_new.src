@@ -1,0 +1,164 @@
+&ACCESS RVO
+&REL 6
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\BUILD FILES
+DEF spiral_new()
+
+;FOLD INI
+  DECL INT LayerNumber,TotalLayerNumber, Totalwidthnumber, Widthnumber,skinpass, totalskinpass,skinpassnumber
+  DECL REAL Radius, TotalHeight,AngleSet,LayerHeight, RadiusCurrent,HeightCurrent, AngleCir, Offset , Startheight, Totalwidth, angleoffset,startoffset,voffset, offsets,offsetskin, Heightfinal
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3
+    BAS (#INITMOV,1 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+halt
+
+oLayerNum = 1
+oSideNum = 1
+WAAM_RSI_ON()
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHOMEA
+BAS(#PTP_PARAMS, 50.0)
+SET_CD_PARAMS(0)
+;XhomeA.E1 = $POS_ACT_MES.E1
+;XhomeA.E2 = $POS_ACT_MES.E2
+PTP XhomeA
+
+;initialise all the parameters
+  XStart=XHOMEA 
+  XMid=XHOMEA 
+  XEnd=XHOMEA 
+  Radius = 50 ; start inner radius
+  startoffset=0 ;angle offset
+  Startheight = 40;z direction
+
+;do not change
+  angleoffset=0+startoffset
+  AngleSet = 0
+  TotalHeight = 50
+  LayerHeight = 2.2
+  voffset=3
+  Widthnumber = 1
+  Widthnumber=1
+  Totalwidthnumber=1000
+  
+  
+  HeightCurrent = Startheight
+  RadiusCurrent = Radius
+  AngleCir = 0+angleoffset
+  XStart.x = RadiusCurrent * (-sin(AngleCir))
+  XStart.y = RadiusCurrent * (-cos(-AngleCir))
+  XStart.z = HeightCurrent
+
+  
+;FOLD WAIT Time= 1 sec;%{PE}%R 5.4.33,%MKUKATPBASIS,%CWAIT,%VWAIT,%P 2:1
+WAIT SEC 1
+;ENDFOLD
+	;move to arc start position
+  $BWDSTART=FALSE
+  LDAT_ACT=LCPDAT
+  FDAT_ACT=FweldA
+  BAS(#CP_PARAMS,0.1)
+  LIN XStart 
+  TRIGGER WHEN DISTANCE = 1 DELAY =0 DO WAAM_RSI_CHECK() PRIO=-1
+HALT  
+
+;FOLD WAIT Time= 1 sec;%{PE}%R 5.4.33,%MKUKATPBASIS,%CWAIT,%VWAIT,%P 2:1
+WAIT SEC 1
+;ENDFOLD
+
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT10) DO ArcMainNG(#PreDefinition, WDAT10, WP10) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT10) DELAY = ArcGetDelay(#GasPreflow, WDAT10) DO ArcMainNG(#GasPreflow, WDAT10, WP10) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT10) DELAY = 0 DO ArcMainNG(#ArcOnMoveStd, WDAT10, WP10) PRIO = -1
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT10, WP10)
+LIN XStart
+ArcMainNG(#ArcOnAfterMoveStd, WDAT10, WP10) 
+
+;Loop start
+
+FOR Widthnumber=1 TO Totalwidthnumber
+ IF (HeightCurrent < TotalHeight) THEN
+	;move to the first part of the circle
+    AngleCir = AngleCir+120
+    RadiusCurrent = Radius
+    XMid.x = RadiusCurrent * (-sin(AngleCir))
+    XMid.y = RadiusCurrent * (-cos(-AngleCir))
+    XMid.z = HeightCurrent+(LayerHeight*AngleCir/360)
+
+    AngleCir = AngleCir+120
+    RadiusCurrent = Radius
+    XEnd.x = RadiusCurrent * (-sin(AngleCir))
+    XEnd.y = RadiusCurrent * (-cos(-AngleCir))
+    XEnd.z = HeightCurrent+(LayerHeight*AngleCir/360)
+
+ 
+TRIGGER WHEN DISTANCE = 1 DELAY =0 DO WAAM_RSI_CHECK() PRIO=-1 
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+LDAT_ACT.APO_DIST = wArcApoDistance
+FDAT_ACT = FweldA
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS (0)
+$CIRC_TYPE=#BASE
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT12, WP12) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT12, WP12)
+CIRC XMid,XEnd C_Dis C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT12, WP12)
+
+ELSE
+
+TRIGGER WHEN DISTANCE = 1 DELAY =0 DO WAAM_RSI_CHECK() PRIO=-1
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FweldA
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS(0)
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT137) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT137, WP137) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT137) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT137, WP137) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT137, WP137)
+LIN XEnd
+ArcMainNG(#ArcOffAfterMoveStd, WDAT137, WP137)
+
+    ENDIF
+ENDFOR
+
+HALT
+
+
+;FOLD WAIT Time= 2 sec;%{PE}%R 5.4.33,%MKUKATPBASIS,%CWAIT,%VWAIT,%P 2:2
+WAIT SEC 2
+;ENDFOLD
+;FOLD PTP homea  Vel=100 % PDAT1 Tool[1] Base[2];%{PE}%R 8.3.22,%MKUKATPBASIS,%CMOVE,%VPTP,%P 1:PTP, 2:homea, 3:, 5:100, 7:PDAT1
+$BWDSTART=FALSE
+PDAT_ACT=PPDAT1
+FDAT_ACT=Fhomea
+BAS(#PTP_PARAMS,100)
+PTP Xhomea 
+;ENDFOLD
+
+
+;FOLD WAIT Time= 1 sec;%{PE}%R 5.4.35,%MKUKATPBASIS,%CWAIT,%VWAIT,%P 2:1
+WAIT SEC 5
+;ENDFOLD
+
+
+;FOLD PTP HOMEA Vel=20 % DEFAULT Tool[13]:CWMig Base[2]:KP2-HV500.Flange Base ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOMEA; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=20; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PDEFAULT
+FDAT_ACT = FHOMEA
+BAS(#PTP_PARAMS, 20.0)
+SET_CD_PARAMS (0)
+PTP XHOMEA
+;ENDFOLD
+WAAM_RSI_OFF()
+
+END

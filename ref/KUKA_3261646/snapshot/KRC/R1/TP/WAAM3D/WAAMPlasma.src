@@ -1,0 +1,44 @@
+&ACCESS RV1
+&REL 1
+DEF WAAMPlasma( )
+   
+   WAAMPlasma_VAR_UPDATE()
+   WAAMPlasma_ERROR()
+   
+END
+
+GLOBAL DEF WAAMPlasma_VAR_UPDATE()
+   
+   VOUT = rVoltageActual * 100
+   AOUT = nCurrentActual * 100
+   rPLASMA_GAS = oPLASMA_GAS/32767*10.0
+   rSHIELDING_GAS = oSHIELDING_GAS/32767*20.0
+   $SEN_PREA[6] = rPLASMA_GAS
+   $SEN_PREA[7] = rSHIELDING_GAS
+   
+   ;$SEN_PREA[9] = rWirefeedActual
+   ;$SEN_PREA[10] = rWirefeed
+   
+   $SEN_PINT[2] = iCurrent
+         
+   $SEN_PINT[3] = iVoltage
+   
+   $SEN_PINT[5] = oMainCurrent
+   
+END
+
+GLOBAL DEF WAAMPlasma_ERROR()
+
+   IF (bSTART_PILOT_ARC == TRUE) AND (WIRE_TEST == TRUE) THEN
+      oStartAuxProcess = TRUE
+   ELSE
+      oStartAuxProcess = FALSE
+   ENDIF
+   
+   IF bERROR_RESET == TRUE THEN
+      oErrorReset = TRUE
+   ELSE
+      oErrorReset = FALSE
+   ENDIF
+   
+END

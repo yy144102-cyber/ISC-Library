@@ -1,0 +1,94 @@
+&ACCESS R2
+&COMMENT ArcTech User sub routines module
+DEF  UserArcSubRoutines()
+END
+;*****************************************************************************************
+;PreDefinition extension
+;*****************************************************************************************
+GLOBAL DEF ATA_UsrPreStrikeParams(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPreStrikeParams","ATA_User")
+ENDIF
+END ;(ATA_UsrPreStrikeParams)
+GLOBAL DEF ATA_UsrPostStrikeParams(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPostStrikeParams","ATA_User")
+ENDIF
+END ;(ATA_UsrPostStrikeParams)
+;*****************************************************************************************
+;ARC_ON User extension
+;*****************************************************************************************
+GLOBAL DEF ATA_UsrPre_ArcOn(ArcDat:IN,SeamName[]:IN)
+DECL stArcDat_T ArcDat
+DECL CHAR SeamName[]
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPre_ArcOn","ATA_User")
+ENDIF
+END ;(ATA_UsrPre_ArcOn)
+GLOBAL DEF ATA_UsrPost_ArcOn(ArcDat:IN,SeamName[]:IN)
+DECL stArcDat_T ArcDat
+DECL CHAR SeamName[]
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPost_ArcOn","ATA_User")
+ENDIF
+END ;(ATA_UsrPost_ArcOn)
+;*****************************************************************************************
+;ARC_SWI User extension
+;*****************************************************************************************
+GLOBAL DEF ATA_UsrPre_ArcSwi(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPre_ArcSwi","ATA_User")
+ENDIF
+END ;(ATA_UsrPre_ArcSwi)
+GLOBAL DEF ATA_UsrPost_ArcSwi(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPost_ArcSwi","ATA_User")
+ENDIF
+END ;(ATA_UsrPost_ArcSwi)
+;*****************************************************************************************
+;ARC_OFF User extension
+;*****************************************************************************************
+GLOBAL DEF ATA_UsrPre_ArcOff(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPre_ArcOff","ATA_User")
+ENDIF
+END ;(ATA_UsrPre_ArcOff)
+GLOBAL DEF ATA_UsrPost_ArcOff(ArcDat:IN)
+DECL stArcDat_T ArcDat
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPost_ArcOff","ATA_User")
+ENDIF
+END ;(ATA_UsrPost_ArcOff)
+;*****************************************************************************************
+;Other User extension
+;*****************************************************************************************
+GLOBAL DEF ATA_UsrErrorHandle()
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrErrorHandle","ATA_User")
+ENDIF
+END ;(ATA_UsrErrorHandle)
+GLOBAL DEF ATA_UsrPreRestart()
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPreRestart","ATA_User")
+ENDIF
+END ;(ATA_UsrPreRestart)
+GLOBAL DEF ATA_UsrPostRestart()
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"ATA_UsrPostRestart","ATA_User")
+ENDIF
+END ;(ATA_UsrPostRestart)
+GLOBAL DEF ATA_UsrPreSplStart()
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"Direkt vor der SplStart-Fahrt","ATA_User")
+ENDIF
+END ;(ATA_UsrPreSplStart)
+GLOBAL DEF ATA_UsrPostSplStart()
+IF ATAu_Test == TRUE THEN
+  ArcMsgWrite(,#NOTIFY,"Direkt nach der SplStart-Fahrt","ATA_User")
+ENDIF
+END ;(ATA_UsrPostSplStart)

@@ -1,0 +1,116 @@
+&ACCESS R2
+&COMMENT ArcTech User Calls module
+DEF UserArcCalls()
+
+;FOLD Helpful Global Variables
+ ;*****************************************************************************************
+ ;Helpful Global Variables
+ ;*****************************************************************************************
+
+ ;[CHAR] gArcSeamName[] -> Actual SeamName
+ 
+ ;stArcActStartSet -> Actual Ignition set
+   ;Elements
+   ;- [CHAR] JobModeId[]
+   ;- [CHAR] ParamSetId[]
+   ;- [REAL] StartTime
+   ;- [REAL] PreFlowTime
+   ;- [REAL] Channel1
+   ;- [REAL] Channel2
+   ;- [REAL] Channel3
+   ;- [REAL] Channel4
+   ;- [REAL] Channel5
+   ;- [REAL] Channel6
+   ;- [REAL] Channel7
+   ;- [REAL] Channel8
+   ;- [REAL] PurgeTime
+ 
+ ;stArcActWeldSet -> Acutal Weld set
+   ;Elements
+   ;- [CHAR] JobModeId[]
+   ;- [CHAR] ParamSetId[]
+   ;- [REAL] Velocity
+   ;- [REAL] Channel1
+   ;- [REAL] Channel2
+   ;- [REAL] Channel3
+   ;- [REAL] Channel4
+   ;- [REAL] Channel5
+   ;- [REAL] Channel6
+   ;- [REAL] Channel7
+   ;- [REAL] Channel8
+ 
+ ;stArcActWeaveSet -> Actual Weaving set
+   ;Elements
+   ;- [ENUM] Pattern
+   ;- [REAL] Length
+   ;- [REAL] Amplitude
+   ;- [REAL] Angle
+   ;- [REAL] LeftSideDelay
+   ;- [REAL] RightSideDelay
+ 
+ ;stArcActCraterSet -> Acutal Crater set
+   ;Elements
+   ;- [CHAR] JobModeId[]
+   ;- [CHAR] ParamSetId[]
+   ;- [REAL] CraterTime
+   ;- [REAL] PostflowTime
+   ;- [REAL] Channel1
+   ;- [REAL] Channel2
+   ;- [REAL] Channel3
+   ;- [REAL] Channel4
+   ;- [REAL] Channel5
+   ;- [REAL] Channel6
+   ;- [REAL] Channel7
+   ;- [REAL] Channel8
+   ;- [REAL] BurnBackTime
+ 
+ ;stArcSeamSet -> Acutal Seam set
+   ;Elements
+   ;- [CHAR] SeamName[]
+   ;- [CHAR] PartName[]
+   ;- [INT]  SeamNumber
+   ;- [INT]  PartNumber
+   ;- [REAL] DesiredLength
+   ;- [REAL] LengthTolNeg
+   ;- [REAL] LengthTolPos
+   ;- [BOOL] LengthCtrlActive
+;ENDFOLD
+
+END
+GLOBAL DEF ATA_UserCall(UserCallType:IN)
+DECL enArcUsrCall_T UserCallType
+SWITCH UserCallType
+  CASE #MaxIgnErrAbort
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"MaxIgnErrAbort - Max ignition errors - Cancel","ATA_User")
+    ENDIF
+  CASE #MaxWeldErrAbort
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"MaxWeldErrAbort - Max seam errors - Cancel","ATA_User")
+    ENDIF
+  CASE #MaxIgnErrRetry
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"MaxIgnErrRetry - Max ignition errors - Retry","ATA_User")
+    ENDIF
+  CASE #MaxWeldErrRetry
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"MaxWeldErrRetry -  Max seam errors - Retry","ATA_User")
+    ENDIF
+  CASE #AdvErrIgnition
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"AdvErrIgnition - Max ignition errors - AdvErrorRecovery","ATA_User")
+    ENDIF
+  CASE #AdvErrWeld
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"AdvErrWeld - Max seam errors - AdvErrorRecovery","ATA_User")
+    ENDIF
+  CASE #AdvErrSeamRepeat
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"AdvErrSeamRepeat - Seam will be repeated - AdvErrorRecovery","ATA_User")
+    ENDIF
+  CASE #AdvErrSeamSkip
+    IF ATAu_Test == TRUE THEN
+      ArcMsgWrite(,#NOTIFY,"AdvErrSeamSkip - Seam will be skipped - AdvErrorRecovery","ATA_User")
+    ENDIF
+ENDSWITCH
+END

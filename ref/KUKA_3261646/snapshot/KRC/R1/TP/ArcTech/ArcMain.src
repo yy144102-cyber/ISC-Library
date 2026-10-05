@@ -1,0 +1,2152 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcMain( )
+END
+;*****************************************************************************************
+;Get Path Value
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcGetPath(tType:IN,tArcDat:IN)
+DECL enArcPath_T tType
+DECL stArcDat_T tArcDat
+DECL REAL tPath
+DECL stAdvanced_T tArcActAdvancedSet
+;IF (gArcIsOnSimEnvironment == TRUE) THEN
+;  RETURN 0
+;ENDIF
+IF (gArcTechAdvancedOption == FALSE) THEN
+  ATAg_ER_ArcGroupEnabled = FALSE
+ENDIF
+tArcActAdvancedSet = ArcPrepareWDatAdvanced(tArcDat)
+tPath = 0
+IF (tType == #OnTheFlyArcOn) THEN
+  IF (ArcAtaOnTheFlyOnOption(tArcActAdvancedSet) == TRUE) THEN
+    tPath = tArcActAdvancedSet.OnTheFlyDistanceOn
+  ENDIF
+ENDIF
+IF (tType == #OnTheFlyArcOff) THEN
+  tPath = cArcNDistSplCondStop
+  IF (ArcAtaOnTheFlyOffOption(tArcActAdvancedSet) == TRUE) THEN
+    tPath = tArcActAdvancedSet.OnTheFlyDistanceOff
+  ENDIF
+ENDIF
+IF (tType == #ArcOnStop) THEN
+  tPath = cArcDistSplCondStop
+ENDIF
+IF (tType == #ArcPreOnMoveSpl) THEN
+  tPath = 0
+ENDIF
+IF (tType == #ArcOffStop) THEN
+  tPath = cArcEpsArcOffStop
+ENDIF
+IF (tType == #ArcOffBefore) THEN
+  tPath = cArcDistArcOffRedCorr
+  IF (ArcAtaArcOffSlopeOption(tArcActAdvancedSet) == TRUE) THEN
+    IF (tArcActAdvancedSet.SlopeDistanceOff > 0) THEN
+      tPath = tArcActAdvancedSet.SlopeDistanceOff * (-1)
+    ENDIF
+  ENDIF
+ENDIF
+IF (tType == #ArcOffBefore2) THEN
+  IF (ArcAtaMoveBackOption(tArcActAdvancedSet) == TRUE) THEN
+    IF (tArcActAdvancedSet.MoveBackAtArcOffDistance > 0) THEN
+      tPath = tArcActAdvancedSet.MoveBackAtArcOffDistance * (-1)
+      IF (tPath > cMaxMoveBackDistance) THEN
+        tPath = cMaxMoveBackDistance
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+IF (tType == #MlPathArcSwi) THEN
+  IF (gArcTrackActive == TRUE) THEN
+    tPath = -1.5
+  ELSE
+    IF (gArcSensorActive == TRUE) THEN
+      tPath = -1.5
+    ELSE
+      tPath = -1.5
+    ENDIF
+  ENDIF
+ENDIF
+IF (tType == #MlPathArcOff) THEN
+  IF (gArcTrackActive == TRUE) THEN
+    tPath = -0.3
+  ELSE
+    IF (gArcSensorActive == TRUE) THEN
+      tPath = -1
+    ELSE
+      tPath = -1
+    ENDIF
+  ENDIF
+ENDIF
+RETURN tPath
+ENDFCT
+;*****************************************************************************************
+;Get Delay Value
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcGetDelay(tType:IN,tArcDat:IN)
+DECL REAL tDelay
+DECL REAL tPreStartTime
+DECL enArcDelay_T tType
+DECL stArcDat_T tArcDat
+DECL stAdvanced_T tArcActAdvancedSet
+;IF (gArcIsOnSimEnvironment == TRUE) THEN
+;  RETURN 0
+;ENDIF
+tDelay        = 0
+tPreStartTime = 0
+tArcActAdvancedSet = ArcPrepareWDatAdvanced(tArcDat)
+IF (tType == #PreDefinition) THEN
+  IF (tArcActAdvancedSet.PreStartOn == TRUE) THEN
+    tPreStartTime = wArcPreStartTime
+    IF (tArcActAdvancedSet.PreStartLocal == TRUE) THEN
+      tPreStartTime = tArcActAdvancedSet.PreStartTime
+    ENDIF
+  ENDIF
+  tDelay = ((cArcPreDefinitionTime * 1.1) - tPreStartTime)
+ENDIF
+IF (tType == #GasPreflow) THEN
+  IF (ArcAtaPreStartOption(tArcActAdvancedSet) == TRUE) THEN
+    tPreStartTime = wArcPreStartTime
+    IF (tArcActAdvancedSet.PreStartLocal == TRUE) THEN
+      tPreStartTime = tArcActAdvancedSet.PreStartTime
+    ENDIF
+  ENDIF
+  tDelay = ((tArcDat.Strike.PurgeTime * (-1000)) - tPreStartTime)
+ENDIF
+IF (tType == #ArcPreOn) THEN
+  IF (ArcAtaPreStartOption(tArcActAdvancedSet) == TRUE) THEN
+    tDelay = wArcPreStartTime * (-1)
+    IF (tArcActAdvancedSet.PreStartLocal == TRUE) THEN
+      tDelay = tArcActAdvancedSet.PreStartTime * (-1)
+    ENDIF
+  ENDIF
+ENDIF
+IF (tType == #ArcPreOnMoveSpl) THEN
+  IF (ArcAtaPreStartOption(tArcActAdvancedSet) == TRUE) THEN
+    tDelay = wArcPreStartTime * (-1)
+    IF (tArcActAdvancedSet.PreStartLocal == TRUE) THEN
+      tDelay = tArcActAdvancedSet.PreStartTime * (-1)
+    ENDIF
+  ENDIF
+ENDIF
+IF (tType == #ArcOnMoveSpl) THEN
+  tDelay = 0
+ENDIF
+IF (tType == #ArcOnAfterMoveSpl) THEN
+  tDelay = 0
+ENDIF
+IF (tType == #MlDelayArcOn) THEN
+  tDelay = 0
+ENDIF
+IF (tType == #MlDelayArcSwi) THEN
+  tDelay = 0
+ENDIF
+IF (tType == #MlDelayArcOff) THEN
+  tDelay = 0
+ENDIF
+RETURN tDelay
+ENDFCT
+;*****************************************************************************************
+;Get ArcSpline ArcOn StopCondition
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcGetStopCond(tType:IN,tArcDat:IN)
+DECL enArcStopCond_T tType
+DECL stArcDat_T tArcDat
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;ArcMainNG
+;*****************************************************************************************
+GLOBAL DEF ArcMainNG(tArcFunc:IN,tArcDatIn:OUT,tArcWPDatIn:OUT,tArcWPHDatIn:OUT,tTcDatIn:IN,tStepDatIn:IN)
+DECL BOOL tB
+DECL BOOL tBuffer
+DECL BOOL tInAdvance
+DECL BOOL tReturn
+DECL INT tI
+DECL INT tHandle
+DECL CHAR tStr[24]
+DECL enArcCall_T tArcFunc
+DECL stArcDat_T tArcDatIn, tArcDat, tArcWPDatIn, tArcWPDat,tArcWPHDat,tArcWPHDatIn
+DECL stAdvanced_T tAdvanced
+DECL stArcModeCoding_T tArcModeCoding
+DECL stArcTcSet_T tTcDatIn, tTcDat
+DECL stArcStepDat_T tStepDatIn, tStepDat
+DECL enArcState_T tArcStateResult
+DECL enArcExecType_T tCallType
+
+CONTINUE
+IF ($PROG_INFO[2].P_STATE == #P_ACTIVE) THEN
+  CONTINUE
+  WAIT FOR (gArcSubMitInitDone == TRUE) ;SubMit Init Done
+ELSE
+  gArcSubMitInitDone = FALSE
+  ArcSysSubMit()
+ENDIF
+
+IF (gArcLineSelState > 0) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[MAIN]","Wait LineSelectDone")
+  CONTINUE
+  WAIT FOR gArcLineSelState == 0
+ENDIF
+
+tStr[] = ArcCallEnumToStr(tArcFunc)
+ArcWeldPointName()
+
+tArcDat             = ArcPrepareWDat(tArcDatIn)                             ;Prepare Wdat structure
+tArcDat.Weave       = ArcWeaveOnFrequency(tArcDat.Weld, tArcDat.Weave)      ;Prepare Weave structure
+tBuffer             = ArcVarExistI(tArcWPDatIn.Info.Version,0)              ;One Element has to be initialized if WPDat structure is empty
+tArcWPDat           = ArcPrepareWPDat(tArcWPDatIn)                          ;Prepare Point Wdat strucure
+tArcWPHDat          = ArcPrepareWPDat(tArcWPHDatIn)                         ;Prepare Help Point Wdat strucure
+tBuffer             = ArcVarExistR(tTcDatIn.Set1.Threshold,0.0)             ;One Element has to be initialized if Tc structure is empty
+tTcDat              = ArcPrepareThermCont(tTcDatIn)                         ;Prepare ThermalControl
+tBuffer             = ArcVarExistB(tStepDatIn.Active, FALSE)                ;One Element has to be initialized if StepDat structure is empty
+tStepDat            = ArcPrepareStepDat(tStepDatIn)                         ;Prepare Step Welding
+
+tB = STRCOPY(gArcPointInfo.PointName[],tArcWPDat.WdatId[])
+tB = STRCOPY(gArcPointInfo.ProgName[],ArcExtractName($PRO_IP1.NAME[]))
+gArcPointInfo.SNR     = 0
+gArcPointInfo.Command = gArcCommand
+;*****************************************************************************************
+;Welder Check
+;*****************************************************************************************
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  IF (ArcCheckWelderSelection(tArcFunc,tArcDat.Info) == FALSE) THEN
+    tB = STRCOPY(gArcWdatId[],tArcDat.WdatId[])
+    gArcErrorWelderSelection = TRUE
+    ArcCheckWelderNr = tArcDat.Info.WId
+    RETURN
+  ENDIF
+  gArcActIlfWelder = tArcDat.Info.WId
+  IF (wArcWelder[gArcActIlfWelder].Type == #NONE) THEN
+    ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,ArcIntToStr(gArcActIlfWelder),"Missing configuration Type")
+    RETURN
+  ENDIF
+  ArcSetWelderIdToPlc(gArcActIlfWelder,tArcFunc)
+ENDIF
+
+;*****************************************************************************************
+;RInt InAdvance Calls
+;*****************************************************************************************
+tInAdvance = FALSE
+SWITCH tArcFunc
+  ;*****************************************************************************************
+  CASE #ArcOnBeforeMoveStd, #ArcOnBeforeSplSingle ;(CONTINUE) ON  Before Point
+  ;*****************************************************************************************
+    IF (gArcIsOnSimEnvironment == TRUE) THEN
+      ATAg_ER_ArcGroupEnabled = FALSE
+    ENDIF
+    IF (gArcWeaveOption == TRUE) THEN
+      $TECHSYS = #TTS
+    ENDIF
+    tInAdvance = TRUE
+  
+  ;*****************************************************************************************
+  CASE #ArcSwiBeforeMoveStd, #ArcSwiBeforeSplSingle   ;(CONTINUE) SWI Before Point
+  ;*****************************************************************************************
+    tInAdvance = TRUE
+    
+  ;*****************************************************************************************
+  CASE #ArcSwiAfterMoveStd, #ArcSwiAfterSplSingle     ;(CONTINUE) SWI After Point
+  ;*****************************************************************************************
+    ;ToDo Problem with $Advance when OnTheFly at ArcOn. ArcSwiAfterMoveStd is called befor ArcOn
+    IF (stArcCallState.MoveType == #Std) THEN
+      IF ((ATAg_ER_WeldDone == FALSE) AND (gArcWeaveOption == TRUE) AND (tArcDat.Weave.Pattern <> #NONE) AND (tArcDat.Weave.Amplitude > 0) AND (tArcDat.Weave.Length > 0) AND (skArcDryRun == FALSE) AND (gArcColdSeam == FALSE))THEN
+        IF ((gArcRsiWeavingActive == FALSE) AND (gArcSensorActive == FALSE)) THEN
+          ArcSetWeaveParameter(#InAdvanceCall,tArcDat.Weave) ;Load $TECH[].FCT Values in Advance to switch Pattern if necessary
+        ENDIF
+      ENDIF
+    ENDIF
+    tInAdvance = TRUE
+    
+  ;*****************************************************************************************
+  CASE #ArcOffBeforeMoveStd, #ArcOffBeforeSplSingle   ;(CONTINUE) OFF Before Point
+  ;*****************************************************************************************
+    IF (gArcIsOnSimEnvironment == FALSE) THEN
+      mArcEndDat = tArcDat
+      
+      ON_ERROR_PROCEED
+      mArcEndSeam = tArcWPDat
+      IF ($ERR.NUMBER > 0) THEN
+        ERR_CLEAR($ERR)
+        mArcEndSeam = mInitArcEndDat
+      ENDIF
+
+      ON_ERROR_PROCEED
+      mArcEndSeamHelp = tArcWPHDat
+      IF ($ERR.NUMBER > 0) THEN
+        ERR_CLEAR($ERR)
+        mArcEndSeamHelp = mInitArcEndDat        
+      ENDIF
+      
+      ON_ERROR_PROCEED
+      mArcTcDatIn = tTcDat
+      IF ($ERR.NUMBER > 0) THEN
+        ERR_CLEAR($ERR)
+        mArcTcDatIn = {Set1{Active FALSE},Set2{Active FALSE}}
+      ENDIF
+      
+      ON_ERROR_PROCEED
+      mArcStepDatIn = tStepDat
+      IF ($ERR.NUMBER > 0) THEN
+        ERR_CLEAR($ERR)
+        mArcStepDatIn = {Active FALSE}
+      ENDIF
+    ENDIF
+    tInAdvance = TRUE
+    
+  ;*****************************************************************************************
+  CASE #ArcBeforeSpline                               ;(CONTINUE) [START] Spline Block
+  ;*****************************************************************************************
+    IF (gArcWeaveOption == TRUE) THEN
+      $TECHSYS = #TTS
+    ENDIF
+    IF (gArcIsOnSimEnvironment == TRUE) THEN
+      ATAg_ER_ArcGroupEnabled = FALSE
+    ELSE
+      IF (gArcTechAdvancedOption == TRUE) AND (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+        ATA_ER_BeginMemPoint(TRUE)
+      ENDIF
+    ENDIF
+    tInAdvance = TRUE
+    
+  ;*****************************************************************************************
+  CASE #ArcAfterSpline                                ;(CONTINUE) [END] Spline Block
+  ;*****************************************************************************************
+    IF (gArcIsOnSimEnvironment == FALSE) THEN
+      ArsOff()
+      IF (stArcFeatureState.AdvError.Active == TRUE) THEN
+        IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+          WAIT FOR (ATAg_ER_BeginMemPoint == FALSE)
+        ENDIF
+      ENDIF
+    ENDIF
+    tInAdvance = TRUE
+ENDSWITCH
+
+IF (tInAdvance == TRUE) THEN
+  ArcBasVelCalc(tArcFunc,tArcDat)
+  ArcMainSeamLengthAdvance(tArcFunc)
+  RETURN
+ENDIF
+
+;*****************************************************************************************
+;Advanced Error Recovery
+;*****************************************************************************************
+tReturn = FALSE
+SWITCH tArcFunc
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle
+    IF (tArcDat.Advanced.OnTheFlyActiveOn == FALSE) THEN
+      IF (ATA_ER_CheckSeamBegin() == TRUE) THEN
+        tReturn = TRUE
+      ENDIF
+    ENDIF
+  CASE #ArcOnMoveStd, #ArcOnSplSingle
+    IF (tArcDat.Advanced.OnTheFlyActiveOn == TRUE) THEN
+      IF ($ON_PATH == TRUE) OR ($MODE_OP == #EX) OR ($MODE_OP == #AUT) THEN
+        IF (ATA_ER_CheckSeamBegin() == TRUE) THEN
+          tReturn = TRUE
+        ENDIF
+      ENDIF
+    ENDIF
+  CASE #ArcOnMoveSpl
+    IF (ATA_ER_CheckSeam() == TRUE) THEN
+      gArcOnStopConditionOn = FALSE
+      tReturn = TRUE
+    ENDIF
+  CASE #ArcSwiMoveStd, #ArcSwiSplSingle, #ArcSwiMoveSpl
+    IF (ATA_ER_CheckSeam() == TRUE) THEN
+      tReturn = TRUE
+    ENDIF
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle
+    IF (ATA_ER_CheckSeam() == TRUE) THEN
+      ATAg_ER_BeginMemPoint = FALSE
+      tReturn = TRUE
+    ENDIF
+  CASE #ArcOffMoveStd, #ArcOffSplSingle
+    IF (ATA_ER_CheckSeam() == TRUE) THEN
+      ATAg_ER_BeginMemPoint = FALSE
+      tReturn = TRUE
+    ENDIF
+  CASE #ArcOffMoveSpl
+    IF (ATA_ER_CheckSeam() == TRUE) THEN
+      ATAg_ER_BeginMemPoint = FALSE
+      gArcOffStopConditionOn = FALSE
+      tReturn = TRUE
+    ENDIF
+ENDSWITCH
+IF (tReturn == TRUE) THEN
+  ArcBasVelCalc(tArcFunc,tArcDat)
+  ArcMainSeamLengthER(tArcFunc)
+  RETURN
+ENDIF
+stArcCallState.ExecType = #TriggerCall
+
+;*****************************************************************************************
+;Init Features
+;*****************************************************************************************
+ArcAnalyseCall(tArcFunc)
+SWITCH stArcCallState.CommandType
+  CASE #ArcOn
+    ;WAIT FOR PreDefinitionDone; ToDo
+    ArcFeatureInit()
+    IF ($ON_PATH == TRUE) THEN
+      ArcFeatureSelectInit(#ArcOn,tArcDat,tArcWPDat,tTcDat,tStepDat)
+    ENDIF
+    IF (gArcIsOnSimEnvironment == FALSE) THEN
+      gArcActIlfWelder = tArcDat.Info.WId
+      tB = STRCOPY(gArcActIlfWelderName[],ArcActWelderToStr(gArcActIlfWelder))
+      gArcActSkWelder  = tArcDat.Info.WId
+      gArcActModeSwi = ArcCheckModeId(gArcActIlfWelder,tArcDat.Weld.JobModeId[], #NONE)
+      tArcModeCoding = ArcGetModiCoding(gArcActIlfWelder,gArcActModeSwi)
+      IF (tArcModeCoding.StrikeParamDisable == TRUE) THEN
+        tArcDat.Strike   = ArcCopyWeldToStrike(tArcDat)
+        stArcActStartSet = tArcDat.Strike
+      ENDIF
+    ELSE
+      gArcActIlfWelder = 1
+      gArcActSkWelder = 1
+      gArcActModeSwi = 1
+    ENDIF
+  CASE #ArcSwi
+    ArcFeatureSelectInit(#ArcSwi,tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+  CASE #ArcOff
+    IF (ArcAtaOnTheFlyOffOption(tArcDat.Advanced) == TRUE) THEN
+      ;OnTheFly No $Advance Stop
+    ELSE
+      WAIT FOR TRUE ;$Advance Stop Important before ArcFeatureSelectInit (Cause #ArcOffAfterMoveStd, #ArcOffAfterSplSingle called in Advance)
+    ENDIF
+    ArcFeatureSelectInit(#ArcOff,tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+  CASE #InAdvance
+    ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"In Advance Error")
+ENDSWITCH
+
+;*****************************************************************************************
+;Workaround for KukaSim
+;*****************************************************************************************
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  ArcKukaSim(tArcFunc,tArcDat,tArcWPDat,tTcDat)
+  RETURN
+ENDIF
+
+ArcMainSeamLengthStart(tArcFunc)
+SWITCH tArcFunc
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC ON Standard / SingleSpline Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  CASE #PreDefinition                                 ;(TRIGGER)  ON  Before Point
+  ;*****************************************************************************************
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+    gArcOnStopConditionOn = TRUE
+    gArcOffStopConditionOn = TRUE
+    ArcCheckILFVersion(tArcDat,tArcWPDat, tArcWPHDat)
+    ;IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+    IF (tArcDat.Advanced.OnTheFlyActiveOn == FALSE) THEN
+      ArcFeatureSelect(#PreDefinition,tArcDat,tArcWPDatIn,tTcDat)
+      ArcPreDefinition(tArcDat)
+    ENDIF
+    stArcSeamSet = tArcWPDat.Strike
+    tB = STRCOPY(gArcSeamName[],tArcWPDat.Strike.SeamName[])
+    tB = STRCOPY(gArcPartName[],tArcWPDat.Strike.PartName[])
+    IF (gArcRobotTeamOk == TRUE) THEN
+      gArcSyncList = GetgArcSyncList(tArcWPDat.Advanced.BitCodedRobotMark)
+    ENDIF
+    IF (gArcSyncList == 0) THEN
+      gArcSyncList = 1
+    ENDIF
+
+  ;*****************************************************************************************
+  CASE #GasPreflow                                    ;(TRIGGER)  ON  Before Point
+  ;*****************************************************************************************
+    gArcGasPreTargetTime = 0
+    stArcWeldTime.TimeStamps.Purge = 0
+    IF ($ON_PATH == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] LineSelectOnArcOn No Path Trigger",tStr[])
+      RETURN
+    ENDIF
+    tBuffer = FALSE
+    IF ((tArcDat.Strike.PurgeTime > 0) AND (ATAg_ER_ErrorOnSeam == FALSE)) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+      gArcNoErrorRestart = FALSE
+      IF (ArcWeldCondition(gArcActIlfWelder) == TRUE) THEN
+        SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIRdyWeldSource[,],0)
+        CASE 0
+          tBuffer = TRUE
+        ENDSWITCH
+        SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIWeldPeriphery[,],0)
+        CASE 0
+          tBuffer = TRUE
+        ENDSWITCH
+        IF (RobotReadyForWeld(#NOTIFY) == FALSE) THEN
+          tBuffer = TRUE
+        ENDIF
+        IF (tBuffer == FALSE) THEN
+          stArcWeldTime.TimeStamps.Purge = $ROB_TIMER
+          ArcOutputGroupSet(gArcActIlfWelder,wArcOGasPreFlowStart[,])
+          gArcGasPreTargetTime = ArcCalcTimeoutSec(tArcDat.Strike.PurgeTime)
+        ELSE
+          ArcMsgWrite(,#NOTIFY,"FlyingPreGasNotPossible","ARC",10093,Opt_NOVLSTOP_LOG)
+        ENDIF
+      ENDIF
+    ENDIF
+    
+  ;*****************************************************************************************
+  CASE #ArcOnMoveStd, #ArcOnSplSingle                 ;(TRIGGER)  ON  Before Point
+  ;*****************************************************************************************
+    IF ($ON_PATH == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] LineSelectOnArcOn No Path Trigger",tStr[])
+      RETURN
+    ENDIF
+    ArcFeatureSelect(#ArcOnTrigger,tArcDat,tArcWPDatIn,tTcDat)
+    IF (stArcFeatureState.Act.OnTheFlyOn == TRUE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] OnTheFly ",tStr[])
+      ArcOn(tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+    ENDIF
+    
+  ;*****************************************************************************************
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle       ;(STOP)     ON  After Point
+  ;*****************************************************************************************
+    IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+      WAIT FOR TRUE ;$Advance Stop
+      IF (ArcIsSttActive() == TRUE) THEN
+        SWITCH SttCmdInterface(3) ;Get Robot on corretion path
+          CASE 0 ;Not On Path
+            SWITCH $MODE_OP
+              CASE #T1,#T2
+                ArcMsgWriteS(,#QUIT ,"AtbSttCorrectionPathMissing","ARC",10179,Opt_NOVLSTOP_LOG)
+              CASE #AUT,#EX
+                ArcMsgWriteS(,#NOTIFY ,"AtbSttCorrectionPathMissing","ARC",10179,Opt_NOVLSTOP_LOG)
+            ENDSWITCH
+          CASE 2 ;In Ghost
+            IF (ArcWeldCondition(gArcActIlfWelder) == TRUE) THEN
+              SWITCH $MODE_OP
+                CASE #T1,#T2
+                  ArcMsgWriteS(,#QUIT ,"AtbSttCorrectionPathGhost","ARC",10180,Opt_NOVLSTOP_LOG)
+                CASE #AUT,#EX
+                  ArcMsgWriteS(,#NOTIFY ,"AtbSttCorrectionPathGhost","ARC",10180,Opt_NOVLSTOP_LOG)
+              ENDSWITCH
+            ENDIF
+        ENDSWITCH
+      ENDIF
+      stArcCallState.ExecType = #AdvanceStopCall
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+      ArcOn(tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+      ArcFeatureSelect(#AfterArcOn,tArcDat,tArcWPDat,tTcDat,tStepDat)
+    ENDIF
+    
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC SWI Standard / SingleSpline Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  CASE #ArcSwiMoveStd, #ArcSwiSplSingle               ;(TRIGGER)  SWI Before Point
+  ;*****************************************************************************************
+    ArcCheckILFVersion(tArcDat,tArcWPDat, tArcWPHDat)
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+    ArcSwi(tArcDat,tArcWPDatIn,tTcDat)
+    
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC OFF Standard / SingleSpline Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  CASE #ArcOffBeforeOffStd, #ArcOffBeforeOffSplSingle ;(TRIGGER)  OFF Before Point
+  ;*****************************************************************************************
+    ArcFeatureSelect(#BeforeArcOff,tArcDat,tArcWPDatIn,tTcDat)
+
+  ;*****************************************************************************************
+  CASE #ArcOffBeforeOffStd2, #ArcOffBefOffSplSingle2  ;(TRIGGER)  OFF Before Point
+  ;*****************************************************************************************
+    IF (ArcAtaMoveBackOption(tArcDat.Advanced) == TRUE) THEN
+      gMoveBackAtArcOffPos = $POS_ACT
+      stMoveBackAtArcOff.PosRecorded = TRUE
+      ;stMoveBackAtArcOff.Velocity = stArcActWeldSet.Velocity
+      stMoveBackAtArcOff.Velocity = gArcBasVelDefinition
+      IF (stMoveBackAtArcOff.Velocity == 0) THEN
+        stMoveBackAtArcOff.Velocity = 0.005
+      ENDIF
+    ENDIF
+    
+  ;*****************************************************************************************
+  CASE #ArcOffMoveStd, #ArcOffSplSingle               ;(TRIGGER)  OFF Before Point
+  ;*****************************************************************************************
+    ArcCheckILFVersion(tArcDat,tArcWPDat, tArcWPHDat)
+    IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+      IF (gArcBlockArcOff == FALSE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[MAIN] OnTheFly",tStr[])
+        ArsOff()
+        ArcOff(tArcDat,tArcWPDatIn,tTcDat)
+        ATA_ER_EndMemPoint()
+      ENDIF
+    ENDIF
+
+  ;*****************************************************************************************
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle     ;(STOP)     OFF After Point
+  ;*****************************************************************************************
+    IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+      WAIT FOR TRUE ;$Advance Stop
+      stArcCallState.ExecType = #AdvanceStopCall
+      ArsOff()
+      IF (gArcBlockArcOff == FALSE) THEN
+        ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+        ArcOff(tArcDat,tArcWPDatIn,tTcDat)
+        ATA_ER_EndMemPoint()
+      ENDIF
+    ENDIF
+    
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC ON SPLINE Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  ;PreDefinition                  ;(TRIGGER) Before Point [Loock Up]
+  ;*****************************************************************************************
+  ;GasPreflow                     ;(TRIGGER) Before Point [Loock Up]
+  ;*****************************************************************************************
+  CASE #ArcPreOnMoveSpl                               ;(TRIGGER)   - PreStart ON  Before Spline Point
+  ;*****************************************************************************************
+    IF ($ON_PATH == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] LineSelectOnArcOn No Path Trigger",tStr[])
+      RETURN
+    ENDIF
+    ArcFeatureSelect(#ArcOnTrigger,tArcDat,tArcWPDatIn,tTcDat)
+
+  ;*****************************************************************************************
+  CASE #ArcOnMoveSpl                                  ;(TRIGGER)   - ON  Before Spline Point
+  ;*****************************************************************************************
+    enArcMotionBeforeArcOn = enArcMotionInfo[2]
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+    IF ((gArcRobotTeamOk == TRUE) AND (stArcFeatureState.Act.OnTheFlyOn == FALSE) AND (gArcSyncList > 1)) THEN
+      ArcProgramSync("ArcSplOn",gArcSyncList)
+      BRAKE
+    ENDIF
+    ArcOn(tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+
+  ;*****************************************************************************************
+  CASE #ArcOnAfterMoveSpl                             ;(TRIGGER)   - ON  Before Spline Point
+  ;*****************************************************************************************
+  
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC SWI SPLINE Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  CASE #ArcSwiMoveSpl                                 ;(TRIGGER)   - SWI Before Spline Point
+  ;*****************************************************************************************
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+    ArcSwi(tArcDat,tArcWPDatIn,tTcDat)
+    
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;                               ARC OFF SPLINE Point
+  ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+  ;*****************************************************************************************
+  CASE #ArcOffBeforeOffSpline                         ;(TRIGGER)   - OFF Before Spline Point
+  ;*****************************************************************************************
+    ArcFeatureSelect(#BeforeArcOff,tArcDat,tArcWPDatIn,tTcDat)
+
+  ;*****************************************************************************************
+  CASE #ArcOffBeforeOffSpline2                        ;(TRIGGER)   - OFF Before Spline Point
+  ;*****************************************************************************************
+    IF (ArcAtaMoveBackOption(tArcDat.Advanced) == TRUE) THEN
+      gMoveBackAtArcOffPos = $POS_ACT
+      stMoveBackAtArcOff.PosRecorded = TRUE
+      stMoveBackAtArcOff.Velocity = stArcActWeldSet.Velocity
+    ENDIF
+
+  ;*****************************************************************************************
+  CASE #ArcOffMoveSpl                                 ;(TRIGGER)   - OFF Before Spline Point
+  ;*****************************************************************************************
+    IF (gArcBlockArcOff == FALSE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN]",tStr[])
+      IF ((gArcRobotTeamOk == TRUE) AND (stArcFeatureState.Act.OnTheFlyOff == FALSE) AND (gArcSyncList > 1)) THEN
+        ArcProgramSync("ArcSplOff",gArcSyncList)
+        BRAKE
+      ENDIF
+      ArcOff(tArcDat,tArcWPDatIn,tTcDat)
+      IF (gArcHandleNoErrorActive == FALSE) THEN
+        ;No Error UntilSeamEnd is done
+        ATA_ER_EndMemPoint()
+      ENDIF
+    ENDIF
+ENDSWITCH
+ArcBasVelCalc(tArcFunc,tArcDat)
+ArcMainSeamLengthEnd(tArcFunc)
+END
+;*****************************************************************************************
+;ArcPreDefinition
+;*****************************************************************************************
+DEF ArcPreDefinition(tArcDat:IN)
+DECL stArcDat_T tArcDat
+DECL BOOL tBuffer
+DECL stArcModeCoding_T tArcModeCoding
+SWITCH ArcSwitchActiveTech()
+  CASE #STT
+    gArcWeaveOption = FALSE
+ENDSWITCH
+gArcLineSelected = FALSE
+ArcAtaUserCalls(#PreStrikeParam,tArcDat)
+IF (gArcIsInitialized == FALSE) THEN
+  ArcCheckWeaveCondition()
+  ArcWeavePreDefinition()
+  gArcIsInitialized = TRUE
+ENDIF
+ArcInitVariables(#PreDefinition)
+IF (gArcGhostMode == TRUE) THEN
+  ArcMsgWriteS(,#NOTIFY,"GhostModeSelected","ARC",10066,Opt_NOVLSTOP_LOG,$PRO_NAME[])
+ENDIF
+
+gArcActModeSwi        = ArcCheckModeId(gArcActIlfWelder,tArcDat.Weld.JobModeId[], #QUIT)
+tArcModeCoding        = ArcGetModiCoding(gArcActIlfWelder,gArcActModeSwi)
+IF (tArcModeCoding.StrikeParamDisable == TRUE) THEN
+  gArcActParamStrike  = 0 ;Adaptive Strike disabled
+  gArcActModeOn       = gArcActModeSwi
+ELSE
+  gArcActModeOn       = ArcCheckModeId(gArcActIlfWelder,tArcDat.Strike.JobModeId[], #QUIT)
+  gArcActParamStrike  = AawGetStrikeParamId(gArcActModeOn)
+ENDIF
+gArcActParamWelding   = AawGetWeldingParamId(gArcActModeSwi)
+ArcSetArcMode(gArcActIlfWelder,gArcActModeOn)
+SWITCH wArcWelder[gArcActIlfWelder].Type
+  CASE #FRONIUS_TPS
+  IF ((gArcActWeldMode == 0) OR (gArcActWeldMode == stArcInitFroniusTps.Mode)) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition Fronius TPS")
+    gArcPreDefWait = TRUE
+  ENDIF
+  CASE #FRONIUS_TPSI
+  IF (gArcActWeldMode == stArcInitFroniusTpsI.Mode) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition Fronius TPSI")
+    gArcPreDefWait = TRUE
+  ENDIF
+  CASE #FRONIUS_TWIN
+  IF (gArcActWeldMode == stArcInitFroniusTwin.Mode) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition Fronius TWIN")
+    gArcPreDefWait = TRUE
+  ENDIF
+  CASE #EWM
+  IF (gArcActWeldMode == stArcInitEwm.Mode) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition EWM")
+    gArcPreDefWait = TRUE
+  ENDIF
+ENDSWITCH
+ArcSetArcMode(gArcActIlfWelder,gArcActModeOn)
+stArcActStartSet = AawStrike(gArcActIlfWelder,tArcDat);String Adaptive Welding TODO Check
+ArcSetStrikeValueChannel(gArcActIlfWelder,gArcActModeOn,stArcActStartSet) ;TODO Check
+mTimeStampPreDef = ABS($ROB_TIMER)
+ArcAtaUserCalls(#PosStrikeParam,tArcDat)
+gArcCommand = #PreDefinition
+stArcProcessState.PreDefDone = TRUE
+END
+;*****************************************************************************************
+;ArcOn
+;*****************************************************************************************
+DEF ArcOn(tArcDat:IN,tArcWPDatIn:IN,tTcDat:IN,tStepDat:IN)
+DECL INT tI
+DECL stArcDat_T tArcDat, tArcWPDatIn
+DECL stArcTcSet_T tTcDat
+DECL stArcStepDat_T tStepDat
+DECL enArcState_T tArcStateResult
+mTimeStampArcOn = ABS($ROB_TIMER)
+ArcStartTrace()
+ArcCheckPreDefinition(tArcDat)
+
+;Online Optimization
+GLOBAL INTERRUPT DECL irtArcOnlineOpt WHEN gArcOnlineOptRequest == TRUE DO ArcOnlineOpt()
+INTERRUPT ON irtArcOnlineOpt
+ArcInitVariables(#ArcOn)
+
+IF (gArcTechAdvancedOption == TRUE) THEN
+  stArcIgnErrSet = ArcGetIgnStrategy(tArcDat.Advanced.IgnitionErrorStrategy)
+  stArcWeldErrSet = ArcGetWeldStrategy(tArcDat.Advanced.WeldErrorStrategy)
+ELSE
+  stArcIgnErrSet = wArcIgnitionStrategy[1]
+  stArcWeldErrSet = wArcWeldingStrategy[1]
+ENDIF
+
+ArcConditionWeldSet()
+ArcRestartInit()
+ArcInitReduceSpeed(FALSE)
+IF (gArcSyncList <= 1) THEN
+  gArcSyncList = 1
+ELSE
+  IF (stArcCallState.MoveType == #SplBlock) THEN
+    SetRemoteCondStopActive()
+  ENDIF
+ENDIF
+
+ArcAtaUserCalls(#PreArcOn,tArcDat)
+
+IF (stArcFeatureState.Act.SeamCtrlPlc == TRUE) THEN
+  ArcSeamNumberControlOn(gArcActIlfWelder)
+ENDIF
+
+ATA_ER_ChkIfSensorActive() ;Check if Sensor is Enable on ErrorRecovery
+
+ArcCheckArcLinkXT()
+
+IF ArcIgnitionCondition() THEN
+  ArcFeatureSelect(#BeforeIgnition,tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+  IF ((stArcFeatureState.Act.StepWeld == TRUE) AND (stArcStepWeldInfo.ShiftDist > 0.0)) THEN
+    ;No Ignition at ArcOn
+    enArcCurrentState = #Welding
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] No Ignition at ArcOn")
+  ELSE
+    ArcScratchFeature()
+    StartIgnition()
+    IF ((stArcFeatureState.Act.StepWeld == TRUE) AND (stArcStepWeldInfo.WeldDist == 0.0)) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] WeldDist = 0")
+      tArcStateResult = SetArcState(#StopWelding)
+      gArcIgnoreError = TRUE
+      stArcStepWeldInfo.WeldActive = FALSE
+    ELSE
+      ArcFeatureSelect(#AfterIgnition,tArcDat,tArcWPDatIn,tTcDat,tStepDat)
+    ENDIF
+  ENDIF
+ENDIF
+
+gArcSwiTriggered = NOT(gArcSwiTriggered)
+ArcAtaUserCalls(#PostArcOn,tArcDat)
+gArcOnStopConditionOn = FALSE
+stArcProcessState.PreDefDone = FALSE
+;Info for RDM Driver
+gArcPointStateCounter = 0
+IF (STRCLEAR(gArcCommandInfo[])) THEN
+  gArcCommandInfo[] = "ArcOn"
+ENDIF
+IF (STRCLEAR(gArcPointName[])) THEN
+  gArcPointName[] = gArcPointNames[1].PointName[]
+ENDIF
+gArcCommand = #ArcOn
+IF (gArcCommandCounter > 1000) THEN
+  gArcCommandCounter = 1
+ELSE
+  gArcCommandCounter = gArcCommandCounter + 1
+ENDIF
+END
+;*****************************************************************************************
+;ArcSwi
+;*****************************************************************************************
+DEF ArcSwi(tArcDat:IN,tArcWPDatIn:IN,tTcDat:IN)
+DECL stArcDat_T tArcDat, tArcWPDatIn
+DECL stArcTcSet_T tTcDat
+
+ArcAtaUserCalls(#PreArcSwi,tArcDat)
+gArcOnSeam = TRUE
+
+IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+  ;ArcSetActValues(ArcSwi,tArcDat)
+  stArcStepWeldInfo.SwiExecuted = TRUE
+ELSE
+  IF (gArcDontSwitch == FALSE) THEN
+    ArcFeatureSelect(#ArcSwiTrigger,tArcDat,tArcWPDatIn,tTcDat)
+    IF (gArcAWOption == TRUE) THEN
+      IF (gAawWeaveValue.LengthActive == TRUE) THEN    ;Length
+        stArcActWeaveSet.Length = ArcSetRangeValue(gAawWeaveValue.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+      ENDIF
+      IF (gAawWeaveValue.AmplitudeActive == TRUE) THEN ;Amplitude
+        stArcActWeaveSet.Amplitude = ArcSetRangeValue(gAawWeaveValue.Amplitude,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+      ENDIF
+    ENDIF
+
+    gArcActModeSwi = ArcCheckModeId(gArcActIlfWelder,tArcDat.Weld.JobModeId[], #NOTIFY)
+    gArcActParamWelding = AawGetWeldingParamId(gArcActModeSwi)
+    IF (stTcInfo.Active == FALSE) THEN
+      ArcSetArcMode(gArcActIlfWelder,gArcActModeSwi)
+      IF (stArcFeatureState.Act.Slope == FALSE) THEN
+        ArcSetWeldValueChannel(gArcActIlfWelder,gArcActModeSwi,tArcDat.Weld) ;TODO Check
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+ForceRealWeldSpeedIfHot()
+gArcSwiTriggered = NOT(gArcSwiTriggered)
+ArcAtaUserCalls(#PostArcSwi,tArcDat)
+;Info for RDM Driver gArcCommandInfo
+IF (STRCLEAR(gArcCommandInfo[])) THEN
+  gArcCommandInfo[] = "ArcSwitch"
+ENDIF
+IF (STRCLEAR(gArcPointName[])) THEN
+  IF gArcPointArrayIndex > 0 THEN
+    gArcPointName[] = gArcPointNames[gArcPointArrayIndex].PointName[]
+  ENDIF
+ENDIF
+gArcCommand = #ArcSwi
+gArcCommandCounter = gArcCommandCounter + 1
+END
+;*****************************************************************************************
+;ArcOff
+;*****************************************************************************************
+DEF ArcOff(tArcDat:IN,tArcWPDatIn:IN,tTcDat:IN)
+DECL stArcDat_T tArcDat, tArcWPDatIn
+DECL stArcTcSet_T tTcDat
+DECL enArcState_T tArcStateResult
+ArcFeatureSelect(#BeforeCraterFill,tArcDat,tArcWPDatIn,tTcDat)
+ArcAtaUserCalls(#PreArcOff,tArcDat)
+gArcOnSeam = FALSE
+gArcActModeOff = ArcCheckModeId(gArcActIlfWelder,stArcActCraterSet.JobModeId[], #NOTIFY)
+gArcActParamCrater = AawGetCraterParamId(gArcActModeOff)
+
+stArcActCraterSet = AawCrater(gArcActIlfWelder,tArcDat) ;Crater Adaptive Welding
+IF (stArcCallState.MoveType == #SplBlock) THEN
+  SetRemoteCondStopActive()
+ENDIF
+IF (enArcCurrentState == #Welding) THEN
+  tArcStateResult = SetArcState(#StopWelding)
+  IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+    ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] StopGasFlow_OnTheFly - No check Wire Free")
+  ENDIF
+ENDIF
+IF (gArcColdSeam == TRUE) AND ((gArcNoErrorUntilSeamEnd == FALSE) OR (stArcWeldErrSet.WeldErrReaction == #ContinueWithoutRetry)) THEN
+  IF (stArcFeatureState.AdvError.Active == FALSE) THEN
+    IF (gArcOffColdQuitMsg == TRUE) THEN
+      ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+      ArcMsgWriteS(,#QUIT,"DoneColdSeam","ARC",10045,Opt_VLSTOP_LOG,gArcSeamName[])
+      ArcRemoteSetClearMsg(10045)
+      ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+    ELSE
+      ArcMsgWriteS(,#NOTIFY,"DoneColdSeam","ARC",10045,Opt_VLSTOP_LOG,gArcSeamName[])
+    ENDIF
+  ENDIF
+ENDIF
+IF (stArcFeatureState.Act.SeamCtrlPlc == TRUE) THEN
+  ArcSeamNumberControlOff(gArcActIlfWelder)
+ENDIF
+ArcAtaUserCalls(#PostArcOff,tArcDat)
+IF (stArcWeldErrSet.WeldErrReaction <> #ContinueWithoutRetry) THEN
+  IF (gArcNoErrorUntilSeamEnd == TRUE) AND (gArcWeldErrorCounter > 0) THEN
+    ;ArcMsg("Diag StopWelding NoErrorUntilSeamEnd")
+    tArcStateResult = SetArcState(#StopWelding)
+    ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+    IF (stArcCallState.MoveType == #SplBlock) THEN
+      IF (gArcSeamErrorCounter <= stArcWeldErrSet.MaxBreaksOnSeam) THEN
+        gArcOnSeam = TRUE ;Necessary for Restart
+        ArcOutputReset(gArcActIlfWelder,wArcOCriticalIgnitError[])
+        ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+        ArcHandleErrorSeamEnd()
+      ELSE
+        IF (stArcFeatureState.AdvError.Active == FALSE) THEN
+          ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+          ArcMsgWriteS(,#QUIT,"DoneColdSeam","ARC",10045,Opt_VLSTOP_LOG,gArcSeamName[])
+          ArcRemoteSetClearMsg(10045)
+          ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+        ENDIF
+        gArcHandleNoErrorActive = FALSE
+      ENDIF
+    ELSE
+      IF (stArcFeatureState.AdvError.Active == FALSE) THEN
+        ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+        ArcMsgWriteS(,#QUIT,"DoneColdSeam","ARC",10045,Opt_VLSTOP_LOG,gArcSeamName[])
+        ArcRemoteSetClearMsg(10045)
+        ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+      ENDIF
+      gArcHandleNoErrorActive = FALSE
+    ENDIF
+  ELSE
+    gArcHandleNoErrorActive = FALSE
+  ENDIF
+ENDIF
+
+IF (gArcHandleNoErrorActive == FALSE) THEN
+  ArcProgramSync("ArcAllConditionEnd",gArcSyncList) ;ToDo Check
+  ArcFeatureSelect(#AfterCraterFill,tArcDat,tArcWPDatIn,tTcDat)
+  stArcCallState.MoveType = #Std
+  ArcAllConditionInit()
+  ArcClearOutputs(gArcActIlfWelder,#ArcOff)
+  ;ArcClearOutputs(1,#ArcOff) ; TODO Check if need
+  ;ArcClearOutputs(2,#ArcOff) ; TODO Check if need
+  ;ArcClearOutputs(3,#ArcOff) ; TODO Check if need
+  ;ArcClearOutputs(4,#ArcOff) ; TODO Check if need
+  INTERRUPT OFF irtArcOnlineOpt
+  ArcOutputGroupSet(gArcActIlfWelder,wArcOClearErrorArcOff[,])
+  RestoreOverride()
+ENDIF
+
+ArcOutputReset(gArcActIlfWelder,wArcOCriticalIgnitError[])
+ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+
+ArcStopTrace()
+AawArcOff()
+gArcOffStopConditionOn = FALSE
+;Parameter Optimation PlugIn
+IF (gArcOnlineOptCom == 1) THEN
+  gArcOnlineOptCom = 2
+  WAIT FOR gArcOnlineOptCom == 0
+ENDIF
+;Info for RDM Driver
+IF (STRCLEAR(gArcCommandInfo[])) THEN
+  gArcCommandInfo[] = "ArcOff"
+ENDIF
+IF (STRCLEAR(gArcPointName[])) THEN
+  IF gArcPointArrayIndex > 0 THEN
+    gArcPointName[] = gArcPointNames[gArcPointArrayIndex].PointName[]
+  ENDIF
+ENDIF
+gArcCommand = #ArcOff
+gArcCommandCounter = gArcCommandCounter + 1
+gArcOffDone = TRUE
+END
+;*****************************************************************************************
+;Remote ArcOff
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteArcOff()
+IF (enArcCurrentState == #Welding) THEN
+  IF (gArcColdSeam == FALSE) THEN
+    IF (ArcCallFromRoutine() == 2) THEN
+      BRAKE ;Stop when robot is moving. Called from trigger
+    ENDIF
+    AmlSaveArcOffPos()
+    ArcMsgWriteS(,#NOTIFY,"RemoteSetArcOff","ARC",10133,Opt_VLSTOP_LOG,gArcSeamName[])
+    ArcMainNG(#ArcOffAfterMoveStd, mArcEndDat, mArcEndSeam, mArcEndSeamHelp, mArcTcDatIn, mArcStepDatIn)
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;Online Opt Interrupt service
+;Change of velocity
+;process and weave params
+;*****************************************************************************************
+DEF ArcOnlineOpt()
+INTERRUPT OFF irtArcOnlineOpt
+IF ((gArcOnlineOptActive == TRUE) AND (gArcDisableOnlineOpt == FALSE) AND (gArcSensorActive == FALSE)) THEN
+  ;Update of process params without velocity change
+  ArcSetWeldValueChannel(gArcActIlfWelder,gArcActModeSwi,stArcActWeldSet) ;TODO Check
+  ;Change of weave sets at main task
+  stArcActWeaveSet = ArcWeaveOnFrequency(stArcActWeldSet, stArcActWeaveSet)
+  ArcWeaveSetLAValue_C(stArcActWeaveSet)
+  ArcWeaveSetValue_C(1,#Angle,stArcActWeaveSet.Angle)
+  ArcSwiRsiWeaving(stArcActWeldSet, stArcActWeaveSet)
+ENDIF
+gArcOnlineOptRequest = FALSE
+INTERRUPT ON irtArcOnlineOpt
+END
+;********************************************************
+;ArcInitVariables
+;********************************************************
+GLOBAL DEF ArcInitVariables(tInitMode:IN)
+DECL enInitMode tInitMode
+IF (tInitMode == #All) THEN
+  INTERRUPT OFF irtArcOnlineOpt
+  gArcWeaveOption                     = TRUE ;Enables Weaving which was disabled at extern option
+  gArcErrorRestartActive              = FALSE
+  gArcInterruptRestartOn              = FALSE
+  enArcCurrentState                   = #Nothing
+  enArcSaveState                      = #Nothing
+  enArcCurrentStatePre                = #Nothing
+  enArcActiveStrategy                 = #None
+  gArcIsInitialized                   = FALSE
+  gArcExitRestartInterrupt            = TRUE
+  ATA_ER_EventInit()
+  ArcVelApplOff(3)
+  gArcErrorWelderSelection            = FALSE
+  gArcInternalInErrorIgn              = FALSE
+  stArcFeatureState.Info.InitFeature  = FALSE
+  stArcProcessState.PreDefDone        = FALSE
+  ArcInitErrorDistance()
+ENDIF
+IF ((tInitMode == #All) OR (tInitMode == #PreDefinition)) THEN
+  $OV_APPL                            = cOvApplDefault
+  gArcSenseModErrStrat                = FALSE
+  gArcWatchdogError                   = FALSE
+  gArcStillstandError                 = FALSE
+  gArcSyncIgnitionError               = FALSE
+  gArcDefaultError                    = FALSE
+  gArcStatKeyWeldOn                   = FALSE
+  gArcIgnoreIgnErrStrat               = FALSE
+  gArcIgnoreWeldErrStrat              = FALSE
+  gArcNoErrorUntilSeamEnd             = FALSE
+  gArcSensorActive                    = FALSE
+  gArcColdSeam                        = FALSE
+  gArcOnSeam                          = FALSE
+  gArcNoErrorRestart                  = FALSE
+  gArcOnlineOptRequest                = FALSE
+  gArcBurnFreeActive                  = FALSE
+  gArcBlockArcOff                     = FALSE
+  gArcMyIgnitionError                 = FALSE
+  gArcHandleNoErrorActive             = FALSE
+  gArcDisableOnlineOpt                = FALSE
+  gArcConditionStrategyOn             = FALSE
+  gArcErrorStrategyActive             = FALSE
+  gArcActModeOn                       = 1
+  gArcActModeSwi                      = 1
+  gArcActModeOff                      = 1
+  gArcSenseContId                     = -1
+  enArcErrorState                     = #Nothing
+  enArcRTError                        = #Nothing
+  gArcMaxWeaveDelayTime               = 0
+  gArcRemoteDialogAnswer              = 0
+  gArcExitRestartInterrupt            = FALSE
+  gArcOnSeamBegin                     = FALSE
+  gArcOnlineOptCom                    = 0
+  gArcActParamStrike                  = 0
+  gArcActParamWelding                 = 0
+  gArcActParamCrater                  = 0
+  gArcActSlopeActive                  = FALSE
+  gArcSlopeArcOn                      = FALSE
+  gArcCommand                         = #None
+  stArcOffSlope.Active                = FALSE
+  gMoveBackAtArcOffPos                = gArcE6PosNull
+  stMoveBackAtArcOff.PosRecorded      = FALSE
+  stMoveBackAtArcOff.Done             = FALSE
+  ArcResetState()
+ENDIF
+IF (tInitMode == #ArcOn) THEN
+  enArcCurrentState             = #Nothing
+  gArcExitRestartInterrupt      = FALSE
+  gArcLineSelected              = FALSE
+  gArcSafeOverrideValue         = -1
+  gArcInternalInError           = FALSE
+  gArcOffDone                   = FALSE
+  enArcActiveStrategy           = #None
+  IF (stArcCallState.MoveType == #SplBlock) THEN
+    stBackward.DistArcOn        = $DISTANCE
+  ELSE
+    stBackward.DistArcOn        = 0.0
+  ENDIF
+  stBackward.DistAtError        = 0.0
+  stBackward.DistToMove         = 0.0
+  stBackward.DistLimited        = 0.0
+  stBackward.DistRealMoved      = 0.0
+  gArcOnSeam                    = TRUE
+  IF (ATAg_ER_ErrorOnSeam == FALSE) THEN
+    enArcSaveState         = #Nothing
+    gArcWeldErrorCounter   = 0
+    gArcAdvError[1]        = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+    gArcAdvError[2]        = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+    gArcAdvError[3]        = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+    gArcAdvError[4]        = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+    gArcAdvError[5]        = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+  ENDIF
+  IF ((gArcRobotTeamOk == TRUE) AND (gArcSyncList > 1)) THEN
+    gArcNoErrorUntilSeamEnd = stArcWeldErrSet.NoErrorUntilSeamEnd
+  ELSE
+    gArcNoErrorUntilSeamEnd = FALSE
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Arc Weave Type WeaveLength or WeveFrequency
+;********************************************************
+DEFFCT stWeave_T ArcWeaveOnFrequency(tWeldIn :IN,tWeaveIn :IN)
+DECL REAL tVelocity
+DECL stWeld_T tWeldIn
+DECL stWeave_T tWeaveIn, tWeaveOut
+SWITCH wArcWeaveMode
+   CASE #WeaveLength
+     RETURN tWeaveIn
+   CASE #WeaveFrequency
+     IF (tWeaveIn.Pattern == #NONE) THEN
+       RETURN tWeaveIn
+     ENDIF
+ENDSWITCH
+ArcWriteDiag(gArcGeneralDebug,"[MAIN] Weave Pattern Frequency active")
+tWeaveOut = tWeaveIn
+tVelocity = tWeldIn.Velocity
+IF ($OV_APPL <> cOvApplDefault) THEN
+  tVelocity = (tWeldIn.Velocity / cOvApplDefault) * $OV_APPL
+ENDIF
+tWeaveOut.Length = (tVelocity * 1000) / (tWeaveOut.Frequency)
+SWITCH ArcCallFromRoutine()
+  CASE 2,4 ;Call from Robot/SubMit Trigger 
+    SWITCH ArcCheckRangeValue(tWeaveOut.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+      CASE -1
+        ArcWriteDiag(gArcGeneralDebug,"[MAIN] Weave Pattern Frequency too Small: ",ArcIntToStr(tWeaveOut.Length))
+        ArcMsgWriteR(,#NOTIFY,"WeavePatternFrequencyTooSmall","ARC",10145,Opt_NOVLSTOP_LOG,tVelocity,tWeaveOut.Frequency,tWeaveOut.Length)
+      CASE -2
+        ArcWriteDiag(gArcGeneralDebug,"[MAIN] Weave Pattern Frequency too Big: ",ArcIntToStr(tWeaveOut.Length))
+        ArcMsgWriteR(,#NOTIFY,"WeavePatternFrequencyTooBig","ARC",10146,Opt_NOVLSTOP_LOG,tVelocity,tWeaveOut.Frequency,tWeaveOut.Length)
+  ENDSWITCH        
+ENDSWITCH
+tWeaveOut.Length = ArcSetRangeValue(tWeaveOut.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+RETURN tWeaveOut
+ENDFCT
+;********************************************************
+;Arc Thermal Control value
+;********************************************************
+GLOBAL DEFFCT stArcStepDat_T ArcPrepareStepDat(tArcStepDatIn :IN)
+DECL BOOL tB
+DECL stArcStepDat_T tArcStepDatIn, tArcStepDat
+
+tArcStepDat  = tArcStepDatIn
+tB = ArcVarExistB(tArcStepDat.Active,FALSE)
+tB = ArcVarExistR(tArcStepDat.WeldDist,0.0)
+tB = ArcVarExistR(tArcStepDat.StepDist,0.0)
+tB = ArcVarExistR(tArcStepDat.ShiftDist,0.0)
+tB = ArcVarExistI(tArcStepDat.StepsNumber,0)
+
+RETURN tArcStepDat
+ENDFCT
+;********************************************************
+;Arc Thermal Control value
+;********************************************************
+GLOBAL DEFFCT stArcTcSet_T ArcPrepareThermCont(tTcDatIn :IN)
+DECL stArcTcSet_T tTcDatIn, tTcDatOut
+DECL BOOL tB
+tTcDatOut = tTcDatIn
+IF (ArcVarExistS(tTcDatOut.Set1.JobModeId[]," ") == FALSE) THEN
+  tTcDatOut.Set1.JobModeId[] = " "
+ENDIF
+IF (ArcVarExistS(tTcDatOut.Set1.ParamSetId[]," ") == FALSE) THEN
+  tTcDatOut.Set1.ParamSetId[] = " "
+ENDIF
+tB = ArcVarExistB(tTcDatOut.Set1.Active,FALSE)
+tB = ArcVarExistR(tTcDatOut.Set1.Threshold,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C1,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C2,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C3,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C4,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C5,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C6,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C7,0.0)
+tB = ArcVarExistR(tTcDatOut.Set1.C8,0.0)
+
+IF (ArcVarExistS(tTcDatOut.Set2.JobModeId[]," ") == FALSE) THEN
+  tTcDatOut.Set2.JobModeId[] = " "
+ENDIF
+IF (ArcVarExistS(tTcDatOut.Set2.ParamSetId[]," ") == FALSE) THEN
+  tTcDatOut.Set2.ParamSetId[] = " "
+ENDIF
+tB = ArcVarExistB(tTcDatOut.Set2.Active,FALSE)
+tB = ArcVarExistR(tTcDatOut.Set2.Threshold,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C1,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C2,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C3,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C4,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C5,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C6,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C7,0.0)
+tB = ArcVarExistR(tTcDatOut.Set2.C8,0.0)
+
+IF (wArcThermalControlOption == FALSE) THEN
+  tTcDatOut.Set1.Active = FALSE
+  tTcDatOut.Set2.Active = FALSE
+ENDIF
+
+RETURN tTcDatOut
+ENDFCT
+;********************************************************
+;Arc Prepare WPDAT
+;********************************************************
+GLOBAL DEFFCT stArcDat_T ArcPrepareWPDat(tArcWPDatIn :OUT)
+DECL BOOL tB
+DECL stArcDat_T tArcWPDatIn
+DECL stArcDat_T tArcWPDatOut
+ON_ERROR_PROCEED
+tArcWPDatOut           = tArcWPDatIn
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  tArcWPDatOut = {WdatId[] " "}
+ENDIF
+tArcWPDatOut           = ArcPrepareWDatId(tArcWPDatOut)
+tArcWPDatOut.Info      = ArcPrepareWPDatInfo(tArcWPDatOut)
+tArcWPDatOut.Strike    = ArcPrepareWPDatStrike(tArcWPDatOut)
+tArcWPDatOut.Advanced  = ArcPrepareWPDatAdvanced(tArcWPDatOut)
+RETURN tArcWPDatOut
+ENDFCT
+;********************************************************
+;Arc Prepare Info WPDAT
+;********************************************************
+DEFFCT stInfo_T ArcPrepareWPDatInfo(tArcWPDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcWPDatIn
+DECL stArcDat_T tArcWPDatOut
+tArcWPDatOut = tArcWPDatIn
+tB = ArcVarExistI(tArcWPDatOut.Info.Version,0)
+RETURN tArcWPDatOut.Info
+ENDFCT
+;********************************************************
+;Arc Prepare Strike WPDAT
+;********************************************************
+DEFFCT stStrike_T ArcPrepareWPDatStrike(tArcWPDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcWPDatIn
+DECL stArcDat_T tArcWPDatOut
+tArcWPDatOut = tArcWPDatIn
+IF (ArcVarExistS(tArcWPDatOut.Strike.SeamName[],"No Name") == FALSE) THEN
+  tArcWPDatOut.Strike.SeamName[] = "No Name"
+ENDIF
+IF (STRLEN(tArcWPDatOut.Strike.SeamName[]) == 1) THEN
+  tArcWPDatOut.Strike.SeamName[] = "No Name"
+ENDIF
+IF (ArcVarExistS(tArcWPDatOut.Strike.PartName[],"No Name") == FALSE) THEN
+  tArcWPDatOut.Strike.PartName[] = "No Name"
+ENDIF
+IF (STRLEN(tArcWPDatOut.Strike.PartName[]) == 1) THEN
+  tArcWPDatOut.Strike.PartName[] = "No Name"
+ENDIF
+tB = ArcVarExistI(tArcWPDatOut.Strike.Seamnumber,0)
+tB = ArcVarExistI(tArcWPDatOut.Strike.PartNumber,0)
+tB = ArcVarExistR(tArcWPDatOut.Strike.DesiredLength,0.0)
+tB = ArcVarExistR(tArcWPDatOut.Strike.LengthTolNeg,0.0)
+tB = ArcVarExistR(tArcWPDatOut.Strike.LengthTolPos,0.0)
+tB = ArcVarExistB(tArcWPDatOut.Strike.LengthCtrlActive,TRUE) ;Seam length control if not found
+
+IF (gArcTechAdvancedOption == TRUE) THEN
+  IF (tArcWPDatOut.Strike.LengthTolPos > wArcSeamLengthMaxTol) THEN
+    tArcWPDatOut.Strike.LengthTolPos = wArcSeamLengthMaxTol
+  ENDIF
+  IF (tArcWPDatOut.Strike.LengthTolNeg < wArcSeamLengthMinTol) THEN
+    tArcWPDatOut.Strike.LengthTolNeg = wArcSeamLengthMinTol
+  ENDIF
+ELSE
+  tArcWPDatOut.Strike.LengthCtrlActive = FALSE
+  tArcWPDatOut.Strike.DesiredLength    = 0.0
+  tArcWPDatOut.Strike.LengthTolPos     = 0.0
+  tArcWPDatOut.Strike.LengthTolNeg     = 0.0
+ENDIF
+RETURN tArcWPDatOut.Strike
+ENDFCT
+;********************************************************
+;Arc Load Advanced WPDAT
+;********************************************************
+DEFFCT stAdvanced_T ArcPrepareWPDatAdvanced(tArcWPDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcWPDatIn
+DECL stArcDat_T tArcWPDatOut
+tArcWPDatOut = tArcWPDatIn
+tB = ArcVarExistI(tArcWPDatOut.Advanced.Seamnumber,0)
+tB = ArcVarExistI(tArcWPDatOut.Advanced.BitCodedRobotMark,1)
+RETURN tArcWPDatOut.Advanced
+ENDFCT
+;********************************************************
+;Arc Prepare WDAT Structure
+;********************************************************
+DEFFCT stArcDat_T ArcPrepareWDat(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut           = tArcDatIn
+tArcDatOut           = ArcPrepareWDatId(tArcDatIn)
+tArcDatOut.Info      = ArcPrepareWDatInfo(tArcDatIn)
+tArcDatOut.Strike    = ArcPrepareWDatStrike(tArcDatIn)
+tArcDatOut.Weld      = ArcPrepareWDatWeld(tArcDatIn)
+tArcDatOut.Crater    = ArcPrepareWDatCrater(tArcDatIn)
+tArcDatOut.Weave     = ArcPrepareWDatWeave(tArcDatIn)
+tArcDatOut.Advanced  = ArcPrepareWDatAdvanced(tArcDatIn)
+tArcDatOut.Track     = ArcPrepareWDatTrack(tArcDatIn)
+RETURN tArcDatOut
+ENDFCT
+;********************************************************
+;Arc Prepare WdatId 
+;********************************************************
+DEFFCT stArcDat_T ArcPrepareWDatId(tArcDatIn :IN)
+DECL stArcDat_T tArcDatIn, tArcDatOut
+tArcDatOut = tArcDatIn
+IF (ArcVarExistS(tArcDatOut.WdatId[],"Name Missing") == FALSE) THEN
+  tArcDatOut.WdatId[] = "Name Missing"
+ENDIF
+RETURN tArcDatOut
+ENDFCT
+;********************************************************
+;Arc Prepare Info WDAT
+;********************************************************
+DEFFCT stInfo_T ArcPrepareWDatInfo(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn, tArcDatOut
+tArcDatOut = tArcDatIn
+IF (ArcVarExistS(tArcDatOut.Info.WName[],"No Name") == FALSE) THEN
+  tArcDatOut.Info.WName[] = "No Name"
+ENDIF
+tB = ArcVarExistI(tArcDatOut.Info.WId,1)
+tArcDatOut.Info.WId = ArcSetRangeValue(tArcDatOut.Info.WId,1,4)
+IF (gArcTechAdvancedOption == FALSE) THEN
+   tArcDatOut.Info.WId = 1
+ENDIF
+RETURN tArcDatOut.Info
+ENDFCT
+;********************************************************
+;Arc Prepare Strike WDAT
+;********************************************************
+DEFFCT stStrike_T ArcPrepareWDatStrike(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+IF (ArcVarExistS(tArcDatIn.Strike.JobModeId[]," ") == FALSE) THEN
+  tArcDatOut.Strike.JobModeId[] = " "
+ENDIF
+IF (ArcVarExistS(tArcDatIn.Strike.ParamSetId[]," ") == FALSE) THEN
+  tArcDatOut.Strike.ParamSetId[] = " "
+ENDIF
+tB = ArcVarExistR(tArcDatOut.Strike.PurgeTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.PreFlowTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.StartTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel1,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel2,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel3,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel4,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel5,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel6,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel7,0.0)
+tB = ArcVarExistR(tArcDatOut.Strike.Channel8,0.0)
+RETURN tArcDatOut.Strike
+ENDFCT
+;********************************************************
+;Arc Prepare Weld WDAT
+;********************************************************
+DEFFCT stWeld_T ArcPrepareWDatWeld(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+IF (ArcVarExistS(tArcDatIn.Weld.JobModeId[]," ") == FALSE) THEN
+  tArcDatOut.Weld.JobModeId[] = " "
+ENDIF
+IF (ArcVarExistS(tArcDatIn.Weld.ParamSetId[]," ") == FALSE) THEN
+  tArcDatOut.Weld.ParamSetId[] = " "
+ENDIF
+tB = ArcVarExistR(tArcDatOut.Weld.Velocity,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel1,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel2,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel3,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel4,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel5,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel6,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel7,0.0)
+tB = ArcVarExistR(tArcDatOut.Weld.Channel8,0.0)
+RETURN tArcDatOut.Weld
+ENDFCT
+;********************************************************
+;Arc Prepare Crater WDAT
+;********************************************************
+DEFFCT stCrater_T ArcPrepareWDatCrater(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+IF (ArcVarExistS(tArcDatIn.Crater.JobModeId[]," ") == FALSE) THEN
+  tArcDatOut.Crater.JobModeId[] = " "
+ENDIF
+IF (ArcVarExistS(tArcDatIn.Crater.ParamSetId[]," ") == FALSE) THEN
+  tArcDatOut.Crater.ParamSetId[] = " "
+ENDIF
+tB = ArcVarExistR(tArcDatOut.Crater.CraterTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.PostflowTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel1,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel2,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel3,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel4,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel5,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel6,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel7,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.Channel8,0.0)
+tB = ArcVarExistR(tArcDatOut.Crater.BurnBackTime,0.0)
+RETURN tArcDatOut.Crater
+ENDFCT
+;********************************************************
+;Arc Prepare Weave WDAT
+;********************************************************
+DEFFCT stWeave_T ArcPrepareWDatWeave(tArcDatIn :IN)
+DECL stArcDat_T tArcDatIn,tArcDatOut
+DECL BOOL tB
+DECL REAL tDwellDistLeft,tDwellDistRight,tLength,tOffset
+DECL REAL tContorlPoint[15]
+tArcDatOut = tArcDatIn
+ON_ERROR_PROCEED
+tArcDatOut.Weave.Pattern = tArcDatOut.Weave.Pattern
+IF ($ERR.NUMBER > 0) THEN
+  tArcDatOut.Weave.Pattern = #None
+  ERR_CLEAR($ERR)
+ENDIF
+tB                              = ArcVarExistR(tArcDatOut.Weave.Length,0.0)
+tB                              = ArcVarExistR(tArcDatOut.Weave.Amplitude,0.0)
+IF (tArcDatOut.Weave.Amplitude > 100) THEN ;STT 
+  tArcDatOut.Weave.Amplitude = tArcDatOut.Weave.Amplitude - 100
+ENDIF
+tB                              = ArcVarExistR(tArcDatOut.Weave.Angle,0.0)
+tB                              = ArcVarExistR(tArcDatOut.Weave.LeftSideDelay,0.0)
+tB                              = ArcVarExistR(tArcDatOut.Weave.RightSideDelay,0.0)
+tB                              = ArcVarExistR(tArcDatOut.Weave.Frequency,2.0)
+tArcDatOut.Weave.Angle          = ArcSetRangeValue(tArcDatOut.Weave.Angle,cArcWeaveMinAngle,cArcWeaveMaxAngle)
+tArcDatOut.Weave.Length         = ArcSetRangeValue(tArcDatOut.Weave.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+tArcDatOut.Weave.Frequency      = ArcSetRangeValue(tArcDatOut.Weave.Frequency,cArcWeaveFrequencyMin,cArcWeaveFrequencyMax)
+tArcDatOut.Weave.Amplitude      = ArcSetRangeValue(tArcDatOut.Weave.Amplitude,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+tArcDatOut.Weave.LeftSideDelay  = ArcSetRangeValue(tArcDatOut.Weave.LeftSideDelay,cArcWeaveMinDelayTime,cArcWeaveMaxDelayTime)
+tArcDatOut.Weave.RightSideDelay = ArcSetRangeValue(tArcDatOut.Weave.RightSideDelay,cArcWeaveMinDelayTime,cArcWeaveMaxDelayTime)
+gArcMaxWeaveDelayTime           = tArcDatOut.Weave.LeftSideDelay
+IF tArcDatOut.Weave.RightSideDelay > gArcMaxWeaveDelayTime THEN
+  gArcMaxWeaveDelayTime         = tArcDatOut.Weave.RightSideDelay
+ENDIF
+
+IF (gArcDwellTimeWhenRsi == TRUE) THEN
+  RETURN tArcDatOut.Weave
+ENDIF
+
+IF ((tArcDatOut.Weave.Pattern == #Trapecoid) AND ((tArcDatOut.Weave.LeftSideDelay > 0) OR (tArcDatOut.Weave.RightSideDelay > 0))) THEN
+  tB = ArcVarExistR(tArcDatOut.Weld.Velocity,0.0)
+  IF (tArcDatOut.Weld.Velocity == 0.0) THEN
+    RETURN tArcDatOut.Weave
+  ENDIF
+
+  tOffset = 0.333
+
+  tDwellDistLeft   = tArcDatOut.Weld.Velocity * 1000 * tArcDatOut.Weave.LeftSideDelay
+  tDwellDistRight  = tArcDatOut.Weld.Velocity * 1000 * tArcDatOut.Weave.RightSideDelay
+  
+  IF (tDwellDistLeft == 0) THEN
+    tDwellDistLeft = tOffset
+  ENDIF
+  
+  IF (tDwellDistRight == 0) THEN
+    tDwellDistRight = tOffset
+  ENDIF
+  
+  tLength = tDwellDistLeft + tDwellDistRight + (tOffset * 12)
+  
+  tArcDatOut.Weave.Length = tLength
+  
+  tContorlPoint[1]  = 0
+  tContorlPoint[2]  = tOffset
+  tContorlPoint[3]  = tContorlPoint[2] + tOffset
+  tContorlPoint[4]  = tContorlPoint[3] + tOffset
+  tContorlPoint[5]  = tContorlPoint[4] + tDwellDistLeft
+  tContorlPoint[6]  = tContorlPoint[5] + tOffset
+  tContorlPoint[7]  = tContorlPoint[6] + tOffset
+  tContorlPoint[8]  = tContorlPoint[7] + tOffset
+  tContorlPoint[9]  = tContorlPoint[8] + tOffset
+  tContorlPoint[10] = tContorlPoint[9] + tOffset
+  tContorlPoint[11] = tContorlPoint[10] + tOffset
+  tContorlPoint[12] = tContorlPoint[11] + tDwellDistRight
+  tContorlPoint[13] = tContorlPoint[12] + tOffset
+  tContorlPoint[14] = tContorlPoint[13] + tOffset
+  tContorlPoint[15] = tLength
+  
+  ArcWeavePattern[9].Tech1.CPS1.X1  = tContorlPoint[1]
+  ArcWeavePattern[9].Tech1.CPS1.X2  = tContorlPoint[2] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X3  = tContorlPoint[3] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X4  = tContorlPoint[4] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X5  = tContorlPoint[5] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X6  = tContorlPoint[6] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X7  = tContorlPoint[7] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X8  = tContorlPoint[8] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X9  = tContorlPoint[9] / tLength
+  ArcWeavePattern[9].Tech1.CPS1.X10 = tContorlPoint[10] / tLength
+  ArcWeavePattern[9].Tech1.CPS2.X1  = tContorlPoint[11] / tLength
+  ArcWeavePattern[9].Tech1.CPS2.X2  = tContorlPoint[12] / tLength
+  ArcWeavePattern[9].Tech1.CPS2.X3  = tContorlPoint[13] / tLength
+  ArcWeavePattern[9].Tech1.CPS2.X4  = tContorlPoint[14] / tLength
+  ArcWeavePattern[9].Tech1.CPS2.X5  = tContorlPoint[15] / tLength
+  
+  ArcWeavePattern[9].Tech1.CPS1.Y1  = 0.0
+  ArcWeavePattern[9].Tech1.CPS1.Y2  = 0.5
+  ArcWeavePattern[9].Tech1.CPS1.Y3  = 0.866
+  ArcWeavePattern[9].Tech1.CPS1.Y4  = 1.0
+  ArcWeavePattern[9].Tech1.CPS1.Y5  = 1.0
+  ArcWeavePattern[9].Tech1.CPS1.Y6  = 0.866
+  ArcWeavePattern[9].Tech1.CPS1.Y7  = 0.5
+  ArcWeavePattern[9].Tech1.CPS1.Y8  = 0
+  ArcWeavePattern[9].Tech1.CPS1.Y9  = -0.5
+  ArcWeavePattern[9].Tech1.CPS1.Y10 = -0.866
+  ArcWeavePattern[9].Tech1.CPS2.Y1  = -1.0
+  ArcWeavePattern[9].Tech1.CPS2.Y2  = -1.0
+  ArcWeavePattern[9].Tech1.CPS2.Y3  = -0.866
+  ArcWeavePattern[9].Tech1.CPS2.Y4  = -0.5
+  ArcWeavePattern[9].Tech1.CPS2.Y5  = 0
+ENDIF
+RETURN tArcDatOut.Weave
+ENDFCT
+;********************************************************
+;Arc Prepare Advanced WDAT 
+;********************************************************
+DEFFCT stAdvanced_T ArcPrepareWDatAdvanced(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+ON_ERROR_PROCEED
+tArcDatOut.Advanced.SlopeOption = tArcDatOut.Advanced.SlopeOption
+IF ($ERR.NUMBER > 0) THEN
+  tArcDatOut.Advanced.SlopeOption = #None
+  ERR_CLEAR($ERR)
+ENDIF
+ON_ERROR_PROCEED
+tArcDatOut.Advanced.SlopeOptionOff = tArcDatOut.Advanced.SlopeOptionOff
+IF ($ERR.NUMBER > 0) THEN
+  tArcDatOut.Advanced.SlopeOptionOff = #None
+  ERR_CLEAR($ERR)
+ENDIF
+ON_ERROR_PROCEED
+tArcDatOut.Advanced.MoveBackAtArcOffOption = tArcDatOut.Advanced.MoveBackAtArcOffOption
+IF ($ERR.NUMBER > 0) THEN
+  tArcDatOut.Advanced.MoveBackAtArcOffOption = #None
+  ERR_CLEAR($ERR)
+ENDIF
+ON_ERROR_PROCEED
+tArcDatOut.Advanced.SlopeStartOptionOff = tArcDatOut.Advanced.SlopeStartOptionOff
+IF ($ERR.NUMBER > 0) THEN
+  tArcDatOut.Advanced.SlopeStartOptionOff = #None
+  ERR_CLEAR($ERR)
+ENDIF
+tB = ArcVarExistI(tArcDatOut.Advanced.IgnitionErrorStrategy,1)
+tB = ArcVarExistI(tArcDatOut.Advanced.WeldErrorStrategy,1)
+IF (tArcDatOut.Advanced.IgnitionErrorStrategy < 1) OR (tArcDatOut.Advanced.IgnitionErrorStrategy > 10) THEN
+  tArcDatOut.Advanced.IgnitionErrorStrategy = 1
+ENDIF
+IF (tArcDatOut.Advanced.WeldErrorStrategy < 1) OR (tArcDatOut.Advanced.WeldErrorStrategy > 10) THEN
+  tArcDatOut.Advanced.WeldErrorStrategy = 1
+ENDIF
+tB = ArcVarExistR(tArcDatOut.Advanced.SlopeTime,0.0)
+tB = ArcVarExistR(tArcDatOut.Advanced.SlopeDistance,0.0)
+tB = ArcVarExistR(tArcDatOut.Advanced.SlopeTimeOff,0.0)
+tB = ArcVarExistR(tArcDatOut.Advanced.SlopeDistanceOff,0.0)
+tB = ArcVarExistB(tArcDatOut.Advanced.OnTheFlyActiveOn,FALSE)
+tB = ArcVarExistB(tArcDatOut.Advanced.OnTheFlyActiveOff,FALSE)
+tB = ArcVarExistR(tArcDatOut.Advanced.OnTheFlyDistanceOn,0.0)
+tB = ArcVarExistR(tArcDatOut.Advanced.OnTheFlyDistanceOff,0.0)
+tB = ArcVarExistB(tArcDatOut.Advanced.PreStartOn,wArcPreStartEnabled)
+tB = ArcVarExistB(tArcDatOut.Advanced.PreStartLocal,FALSE)
+tB = ArcVarExistR(tArcDatOut.Advanced.PreStartTime,wArcPreStartTime)
+tB = ArcVarExistR(tArcDatOut.Advanced.MoveBackAtArcOffDistance,0.0)
+IF (gArcTechAdvancedOption == FALSE) THEN
+  tArcDatOut.Advanced.IgnitionErrorStrategy     = 1
+  tArcDatOut.Advanced.WeldErrorStrategy         = 1
+  tArcDatOut.Advanced.SlopeOption               = #None
+  tArcDatOut.Advanced.SlopeTime                 = 0.0
+  tArcDatOut.Advanced.SlopeDistance             = 0.0
+  tArcDatOut.Advanced.OnTheFlyActiveOn          = FALSE
+  tArcDatOut.Advanced.OnTheFlyActiveOff         = FALSE
+  tArcDatOut.Advanced.OnTheFlyDistanceOn        = 0.0
+  tArcDatOut.Advanced.OnTheFlyDistanceOff       = 0.0
+  tArcDatOut.Advanced.PreStartOn                = FALSE
+  tArcDatOut.Advanced.PreStartLocal             = FALSE
+  tArcDatOut.Advanced.PreStartTime              = 0.0
+  tArcDatOut.Advanced.SlopeOptionOff            = #None
+  tArcDatOut.Advanced.SlopeDistanceOff          = 0.0
+  tArcDatOut.Advanced.SlopeTimeOff              = 0.0
+  tArcDatOut.Advanced.MoveBackAtArcOffOption    = #None
+  tArcDatOut.Advanced.MoveBackAtArcOffDistance  = 0.0
+  tArcDatOut.Advanced.SlopeStartOptionOff       = #None
+ENDIF
+;TODO Check
+;IF (tArcDatOut.Advanced.MoveBackAtArcOffOption <> #None) THEN
+;  IF (tArcDatOut.Advanced.OnTheFlyActiveOff == TRUE) THEN
+;    ;ArcWriteDiag(gArcGeneralDebug,"[MAIN] MoveBackAtArcOffOption ON -> OnTheFlyArcOff OFF")
+;    tArcDatOut.Advanced.OnTheFlyActiveOff = FALSE
+;  ENDIF
+;ENDIF
+;IF (tArcDatOut.Advanced.OffSlopeStart <> #None) THEN
+;  IF (tArcDatOut.Advanced.OnTheFlyActiveOff == TRUE) THEN
+;    ;ArcWriteDiag(gArcGeneralDebug,"[MAIN] ArcOffSlope ON -> OnTheFlyArcOff OFF")
+;    tArcDatOut.Advanced.OnTheFlyActiveOff = FALSE
+;  ENDIF
+;ENDIF
+RETURN tArcDatOut.Advanced
+ENDFCT
+;********************************************************
+;Arc Prepare Track WDAT
+;********************************************************
+DEFFCT stTrack_T ArcPrepareWDatTrack(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+tB = ArcVarExistB(tArcDatOut.Track.IsArcSenseEnabled,FALSE)
+tB = ArcVarExistB(tArcDatOut.Track.ControlEnabled,FALSE)
+tB = ArcVarExistB(tArcDatOut.Track.KeepOffset,FALSE)
+tB = ArcVarExistB(tArcDatOut.Track.TeachNew,FALSE)
+tB = ArcVarExistB(tArcDatOut.Track.FindSeamMiddle,FALSE)
+tB = ArcVarExistR(tArcDatOut.Track.TrackingDelay,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.ControlSensibility,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.MaxDeviation,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.ControlSensibilityHeight,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.Bias,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.WeaveOffset,0.0)
+tB = ArcVarExistR(tArcDatOut.Track.HeightCorrValue,0.0)
+RETURN tArcDatOut.Track
+ENDFCT
+;********************************************************
+;Arc Copy WDAT.Weld to WDAT.Strike
+;********************************************************
+DEFFCT stStrike_T ArcCopyWeldToStrike(tArcDatIn :IN)
+DECL BOOL tB
+DECL stArcDat_T tArcDatIn,tArcDatOut
+tArcDatOut = tArcDatIn
+tArcDatOut.Strike.JobModeId[]  = tArcDatOut.Weld.JobModeId[]  
+tArcDatOut.Strike.ParamSetId[] = tArcDatOut.Weld.ParamSetId[]  
+tArcDatOut.Strike.PurgeTime    = 0.0
+tArcDatOut.Strike.PreFlowTime  = 0.0
+tArcDatOut.Strike.StartTime    = 0.0
+tArcDatOut.Strike.Channel1     = tArcDatOut.Weld.Channel1
+tArcDatOut.Strike.Channel2     = tArcDatOut.Weld.Channel2
+tArcDatOut.Strike.Channel3     = tArcDatOut.Weld.Channel3
+tArcDatOut.Strike.Channel4     = tArcDatOut.Weld.Channel4
+tArcDatOut.Strike.Channel5     = tArcDatOut.Weld.Channel5
+tArcDatOut.Strike.Channel6     = tArcDatOut.Weld.Channel6
+tArcDatOut.Strike.Channel7     = tArcDatOut.Weld.Channel7
+tArcDatOut.Strike.Channel8     = tArcDatOut.Weld.Channel8
+RETURN tArcDatOut.Strike
+ENDFCT
+;********************************************************
+;Arc Check Welder Selection
+;********************************************************
+DEFFCT BOOL ArcCheckWelderSelection(tArcFunc :IN,tInfo :IN)
+DECL enArcCall_T tArcFunc
+DECL stInfo_T tInfo
+stArcInfo = tInfo
+SWITCH tArcFunc
+  CASE #PreDefinition,#GasPreflow,#ArcOnMoveStd,#ArcOnSplSingle,#ArcOnBeforeMoveStd,#ArcOnBeforeSplSingle,#ArcOnAfterMoveStd,#ArcOnAfterSplSingle
+    RETURN TRUE
+ENDSWITCH
+IF (tInfo.WId == gArcActIlfWelder) THEN
+  RETURN TRUE
+ENDIF
+RETURN FALSE
+ENDFCT
+;********************************************************
+;Arc Bus Velocity Calculation
+;********************************************************
+DEF ArcBasVelCalc(tArcFunc :IN,tArcDat :IN)
+DECL INT tCall
+DECL enArcCall_T tArcFunc
+DECL stArcDat_T tArcDat
+tCall = ArcCallFromRoutine()
+SWITCH tArcFunc
+  CASE #ArcOnAfterMoveStd, #ArcSwiAfterMoveStd                       ;Standard Movements
+  CASE #ArcOnAfterSplSingle, #ArcSwiAfterSplSingle                   ;Spline Movements
+  ;CASE #ArcOnMoveSpl, #ArcSwiMoveSpl                                ;SplineBlock Movements TODO Check
+  CASE #ArcOffAfterMoveStd,#ArcOffAfterSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+      RETURN
+    ENDIF
+    gArcBasVelDefinition = cArcVelocityRaport
+    ArcVelApplOff(tCall)        ;$VEL_APPL set Off
+    RETURN
+  CASE #ArcOffMoveStd,#ArcOffSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+      RETURN
+    ENDIF  
+    gArcBasVelDefinition = cArcVelocityRaport
+    ArcVelApplOff(tCall)        ;$VEL_APPL set Off
+  DEFAULT
+    RETURN
+ENDSWITCH
+gArcSpeedType = #NONE
+ArcSlopeVelCalc(tArcDat)                             ;For Slope
+ArcVelAppl(tArcFunc,tArcDat)                         ;For Adaptive Welding
+SWITCH gArcSpeedType
+  CASE #NONE
+    ArcVelApplOff(tCall)                             ;$VEL_APPL set Off
+    gArcBasVelDefinition = tArcDat.Weld.Velocity * gArcDryVelFactor
+  CASE #OvApp                                        ;Use case on use $OV_APPL (Used for Slope)
+    ArcVelApplOff(tCall)                             ;$VEL_APPL set Off
+    gArcBasVelDefinition = cArcVelocityRaport
+  CASE #VelAppl                                       ;Use case on use $VEL_APPL (only with AdaptiveWelding)   
+    ArcVelApplSet(tCall,tArcDat.Weld.Velocity)        ;$VEL_APPL Set Speed
+    gArcBasVelDefinition = cArcApplVelocityMax        ;Velocity Raport ;Use for Standard & Single Spline
+    IF (skArcDryRun == FALSE) THEN
+      gArcDryVelFactor = cArcApplVelocityMax - tArcDat.Weld.Velocity ;Use for Spline Block
+    ENDIF    
+ENDSWITCH
+END
+;********************************************************
+;ArcBasVel $OV_APPL Slope Calculation
+;********************************************************
+DEF ArcSlopeVelCalc(tArcDat :IN)
+DECL stArcDat_T tArcDat
+IF (gArcSpeedType <> #NONE) THEN
+  RETURN
+ENDIF
+IF (stArcFeatureState.Act.Slope == TRUE) THEN
+  IF (gArcSlopeAct.Velocity.Active == TRUE) THEN
+    IF (stArcCallState.MoveType == #Std) THEN
+      gArcSpeedType = #OvApp
+    ELSE
+      ArcMsgWriteS(,#NOTIFY,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"Slope Speed not supported")
+    ENDIF
+  ENDIF
+ENDIF
+END
+;********************************************************
+;ArcBasVel with VEL_APPL only for Adaptive Welding
+;********************************************************
+DEF ArcVelAppl(tArcFunc :IN,tArcDat :IN)
+DECL REAL tCalcSpeed
+DECL enArcCall_T tArcFunc
+DECL stArcDat_T tArcDat
+IF (gArcAWOption == FALSE) THEN
+  RETURN
+ENDIF
+IF (AawW1SpeedActiveOnSource() == FALSE) THEN
+  RETURN
+ENDIF
+IF (gArcSpeedType <> #NONE) THEN
+  RETURN
+ENDIF
+gArcSpeedType =  #VelAppl
+END
+;********************************************************
+;Check Ignition
+;********************************************************
+DEFFCT BOOL ArcIgnitionCondition()
+DECL BOOL tStartIgnition
+tStartIgnition = FALSE
+IF ((ATAg_ER_ArcGroupEnabled == TRUE) AND (ATAg_ER_ErrorOnSeam == TRUE) AND (gArcWeldErrorCounter > 0)) THEN
+  IF (gArcAdvError[gArcWeldErrorCounter].ErrorDistance == 0) THEN
+    ;Error on ArcOn position
+    ArcCheckIfHot()
+    tStartIgnition = TRUE
+  ELSE
+    ;Error anywhere on seam
+    ;ArcWaitDistanceZero()
+    SetDistanceToZero()
+    enArcActiveStrategy = #AdvancedErrorRecovery
+    ArcInitReduceSpeed(TRUE)
+    gArcHandleNoErrorActive = TRUE
+  ENDIF
+ELSE
+  ;Standard ArcOn
+  gArcColdSeam = FALSE
+  gArcIgnErrorCounter = 0 ;Only at real ARC_ON (Counter for IgnitionErrorStrategies)
+  gArcSeamErrorCounter = 0 ;Only at real ARC_ON (Counter for SeamErrors)
+  tStartIgnition = TRUE
+ENDIF
+RETURN tStartIgnition
+ENDFCT
+;********************************************************
+;Anaylse Arc Command Call
+;********************************************************
+DEF ArcAnalyseCall(tArcFunc :IN)
+DECL enArcCall_T tArcFunc
+
+stArcCallState.CallType     = tArcFunc
+stArcCallState.CommandType  = #None
+stArcCallState.MoveType     = #None
+
+SWITCH tArcFunc
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ;ARC ON
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  CASE #PreDefinition, #GasPreflow
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #Std
+
+  CASE #ArcOnMoveStd
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #Std
+    
+  CASE #ArcOnAfterMoveStd
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #Std
+    
+  CASE #ArcOnSplSingle
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #SplSingle
+    
+  CASE #ArcOnAfterSplSingle
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #SplSingle
+    
+  CASE #ArcPreOnMoveSpl, #ArcOnMoveSpl, #ArcOnAfterMoveSpl
+    stArcCallState.CommandType  = #ArcOn
+    stArcCallState.MoveType     = #SplBlock
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ;ARC SWI
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  CASE #ArcSwiMoveStd
+    stArcCallState.CommandType  = #ArcSwi
+    stArcCallState.MoveType     = #Std
+    
+  CASE #ArcSwiSplSingle
+    stArcCallState.CommandType  = #ArcSwi
+    stArcCallState.MoveType     = #SplSingle
+    
+  CASE #ArcSwiMoveSpl
+    stArcCallState.CommandType  = #ArcSwi
+    stArcCallState.MoveType     = #SplBlock
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ;ARC OFF
+  ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  CASE #ArcOffBeforeOffStd, #ArcOffBeforeOffStd2, #ArcOffMoveStd
+    stArcCallState.CommandType  = #ArcOff
+    stArcCallState.MoveType     = #Std
+    
+  CASE #ArcOffAfterMoveStd
+    stArcCallState.CommandType  = #ArcOff
+    stArcCallState.MoveType     = #Std
+    
+  CASE #ArcOffBeforeOffSplSingle, #ArcOffBefOffSplSingle2, #ArcOffSplSingle
+    stArcCallState.CommandType  = #ArcOff
+    stArcCallState.MoveType     = #SplSingle
+    
+  CASE #ArcOffAfterSplSingle
+    stArcCallState.CommandType  = #ArcOff
+    stArcCallState.MoveType     = #SplSingle
+    
+  CASE #ArcOffBeforeOffSpline, #ArcOffBeforeOffSpline2, #ArcOffMoveSpl
+    stArcCallState.CommandType  = #ArcOff
+    stArcCallState.MoveType     = #SplBlock
+ENDSWITCH
+END
+;********************************************************
+;ArcOn Get arc point name
+;********************************************************
+DEF ArcWeldPointName()
+DECL BOOL tB
+IF (STRLEN($PRO_IP1.P_NAME[]) >= 2) THEN
+  ON_ERROR_PROCEED
+  tB = STRCOPY(gArcWeldPointName[] ,$PRO_IP1.P_NAME[])
+  IF ($ERR.NUMBER > 0) THEN
+    gArcWeldPointName[] = "Error"
+    ERR_CLEAR($ERR)
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Set Actual Global Elements
+;********************************************************
+DEF ArcSetWelderIdToPlc(tWelderNr :IN,tArcFunc :IN)
+DECL INT tWelderNr
+DECL INT tID
+DECL enArcCall_T tArcFunc
+SWITCH tArcFunc
+  CASE #PreDefinition,#GasPreflow,#ArcOnMoveStd,#ArcOnSplSingle,#ArcOnBeforeMoveStd,#ArcOnBeforeSplSingle,#ArcOnAfterMoveStd,#ArcOnAfterSplSingle
+  DEFAULT
+    RETURN
+ENDSWITCH 
+IF (wsArcOWelderId.Active == FALSE) THEN
+  RETURN
+ENDIF
+tID = wArcWelder[tWelderNr].ID
+IF (tID > 0) THEN
+  IF (gArcSignalGroupSelection == TRUE) THEN
+    ArcOutSignalGroup(wsArcOWelderId,0,0,tID)
+  ELSE
+    ArcIntToBit($OUT[],wsArcOWelderId,tID)
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Check ArcLinkXT
+;********************************************************
+DEF ArcCheckArcLinkXT()
+DECL BOOL tRepeatArcLinkMsg
+
+tRepeatArcLinkMsg = FALSE
+REPEAT
+  IF (wArcWelder[gArcActIlfWelder].Type == #ARCLINKXT) THEN
+    IF (ArcWeldCondition(gArcActIlfWelder) == TRUE) THEN
+      IF (gArcModeOpChanged == TRUE) OR (gArcChecksumMsgAndHot == TRUE) THEN
+        ;Message from ArcLink driver
+        IF ISMESSAGESET(41000) THEN
+          IF (stArcCallState.MoveType == #SplBlock) OR ($VEL_ACT > 0.0) THEN ;$VEL_ACT wegen OnTheFly abfragen
+            BRAKE
+          ENDIF
+          SWITCH ArcMsgWriteDialog(,"ArcLinkDifferentChecksum","ARC",10096,Opt_VLSTOP_LOG,"Common#Yes","Common#No")
+            CASE 1
+              gArcChecksumMsgAndHot = FALSE
+              gArcModeOpChanged     = FALSE
+              tRepeatArcLinkMsg     = FALSE
+            CASE 2
+              HALT
+              tRepeatArcLinkMsg = TRUE
+          ENDSWITCH
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDIF
+UNTIL (tRepeatArcLinkMsg == FALSE)
+END
+;********************************************************
+;Check PreDefinition
+;********************************************************
+DEF ArcCheckPreDefinition(tArcDat:IN)
+DECL stArcDat_T tArcDat
+DECL REAL tDeltaTime
+DECL REAL tArcPreDefinitionTime
+tArcPreDefinitionTime = ABS(cArcPreDefinitionTime)
+IF (mTimeStampPreDef > 0) THEN
+  IF ((gArcPreDefTimeEnable == TRUE) OR (gArcPreDefWait == TRUE)) THEN
+    tDeltaTime = ( tArcPreDefinitionTime - ABS(mTimeStampArcOn - mTimeStampPreDef))
+    IF (tDeltaTime > 0) AND (tDeltaTime < 5000) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition gArcPreDefTimeEnable = TRUE")
+      WAIT SEC tDeltaTime / 1000.0
+    ELSE
+      ;overflow unsigned 32 Bit recognize
+      IF (tDeltaTime < -5000) THEN
+        WAIT SEC tArcPreDefinitionTime / 1000.0
+      ENDIF
+    ENDIF
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition gArcPreDefTimeEnable = FALSE")
+  ENDIF
+ELSE
+  ArcPreDefinition(tArcDat)
+  IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+    IF ((gArcPreDefTimeEnable == TRUE) OR (gArcPreDefWait == TRUE)) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition 2 gArcPreDefTimeEnable = TRUE")
+      WAIT SEC tArcPreDefinitionTime / 1000.0
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[MAIN] Wait PreDefinition 2 gArcPreDefTimeEnable = FALSE")
+    ENDIF
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[MAIN] No Wait PreDefinition 2 OnTheFlyActiveOn == TRUE")
+  ENDIF
+ENDIF
+mTimeStampPreDef = -1
+gArcPreDefWait = FALSE
+END
+;********************************************************
+;WAIT FOR $DISTANCE = 0
+;********************************************************
+;DEF ArcWaitDistanceZero()
+;IF (stArcCallState.MoveType == #SplBlock) THEN
+;  RETURN
+;ENDIF
+;IF ($DISTANCE < 0.5) THEN
+;  RETURN
+;ENDIF 
+;LIN $POS_ACT
+;END
+;********************************************************
+;Kuka.Sim
+;********************************************************
+DEF ArcKukaSim(tArcFunc:IN, tArcDat:IN, tArcWPDat:IN, tTcDat:IN)
+DECL enArcCall_T tArcFunc
+DECL stArcDat_T tArcDat, tArcWPDat
+DECL stArcTcSet_T tTcDatIn, tTcDat
+
+ArcBasVelCalc(tArcFunc,tArcDat)
+
+SWITCH tArcFunc
+  CASE #ArcOnMoveStd, #ArcOnSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOn == TRUE) THEN
+      ;Debug KUKA.Sim
+      ;;@Print ArcOn - OnTheFly
+      ArcKukaSimTrace(TRUE)
+      ArcFeatureSelect(#BeforeIgnition,tArcDat,tArcWPDat,tTcDat)
+      ArcFeatureSelect(#AfterIgnition,tArcDat,tArcWPDat,tTcDat)
+    ENDIF
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOn == FALSE) THEN
+      WAIT FOR TRUE ;$Advance Stop
+      ArcKukaSimArcOnInitVar()
+      ;Debug KUKA.Sim
+      ;;@Print ArcOn
+      stArcCallState.ExecType = #AdvanceStopCall
+      ArcFeatureSelect(#BeforeIgnition,tArcDat,tArcWPDat,tTcDat)
+      WAIT SEC tArcDat.Strike.PreFlowTime
+      WAIT SEC tArcDat.Strike.StartTime
+      ArcKukaSimTrace(TRUE)
+      ArcFeatureSelect(#AfterIgnition,tArcDat,tArcWPDat,tTcDat)
+    ENDIF
+  CASE #ArcSwiMoveStd, #ArcSwiSplSingle
+    ArcFeatureSelect(#ArcSwiTrigger,tArcDat,tArcWPDat,tTcDat)
+  CASE #ArcOffMoveStd, #ArcOffSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+      ;Debug KUKA.Sim
+      ;;@Print ArcOff - OnTheFly
+      ArcFeatureSelect(#BeforeCraterFill,tArcDat,tArcWPDat,tTcDat)
+      ArcKukaSimTrace(FALSE)
+      ArcFeatureSelect(#AfterCraterFill,tArcDat,tArcWPDat,tTcDat)
+    ENDIF
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle
+    IF (stArcFeatureState.Act.OnTheFlyOff == FALSE) THEN
+      WAIT FOR TRUE ;$Advance Stop
+      ;Debug KUKA.Sim
+      ;;@Print ArcOff
+      ArcKukaSimArcOffInitVar()
+      ArcOffStrategy(#AtArcOff,stArcDatAct)
+      stArcCallState.ExecType = #AdvanceStopCall
+      ArcFeatureSelect(#BeforeCraterFill,tArcDat,tArcWPDat,tTcDat)
+      WAIT SEC tArcDat.Crater.CraterTime
+      WAIT SEC tArcDat.Crater.PostFlowTime
+      ArcKukaSimTrace(FALSE)
+      ArcFeatureSelect(#AfterCraterFill,tArcDat,tArcWPDat,tTcDat)
+    ENDIF
+  CASE #ArcOffBeforeOffStd2, #ArcOffBefOffSplSingle2
+    IF (ArcAtaMoveBackOption(tArcDat.Advanced) == TRUE) THEN
+      gMoveBackAtArcOffPos = $POS_ACT
+      stMoveBackAtArcOff.PosRecorded = TRUE
+      ;stMoveBackAtArcOff.Velocity = stArcActWeldSet.Velocity
+      stMoveBackAtArcOff.Velocity = gArcBasVelDefinition
+      IF (stMoveBackAtArcOff.Velocity == 0) THEN
+        stMoveBackAtArcOff.Velocity = 0.005
+      ENDIF
+    ENDIF
+  ;CASE #ArcOffBeforeOffStd, #ArcOffBeforeOffSplSingle 
+    ;ArcFeatureSelect(#BeforeArcOff,tArcDat,tArcWPDat,tTcDat)
+    
+  CASE #ArcOnMoveSpl
+    ArcKukaSimArcOnInitVar()
+    enArcMotionBeforeArcOn = enArcMotionInfo[2]
+    ;Debug KUKA.Sim
+    ;;@Print ArcOn - SplBlock
+    ArcKukaSimTrace(TRUE)
+    ArcFeatureSelect(#BeforeIgnition,tArcDat,tArcWPDat,tTcDat)
+    ArcFeatureSelect(#AfterIgnition,tArcDat,tArcWPDat,tTcDat)
+  CASE #ArcSwiMoveSpl
+    ArcFeatureSelect(#ArcSwiTrigger,tArcDat,tArcWPDat,tTcDat)
+  CASE #ArcOffMoveSpl
+    ;Debug KUKA.Sim
+    ;;@Print ArcOff - SplBlock
+    ArcKukaSimArcOffInitVar()
+    ;ArcOffStrategy(#AtArcOff,stArcDatAct) ;Move Backward ist not working in KUKA.Sim
+    ArcFeatureSelect(#BeforeCraterFill,tArcDat,tArcWPDat,tTcDat)
+    WAIT SEC tArcDat.Crater.CraterTime
+    WAIT SEC tArcDat.Crater.PostFlowTime
+    ArcKukaSimTrace(FALSE)
+    ArcFeatureSelect(#AfterCraterFill,tArcDat,tArcWPDat,tTcDat)
+ENDSWITCH
+END
+;********************************************************
+;Trace for Kuka.Sim
+;********************************************************
+DEF ArcKukaSimTrace(tActive :IN)
+DECL BOOL tActive
+DECL INT tI
+DECL INT tIndex
+IF (gArcKukaSimTraceOn == FALSE) THEN
+  RETURN
+ENDIF
+
+;SIM Default trace configuration
+;Actionsignal $OUT[17] -> red
+;Actionsignal $OUT[18] -> blue
+;Actionsignal $OUT[19] -> green
+;Actionsignal $OUT[20] -> white
+;Actionsignal $OUT[21] -> black
+;Actionsignal $OUT[22] -> grey
+;Actionsignal $OUT[23] -> yellow
+;Actionsignal $OUT[24] -> brown
+;Actionsignal $OUT[25] -> cyan
+;Actionsignal $OUT[26] -> purple
+;Actionsignal $OUT[27] -> Null
+;Actionsignal $OUT[28] -> orange
+;Actionsignal $OUT[29] -> pink
+;Actionsignal $OUT[30] -> beige
+;Actionsignal $OUT[31] -> cream
+;Actionsignal $OUT[32] -> khaki
+
+IF ($ACT_TOOL > 0) THEN
+  tIndex = $ACT_TOOL + 16
+  $OUT[tIndex] = tActive
+ELSE
+  FOR tI = 17 TO 32
+    $OUT[tI] = FALSE
+  ENDFOR
+ENDIF
+END
+;********************************************************
+;Kuka.Sim Init Variables ArcOn
+;********************************************************
+DEF ArcKukaSimArcOnInitVar()
+  gMoveBackAtArcOffPos              = gArcE6PosNull
+  stMoveBackAtArcOff.PosRecorded    = FALSE
+  stMoveBackAtArcOff.Done           = FALSE
+END
+;********************************************************
+;Kuka.Sim Init Variables ArcOff
+;********************************************************
+DEF ArcKukaSimArcOffInitVar()
+  ;Slope ist not working in KUKA.Sim
+  stArcDatAct.Advanced.SlopeOptionOff         = #None
+  stArcDatAct.Advanced.SlopeStartOptionOff    = #None
+  stArcDatAct.Advanced.SlopeDistanceOff       = 0
+END
+;********************************************************
+;Arc Scratch Feature
+;********************************************************
+DEF ArcScratchFeature()
+
+IF (stMoveScratch.Enable == TRUE) THEN
+  stArcIgnErrSet.IgnitionReaction = #MoveScratch
+ENDIF
+
+IF ((stArcIgnErrSet.IgnitionReaction == #MoveScratch) AND (stMoveScratch.BeforeArcOn == TRUE)) THEN
+  gArcColdSeam = TRUE
+  enArcErrorState = #DefaultError
+  enArcActiveStrategy = #MoveScratch
+  ArcWriteDiag(gArcGeneralDebug,"[MAIN] MoveScratch at Beginning")
+  ArcErrorOnIgnition(stArcIgnErrSet)
+ENDIF
+END

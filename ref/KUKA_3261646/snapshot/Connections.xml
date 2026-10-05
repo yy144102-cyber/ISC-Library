@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Connections>
+  <Connection Type="KukaRoboter.WorkOnline.Connections.KrcConnectionTarget" ConnectionString="PCRC-5KIJEZ4STQ;PCRC-5KIJEZ4STQ;172.31.1.147;3261646;V8.6.12.610;KR C;Options:ArcTechAdvanced,3.7.1.9|ArcTechBasic,3.7.2.112|DiagnosisSafety,3.1.7.65|DiagnosisServiceEtherCAT,1.0.4.160|EthernetKRL,3.1.3.30|ExpertTech,4.0.9.1089|HMI Easy,1.0.8.136|KUKA.BoardPackage,2.2.4.1|KUKA.DeviceConnector pre-installed,2.1.12.314|KUKA.EtherNetIP MS,4.1.5.3|KUKA.PROFINET MS,5.0.3.40|KUKA.SoftwarePackage smartPAD-2,1.1.2.1|KUKA.UpdatePackageFirmware,1.1.3.77|KUKA.UpdateService,1.1.20.673|KUKA.UpdateServiceConfiguration,1.0.13.229|KUKA.WAAM,1.0.2|LoadDataDetermination,7.2.6.249|PathMode,1.0.3.5|RemoteSupportView,1.2.0.61|RobotSensorInterface,4.1.5.560|SafeOperation,3.5.4.4" LastActive="true" />
+</Connections>

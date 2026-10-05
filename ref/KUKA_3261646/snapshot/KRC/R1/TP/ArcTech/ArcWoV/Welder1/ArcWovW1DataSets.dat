@@ -1,0 +1,46 @@
+&ACCESS R2
+&REL 1
+&COMMENT Generated from WOV
+DEFDAT ARCWOVW1DATASETS PUBLIC
+
+DECL GLOBAL stParam_T wArcW1StrikeParams[16,16,25]
+wArcW1StrikeParams[1,1,1]={Active TRUE,KrlId #Channel1,SetName[] "Set1",SetMin 0.0,SetVal 1.0,SetMax 1.0}
+wArcW1StrikeParams[1,1,2]={Active TRUE,KrlId #Channel2,SetName[] "Set1",SetMin 0.0,SetVal 3727.0,SetMax 65535.0}
+wArcW1StrikeParams[1,1,3]={Active TRUE,KrlId #Channel3,SetName[] "Set1",SetMin -327.68,SetVal 5.0,SetMax 327.67}
+wArcW1StrikeParams[1,1,4]={Active TRUE,KrlId #Channel4,SetName[] "Set1",SetMin 0.0,SetVal 0.0,SetMax 19.8}
+wArcW1StrikeParams[1,1,5]={Active TRUE,KrlId #Channel5,SetName[] "Set1",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1StrikeParams[1,1,6]={Active TRUE,KrlId #Channel6,SetName[] "Set1",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1StrikeParams[1,1,7]={Active TRUE,KrlId #StartTime,SetName[] "Set1",SetMin 0.0,SetVal 0.0,SetMax 2.0}
+wArcW1StrikeParams[1,1,8]={Active TRUE,KrlId #PreFlowTime,SetName[] "Set1",SetMin 0.0,SetVal 1.0,SetMax 2.0}
+
+DECL GLOBAL stParam_T wArcW1WeldParams[16,16,25]
+wArcW1WeldParams[1,1,1]={Active TRUE,KrlId #Channel1,SetName[] "Set2",SetMin 0.0,SetVal 1.0,SetMax 1.0}
+wArcW1WeldParams[1,1,2]={Active TRUE,KrlId #Channel2,SetName[] "Set2",SetMin 0.0,SetVal 3727.0,SetMax 65535.0}
+wArcW1WeldParams[1,1,3]={Active TRUE,KrlId #Channel3,SetName[] "Set2",SetMin -327.68,SetVal 5.0,SetMax 327.67}
+wArcW1WeldParams[1,1,4]={Active TRUE,KrlId #Channel4,SetName[] "Set2",SetMin 0.0,SetVal 0.0,SetMax 19.8}
+wArcW1WeldParams[1,1,5]={Active TRUE,KrlId #Channel5,SetName[] "Set2",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1WeldParams[1,1,6]={Active TRUE,KrlId #Channel6,SetName[] "Set2",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1WeldParams[1,1,7]={Active TRUE,KrlId #Velocity,SetName[] "Set2",SetMin 0.0008,SetVal 0.0083,SetMax 2.0}
+wArcW1WeldParams[1,1,8]={Active TRUE,KrlId #Pattern,SetName[] "Set2",SetMin 0.0,SetVal -1.0,SetMax 13.0}
+wArcW1WeldParams[1,1,9]={Active TRUE,KrlId #Length,SetName[] "Set2",SetMin 0.2,SetVal 4.15,SetMax 25.0}
+wArcW1WeldParams[1,1,10]={Active TRUE,KrlId #Frequency,SetName[] "Set2",SetMin 0.1,SetVal 2.0,SetMax 15.0}
+wArcW1WeldParams[1,1,11]={Active TRUE,KrlId #Amplitude,SetName[] "Set2",SetMin 0.2,SetVal 2.0,SetMax 25.0}
+wArcW1WeldParams[1,1,12]={Active TRUE,KrlId #Angle,SetName[] "Set2",SetMin -179.9,SetVal 0.0,SetMax 179.9}
+wArcW1WeldParams[1,1,13]={Active TRUE,KrlId #WeaveDelayLeft,SetName[] "Set2",SetMin 0.0,SetVal 0.0,SetMax 2.5}
+wArcW1WeldParams[1,1,14]={Active TRUE,KrlId #WeaveDelayRight,SetName[] "Set2",SetMin 0.0,SetVal 0.0,SetMax 2.5}
+
+DECL GLOBAL stParam_T wArcW1CraterParams[16,16,25]
+wArcW1CraterParams[1,1,1]={Active TRUE,KrlId #Channel1,SetName[] "Set3",SetMin 0.0,SetVal 1.0,SetMax 1.0}
+wArcW1CraterParams[1,1,2]={Active TRUE,KrlId #Channel2,SetName[] "Set3",SetMin 0.0,SetVal 3727.0,SetMax 65535.0}
+wArcW1CraterParams[1,1,3]={Active TRUE,KrlId #Channel3,SetName[] "Set3",SetMin -327.68,SetVal 5.0,SetMax 327.67}
+wArcW1CraterParams[1,1,4]={Active TRUE,KrlId #Channel4,SetName[] "Set3",SetMin 0.0,SetVal 0.0,SetMax 19.8}
+wArcW1CraterParams[1,1,5]={Active TRUE,KrlId #Channel5,SetName[] "Set3",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1CraterParams[1,1,6]={Active TRUE,KrlId #Channel6,SetName[] "Set3",SetMin -10.0,SetVal 0.0,SetMax 10.0}
+wArcW1CraterParams[1,1,7]={Active TRUE,KrlId #CraterTime,SetName[] "Set3",SetMin 0.0,SetVal 0.0,SetMax 2.0}
+wArcW1CraterParams[1,1,8]={Active TRUE,KrlId #PostFlowTime,SetName[] "Set3",SetMin 0.0,SetVal 1.0,SetMax 2.0}
+wArcW1CraterParams[1,1,9]={Active FALSE,KrlId #wArcBurnFreeTimePulse,SetName[] "Set3"}
+wArcW1CraterParams[1,1,10]={Active FALSE,KrlId #wArcBurnFreeGasFlowTime,SetName[] "Set3"}
+wArcW1CraterParams[1,1,11]={Active FALSE,KrlId #wArcBurnFreeMaxRetries,SetName[] "Set3"}
+
+DECL GLOBAL stArcBurnFree_T wArcW1BurnFree={Option {Active FALSE,Mode 0,TimePulse 0.0,GasFlowTime 0.0,Retries 0.0},Param {JobModeId[] " ",ParamSetId[] " ",CraterTime 0.0,PostFlowTime 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0}}
+ENDDAT

@@ -1,0 +1,33 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech User Pettern Figure
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcUser
+DEFDAT  USERWEAVESIDE
+;;********************************************************
+;Description
+; *SignNr: Signal Output Number 1..8192
+; *State: State of signal output by Set
+; *Description[]: Signal Description 
+;;********************************************************
+;For Welder 1
+DECL stArcSignal_T uArcW1SetOut[2]
+uArcW1SetOut[1]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_1 Weave Left Side"}
+uArcW1SetOut[2]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_1 Weave Right Side"}
+
+;For Welder 2
+DECL stArcSignal_T uArcW2SetOut[2]
+uArcW2SetOut[1]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_2 Weave Left Side"}
+uArcW2SetOut[2]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_2 Weave Right Side"}
+
+;For Welder 3
+DECL stArcSignal_T uArcW3SetOut[2]
+uArcW3SetOut[1]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_3 Weave Left Side"}
+uArcW3SetOut[2]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_3 Weave Right Side"}
+
+;For Welder 4
+DECL stArcSignal_T uArcW4SetOut[2]
+uArcW4SetOut[1]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_4 Weave Left Side"}
+uArcW4SetOut[2]={Active FALSE,State TRUE,SignNr 0,Description[] "Welder_4 Weave Right Side"}
+
+ENDDAT

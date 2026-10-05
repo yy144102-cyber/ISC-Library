@@ -1,0 +1,24 @@
+&ACCESS RVO
+&REL 33
+&COMMENT RoboWAAM Control Program
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+&PARAM DISKPATH = KRC:\R1\Program
+DEFDAT  RoboWAAM PUBLIC
+;************************************************ 
+;* Description: RoboWAAM ()                     * 
+;*                                              *
+;*              This library of functions is    *
+;*              designed to read the data and   *
+;*              create a motion path.           *
+;************************************************
+;*    Software: KSS 8.5                         *
+;************************************************
+;*    Modified: KUKA UK                         *
+;*        Date: 2020.03.05                      *
+;*     Version: 01.01.02                        * 
+;************************************************ 
+
+
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "Kuka.VelocityPtp=5; Kuka.BlendingEnabled=False; Kuka.CurrentCDSetIndex=0  "}
+ENDDAT

@@ -1,0 +1,67 @@
+&ACCESS RVO
+&REL 174
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEFDAT  SQUARE_10MM
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+
+DECL stArcDat_T WDAT1={WdatId[] "WDAT1",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 12.0000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833333,Channel1 1.00000,Channel2 3086.00,Channel3 12.0000,Channel4 6.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP1={WdatId[] "WP1",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 1,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT2={WdatId[] "WDAT2",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 10.0000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833333,Channel1 1.00000,Channel2 3086.00,Channel3 10.0000,Channel4 5.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP2={WdatId[] "WP2",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT3={WdatId[] "WDAT3",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 9.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833333,Channel1 1.00000,Channel2 3086.00,Channel3 9.00000,Channel4 4.50000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP3={WdatId[] "WP3",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT4={WdatId[] "WDAT4",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 8.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833333,Channel1 1.00000,Channel2 3086.00,Channel3 8.00000,Channel4 4.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP4={WdatId[] "WP4",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+DECL stArcDat_T WDAT5={WdatId[] "WDAT5",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3086.00,Channel3 7.00000,Channel4 1.00000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.00833333,Channel1 1.00000,Channel2 3086.00,Channel3 7.00000,Channel4 3.50000,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.500000,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 4.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP5={WdatId[] "WP5",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+
+DECL PDAT PPDAT1={VEL 100.000,ACC 100.000,APO_DIST 1.00000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL LDAT LCPDAT1={VEL 2.00000,ACC 100.000,APO_DIST 1.00000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0,CB {AUX_PT {ORI #CONSIDER,E1 #CONSIDER,E2 #CONSIDER,E3 #CONSIDER,E4 #CONSIDER,E5 #CONSIDER,E6 #CONSIDER},TARGET_PT {ORI #INTERPOLATE,E1 #INTERPOLATE,E2 #INTERPOLATE,E3 #INTERPOLATE,E4 #INTERPOLATE,E5 #INTERPOLATE,E6 #INTERPOLATE}}}
+DECL FDAT FP1={TOOL_NO 1,BASE_NO 17,IPO_FRAME #BASE,POINT2[] " "}
+
+DECL E6POS XHOMEX={X 0.0,Y -1000.00,Z 1200.00,A 180.000,B 0.0,C 0.0,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+DECL E6POS XHOVERX={X 0.0,Y -1000.00,Z 1200.00,A 180.000,B 0.0,C 0.0,S 18,T 3,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+DECL E6POS Point_1[19]
+
+Point_1[1]={X 250.000,Y -450.000,Z 66.3000,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[2]={X 0.0,Y -450.000,Z 66.3000,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 -330.945404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[3]={X -350.000,Y -450.000,Z 66.3000,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 -293.070404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[4]={X -420.710693,Y -420.710693,Z 66.3000,A 135.000,B 0.0,C 0.0,S 18,T 10,E1 -285.945404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[5]={X -450.000,Y -350.000,Z 66.3000,A 90.0000,B 0.0,C 0.0,S 18,T 10,E1 -278.820374,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[6]={X -450.000,Y 0.0,Z 66.3000,A 90.0000,B 0.0,C 0.0,S 18,T 10,E1 -240.945404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[7]={X -450.000,Y 350.000,Z 66.3000,A 90.0000,B 0.0,C 0.0,S 18,T 10,E1 -203.070404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[8]={X -420.710693,Y 420.710693,Z 66.3000,A 45.0000,B 0.0,C 0.0,S 18,T 10,E1 -195.945404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[9]={X -350.000,Y 450.000,Z 66.3000,A 0.0,B 0.0,C 0.0,S 18,T 10,E1 -188.820374,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[10]={X 0.0,Y 450.000,Z 66.3000,A 0.0,B 0.0,C 0.0,S 18,T 10,E1 -150.945404,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[11]={X 350.000,Y 450.000,Z 66.3000,A 0.0,B 0.0,C 0.0,S 18,T 10,E1 -113.070412,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[12]={X 420.710693,Y 420.710693,Z 66.3000,A -45.0000,B 0.0,C 0.0,S 18,T 10,E1 -105.945396,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[13]={X 450.000,Y 350.000,Z 66.3000,A -90.0000,B 0.0,C 0.0,S 18,T 10,E1 -98.8203812,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[14]={X 450.000,Y 0.0,Z 66.3000,A -90.0000,B 0.0,C 0.0,S 18,T 10,E1 -60.9453964,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[15]={X 450.000,Y -350.000,Z 66.3000,A -90.0000,B 0.0,C 0.0,S 18,T 10,E1 -23.0704193,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[16]={X 420.710693,Y -420.710693,Z 66.3000,A -135.000,B 0.0,C 0.0,S 18,T 10,E1 -15.9453964,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[17]={X 350.000,Y -450.000,Z 66.3000,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 -8.82038116,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[18]={X 280.000,Y -450.000,Z 66.3000,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 -2.83618164,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+Point_1[19]={X 250.000,Y -450.000,Z 68.9300,A 180.000,B 0.0,C 0.0,S 18,T 10,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+
+
+
+
+DECL E6POS Point_1_1[6]
+DECL E6POS Point_1_2[13]
+DECL E6POS Point_1_3[15]
+DECL E6POS Point_1_4[17]
+DECL E6POS Point_1_5[17]
+DECL E6POS Point_1_6[17]
+ENDDAT

@@ -1,0 +1,82 @@
+&ACCESS R2
+&COMMENT ArcTech User Custom
+DEF UserArcCustom()
+;*****************************************************************************************
+;Arc General
+;*****************************************************************************************
+gArcDiagOn                   = TRUE   ;enables/disables diag function
+gArcCircTypeSetEnable        = TRUE   ;enables/disables Circ Type field in InlineForm
+gArcNoQuitOnSplStart         = FALSE  ;enables/disables Quit Message on Spline Start when Ignition Error Strategy BackToSplineStart is active
+gArcDontSwitch               = FALSE  ;enables/disables Switch Parameter on ArcSwitch
+gArcGhostMode                = FALSE  ;enables/disables ArcProcess simulation
+gArcGasPulseLength           = 5.0    ;Maximum of Gas purge by softkey Range from 1 to 20 [s]
+gArcFactorFastSpeed          = 5.0    ;Speed Factor for Advanced Error Recovery
+gArcSpeedMoveBack            = 0.01   ;Speed Spline MoveBackward
+gArcSpeedMoveBackStart       = 0.02   ;Speed Spline Move to spline start
+gArcTechValThreshold         = 0.94   ;Adapted [Allowed up to 94 % ~ not more as 3.5 Hz]
+gArcPreDefTimeEnable         = FALSE  ;Enable WAIT SEC pre Definition Time [DEFAULT = FALSE]
+gArcRsiWeaving               = FALSE  ;TRUE -> RSI weaving, FALSE -> Function generator weaving
+gArcWaitWhenCold             = FALSE  ;(Default: FALSE) Wait (preflowTime, startTime, craterTime, postflowTime) when cold
+gArcOnCircEnabled            = FALSE  ;(Default: FALSE) Enables CIRC Command for ArcOn
+gArcOffColdQuitMsg           = TRUE   ;(Default: TRUE) Quitt Message on ArcOff when Seam finished cold
+gArcDiagCallEnable           = FALSE  ;(Default: FALSE) Show on arctech diagnostic log Call Up Names
+gArcPlugInUsrSLenCtrl        = 20     ;UserLevel Setting for PlugIn SeamLengthCtrl (0 = Disabled) (20 = Expert) (30 = Admin)
+gArcSignalGroupSelection     = TRUE   ;(Default: TRUE) Signal from to Type (TRUE) Signal group selection (FALSE) Signal group set bit to bit
+
+;*****************************************************************************************
+;Arc Tech Global Wdats Variables
+;*****************************************************************************************
+;Path for Recovery User program
+gArcGlobalPath[]             = "KRC:\R1\TP\ArcTech\ArcUser\UserArcGlobalWDats.dat" ;DEFAULT  - "KRC:\R1\TP\ArcTech\ArcUser\UserArcGlobalWDats.dat"
+;*****************************************************************************************
+;Arc Tech Error Recovery Variables
+;*****************************************************************************************
+;Path for Recovery User program
+ATAg_ER_Path[]               = "KRC:\R1\Program\ArcTechErrorRecovery"  ;DEFAULT  - "KRC:\R1\Program\ArcTeErrorRecovery"
+;Path for Recovery Template
+ATAg_ER_TemplatePath[]       = "KRC:\R1\Program\ArcTechErrorRecovery\Template"  ;DEFAULT  - "KRC:\R1\Program\ArcTechErrorRecovery\Template"
+;Path for ServicePosition
+ATAg_ER_ServicePosPath[]     = "KRC:\R1\Program\ArcTechErrorRecovery\ServicePosition"  ;DEFAULT  - "KRC:\R1\Program\ArcTechErrorRecovery\ServicePosition" 
+; Name of the Service Position Module
+ATAg_ER_ServPosPrgName[]     = "ServicePosition"  ;DEFAULT  - "ServicePosition"
+
+;*****************************************************************************************
+;Arc Trace Recording (Starts at ArcOn - Ends at ArcOff)
+;*****************************************************************************************
+gArcTraceOn                  = FALSE  ;enables/disables trace function
+gArcTraceName[]              = "Arc"  ;Trace Name = Arc + SeamName
+gArcTraceDef[]               = "Tracedef_KRC_IpoActualValues.xml"  ;Used TraceDef
+gArcKukaSimTraceOn           = TRUE  ;enables/disables trace function for KUKA.Sim
+;*****************************************************************************************
+;ArcTechAdvanced adjustments
+;*****************************************************************************************
+
+;*****************************************************************************************
+;ArcSense (Tracking)
+;*****************************************************************************************
+gArsSideControlOn            = TRUE    ;enables/disables ArcSense Side Control
+gArsHeightControlOn          = TRUE    ;enables/disables ArcSense Height Control
+gArsSwiDontChangeParam       = FALSE   ;If true there is no new signal referencing at arc swi when paramter changed
+gArsSigQualSensitivity       = 2       ;For Signal Detection Sensitivity (0 = OFF, 1 = Default, 2 = Lower sensitivity 3 = Lowest sensitivity)
+gArsPeriodsCorrSlow          = 10      ;Periods slower correction after BiasChanged or when find seam middle is active
+gArsSoftStartCtn             = 0.1     ;ArcSense SoftStartCounter at Begin max = 1
+gArsMaxCorrWeaveSide         = 1.0     ;Maximum Correction Side for one Weave Cycle in mm
+gArsMaxCorrWeaveHeight       = 1.0     ;Maximum Correction Height for one Weave Cycle in mm
+gArsControlSelection         = 0       ;Selection of control algroythm
+gArsMinInputValue            = 0.01    ;Minimum Input Value
+gArsAmpMaxOutIdx             = 0       ;Amplitude max reached toggle bit Output Index
+gArsMinRefCycleOn            = 5       ;Minimum reference cycles at ArcOn (2 - 10)
+gArsMinRefCycleSwi           = 3       ;Minimum reference cycles at ArcSwi (2 - 10)
+gArsNrCycRefMidVal           = 4       ;Number of cycles for middle value calculation when new reference (0 - 10) 0 = OFF
+gArsMidValRefPercent         = 100     ;Correction in percent for middle value when new referecne (0 - 100)
+
+;*****************************************************************************************
+;Arc Adaptive Welding
+;*****************************************************************************************
+gArcAwFuncEnable             = 'B0111'    ;Adaptive Welding Function  'B0001' = Active Strike ,'B0010' = Active Welding,'B0100' = Active Crater,'B0111' = Active Strike,Welding,Crater
+gAawDiagEnable               = 'B0111'    ;Adaptive Welding Diagnostic 'B0001' = Active Strike ,'B0010' = Active Welding,'B0100' = Active Crater,'B0111' = Active Strike,Welding,Crater,'B1111' = Active ALL
+gAawFilterType               = #Disabled  ;#Disabled = Filter Disable #AverageSource = Average Source Value (Return Average Source value)  #CutSourcePeak = Cut Peak Source (Return same Value)
+gAawPerCentFilter            = 100        ;Adaptive Welding Filter input source value Value(0 - 100)
+gAawConstFrequency           = TRUE       ;Adaptive Welding Constant Frequency Velocity ... Length
+gAawAnalogFactor             = 10         ;Multiplication factor for analog input ($ANIN[X] * gAawAnalogFactor)
+END

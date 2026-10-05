@@ -1,0 +1,55 @@
+&ACCESS RVO
+&REL 28
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1
+DEF PLC_PURGE( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+PLC_HOME()
+
+
+$ASYNC_AXIS = 'B0011'
+;FOLD SPTP p6 CONT Vel=10 % PDAT1 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p6; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=10; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp6 WITH $VEL_AXIS[1] = SVEL_JOINT(10.0), $TOOL = STOOL2(Fp6), $BASE = SBASE(Fp6.BASE_NO), $IPO_MODE = SIPO_MODE(Fp6.IPO_FRAME), $LOAD = SLOAD(Fp6.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT1), $APO = SAPO_PTP(PPDAT1), $GEAR_JERK[1] = SGEAR_JERK(PPDAT1), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SPTP p8 CONT Vel=20 % PDAT3 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p8; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp8 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp8), $BASE = SBASE(Fp8.BASE_NO), $IPO_MODE = SIPO_MODE(Fp8.IPO_FRAME), $LOAD = SLOAD(Fp8.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT3), $APO = SAPO_PTP(PPDAT3), $GEAR_JERK[1] = SGEAR_JERK(PPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SPTP p10 CONT Vel=20 % PDAT5 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p10; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT5; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp10 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp10), $BASE = SBASE(Fp10.BASE_NO), $IPO_MODE = SIPO_MODE(Fp10.IPO_FRAME), $LOAD = SLOAD(Fp10.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT5), $APO = SAPO_PTP(PPDAT5), $GEAR_JERK[1] = SGEAR_JERK(PPDAT5), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SPTP p11 CONT Vel=20 % PDAT6 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p11; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT6; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp11 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp11), $BASE = SBASE(Fp11.BASE_NO), $IPO_MODE = SIPO_MODE(Fp11.IPO_FRAME), $LOAD = SLOAD(Fp11.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT6), $APO = SAPO_PTP(PPDAT6), $GEAR_JERK[1] = SGEAR_JERK(PPDAT6), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SPTP p12 Vel=20 % PDAT7 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p12; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT7; Kuka.VelocityPtp=20; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP Xp12 WITH $VEL_AXIS[1] = SVEL_JOINT(20.0), $TOOL = STOOL2(Fp12), $BASE = SBASE(Fp12.BASE_NO), $IPO_MODE = SIPO_MODE(Fp12.IPO_FRAME), $LOAD = SLOAD(Fp12.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT7), $APO = SAPO_PTP(PPDAT7), $GEAR_JERK[1] = SGEAR_JERK(PPDAT7), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+
+$ASYNC_AXIS = 'B0000'
+END

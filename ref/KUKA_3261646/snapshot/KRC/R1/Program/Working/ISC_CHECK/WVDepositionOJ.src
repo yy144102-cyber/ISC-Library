@@ -1,0 +1,458 @@
+&ACCESS RVO
+&REL 2
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF WVDepositionOJ(Layer:IN,HightPitch:IN,Velocity:IN,SX:IN,SY:IN,SZ:IN)
+DECL INT Layer
+DECL REAL HightPitch,Velocity,SX,SY,SZ
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+PosCalc(Layer,HightPitch,SX,SY,SZ)
+Velocity = VelocityCalc(Velocity)
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+MotionPar(#CPmotion,0.1)
+LIN XHOVERX
+LIN XAPOJPX
+LIN Point[1]
+oIsScanning = TRUE
+WAIT SEC 1.0
+WeldingAct(#_ON,Layer)
+MotionPar(#CPmotion,Velocity)
+
+;FOLD Move
+LIN Point[1] C_Dis C_Dis
+LIN Point[2] C_Dis C_Dis
+LIN Point[3] C_Dis C_Dis
+LIN Point[4] C_Dis C_Dis
+LIN Point[5] C_Dis C_Dis
+LIN Point[6] C_Dis C_Dis
+LIN Point[7] C_Dis C_Dis
+LIN Point[8] C_Dis C_Dis
+LIN Point[9] C_Dis C_Dis
+LIN Point[10] C_Dis C_Dis
+LIN Point[11] C_Dis C_Dis
+LIN Point[12] C_Dis C_Dis
+LIN Point[13] C_Dis C_Dis
+LIN Point[14] C_Dis C_Dis
+LIN Point[16] C_Dis C_Dis
+LIN Point[17] C_Dis C_Dis
+LIN Point[18] C_Dis C_Dis
+LIN Point[19] C_Dis C_Dis
+LIN Point[20] C_Dis C_Dis
+LIN Point[21] C_Dis C_Dis
+LIN Point[22] C_Dis C_Dis
+LIN Point[23] C_Dis C_Dis
+LIN Point[24] C_Dis C_Dis
+LIN Point[25] C_Dis C_Dis
+LIN Point[26] C_Dis C_Dis
+LIN Point[27] C_Dis C_Dis
+LIN Point[28] C_Dis C_Dis
+LIN Point[29] C_Dis C_Dis
+LIN Point[30] C_Dis C_Dis
+LIN Point[31] C_Dis C_Dis
+LIN Point[32] C_Dis C_Dis
+LIN Point[33] C_Dis C_Dis
+LIN Point[34] C_Dis C_Dis
+LIN Point[35] C_Dis C_Dis
+LIN Point[36] C_Dis C_Dis
+LIN Point[37] C_Dis C_Dis
+LIN Point[38] C_Dis C_Dis
+LIN Point[39] C_Dis C_Dis
+LIN Point[40] C_Dis C_Dis
+LIN Point[41] C_Dis C_Dis
+LIN Point[42] C_Dis C_Dis
+LIN Point[43] C_Dis C_Dis
+LIN Point[44] C_Dis C_Dis
+LIN Point[45] C_Dis C_Dis
+LIN Point[46] C_Dis C_Dis
+LIN Point[47] C_Dis C_Dis
+LIN Point[48] C_Dis C_Dis
+LIN Point[49] C_Dis C_Dis
+LIN Point[50] C_Dis C_Dis
+LIN Point[51] C_Dis C_Dis
+LIN Point[52] C_Dis C_Dis
+LIN Point[53] C_Dis C_Dis
+LIN Point[54] C_Dis C_Dis
+LIN Point[55] C_Dis C_Dis
+LIN Point[56] C_Dis C_Dis
+LIN Point[57] C_Dis C_Dis
+LIN Point[58] C_Dis C_Dis
+LIN Point[59] C_Dis C_Dis
+LIN Point[60] C_Dis C_Dis
+LIN Point[61] C_Dis C_Dis
+LIN Point[62] C_Dis C_Dis
+LIN Point[63] C_Dis C_Dis
+LIN Point[64] C_Dis C_Dis
+LIN Point[65] C_Dis C_Dis
+LIN Point[66] C_Dis C_Dis
+LIN Point[67] C_Dis C_Dis
+LIN Point[68] C_Dis C_Dis
+LIN Point[69] C_Dis C_Dis
+LIN Point[70] C_Dis C_Dis
+LIN Point[71] C_Dis C_Dis
+LIN Point[72] C_Dis C_Dis
+LIN Point[73] C_Dis C_Dis
+LIN Point[74] C_Dis C_Dis
+LIN Point[75] C_Dis C_Dis
+LIN Point[76] C_Dis C_Dis
+LIN Point[77] C_Dis C_Dis
+LIN Point[78] C_Dis C_Dis
+LIN Point[79] C_Dis C_Dis
+LIN Point[80] C_Dis C_Dis
+LIN Point[81] C_Dis C_Dis
+LIN Point[82] C_Dis C_Dis
+LIN Point[83] C_Dis C_Dis
+LIN Point[84] C_Dis C_Dis
+LIN Point[85] C_Dis C_Dis
+LIN Point[86] C_Dis C_Dis
+LIN Point[87] C_Dis C_Dis
+LIN Point[88] C_Dis C_Dis
+LIN Point[89] C_Dis C_Dis
+LIN Point[90] C_Dis C_Dis
+LIN Point[91] C_Dis C_Dis
+LIN Point[92] C_Dis C_Dis
+LIN Point[93] C_Dis C_Dis
+LIN Point[94] C_Dis C_Dis
+LIN Point[95] C_Dis C_Dis
+LIN Point[96] C_Dis C_Dis
+LIN Point[97] C_Dis C_Dis
+LIN Point[98] C_Dis C_Dis
+LIN Point[99] C_Dis C_Dis
+LIN Point[100] C_Dis C_Dis
+LIN Point[101] C_Dis C_Dis
+LIN Point[102] C_Dis C_Dis
+LIN Point[103] C_Dis C_Dis
+LIN Point[104] C_Dis C_Dis
+LIN Point[105] C_Dis C_Dis
+LIN Point[106] C_Dis C_Dis
+LIN Point[107] C_Dis C_Dis
+LIN Point[108] C_Dis C_Dis
+LIN Point[109] C_Dis C_Dis
+LIN Point[110] C_Dis C_Dis
+LIN Point[111] C_Dis C_Dis
+LIN Point[112] C_Dis C_Dis
+LIN Point[113] C_Dis C_Dis
+LIN Point[114] C_Dis C_Dis
+LIN Point[115] C_Dis C_Dis
+LIN Point[116] C_Dis C_Dis
+LIN Point[117] C_Dis C_Dis
+LIN Point[118] C_Dis C_Dis
+LIN Point[119] C_Dis C_Dis
+LIN Point[120] C_Dis C_Dis
+LIN Point[121] C_Dis C_Dis
+LIN Point[122] C_Dis C_Dis
+LIN Point[123] C_Dis C_Dis
+LIN Point[124] C_Dis C_Dis
+LIN Point[125] C_Dis C_Dis
+LIN Point[126] C_Dis C_Dis
+LIN Point[127] C_Dis C_Dis
+LIN Point[128] C_Dis C_Dis
+LIN Point[129] C_Dis C_Dis
+LIN Point[130] C_Dis C_Dis
+LIN Point[131] C_Dis C_Dis
+LIN Point[132] C_Dis C_Dis
+LIN Point[133] C_Dis C_Dis
+LIN Point[134] C_Dis C_Dis
+LIN Point[135] C_Dis C_Dis
+LIN Point[136] C_Dis C_Dis
+LIN Point[137] C_Dis C_Dis
+LIN Point[138] C_Dis C_Dis
+LIN Point[139] C_Dis C_Dis
+LIN Point[140] C_Dis C_Dis
+LIN Point[141] C_Dis C_Dis
+LIN Point[142] C_Dis C_Dis
+LIN Point[143] C_Dis C_Dis
+LIN Point[144] C_Dis C_Dis
+LIN Point[145] C_Dis C_Dis
+LIN Point[146] C_Dis C_Dis
+LIN Point[147] C_Dis C_Dis
+LIN Point[148] C_Dis C_Dis
+LIN Point[149] C_Dis C_Dis
+LIN Point[150] C_Dis C_Dis
+LIN Point[151] C_Dis C_Dis
+LIN Point[152] C_Dis C_Dis
+LIN Point[153] C_Dis C_Dis
+LIN Point[154] C_Dis C_Dis
+LIN Point[155] C_Dis C_Dis
+LIN Point[156] C_Dis C_Dis
+LIN Point[157] C_Dis C_Dis
+LIN Point[158] C_Dis C_Dis
+LIN Point[159] C_Dis C_Dis
+LIN Point[160] C_Dis C_Dis
+LIN Point[161] C_Dis C_Dis
+LIN Point[162] C_Dis C_Dis
+LIN Point[163] C_Dis C_Dis
+LIN Point[164] C_Dis C_Dis
+LIN Point[165] C_Dis C_Dis
+LIN Point[166] C_Dis C_Dis
+LIN Point[167] C_Dis C_Dis
+LIN Point[168] C_Dis C_Dis
+LIN Point[169] C_Dis C_Dis
+LIN Point[170] C_Dis C_Dis
+LIN Point[171] C_Dis C_Dis
+LIN Point[172] C_Dis C_Dis
+LIN Point[173] C_Dis C_Dis
+LIN Point[174] C_Dis C_Dis
+LIN Point[175] C_Dis C_Dis
+LIN Point[176] C_Dis C_Dis
+LIN Point[177] C_Dis C_Dis
+LIN Point[178] C_Dis C_Dis
+LIN Point[179] C_Dis C_Dis
+LIN Point[180] C_Dis C_Dis
+LIN Point[181] C_Dis C_Dis
+LIN Point[182] C_Dis C_Dis
+LIN Point[183] C_Dis C_Dis
+LIN Point[184] C_Dis C_Dis
+LIN Point[185] C_Dis C_Dis
+LIN Point[186] C_Dis C_Dis
+LIN Point[187] C_Dis C_Dis
+LIN Point[188] C_Dis C_Dis
+LIN Point[189] C_Dis C_Dis
+LIN Point[190] C_Dis C_Dis
+LIN Point[191] C_Dis C_Dis
+LIN Point[192] C_Dis C_Dis
+LIN Point[193] C_Dis C_Dis
+LIN Point[194] C_Dis C_Dis
+LIN Point[195] C_Dis C_Dis
+LIN Point[196] C_Dis C_Dis
+LIN Point[197] C_Dis C_Dis
+LIN Point[198] C_Dis C_Dis
+LIN Point[199] C_Dis C_Dis
+LIN Point[200] C_Dis C_Dis
+LIN Point[201] C_Dis C_Dis
+LIN Point[202] C_Dis C_Dis
+LIN Point[203] C_Dis C_Dis
+LIN Point[204] C_Dis C_Dis
+LIN Point[205] C_Dis C_Dis
+LIN Point[206] C_Dis C_Dis
+LIN Point[207] C_Dis C_Dis
+LIN Point[208] C_Dis C_Dis
+LIN Point[209] C_Dis C_Dis
+LIN Point[210] C_Dis C_Dis
+LIN Point[211] C_Dis C_Dis
+LIN Point[212] C_Dis C_Dis
+LIN Point[213] C_Dis C_Dis
+LIN Point[214] C_Dis C_Dis
+LIN Point[215] C_Dis C_Dis
+LIN Point[216] C_Dis C_Dis
+LIN Point[217] C_Dis C_Dis
+LIN Point[218] C_Dis C_Dis
+LIN Point[219] C_Dis C_Dis
+LIN Point[220] C_Dis C_Dis
+LIN Point[221] C_Dis C_Dis
+LIN Point[222] C_Dis C_Dis
+LIN Point[223] C_Dis C_Dis
+LIN Point[224] C_Dis C_Dis
+LIN Point[225] C_Dis C_Dis
+LIN Point[226] C_Dis C_Dis
+LIN Point[227] C_Dis C_Dis
+LIN Point[228] C_Dis C_Dis
+LIN Point[229] C_Dis C_Dis
+LIN Point[230] C_Dis C_Dis
+LIN Point[231] C_Dis C_Dis
+LIN Point[232] C_Dis C_Dis
+LIN Point[233] C_Dis C_Dis
+LIN Point[234] C_Dis C_Dis
+LIN Point[235] C_Dis C_Dis
+LIN Point[236] C_Dis C_Dis
+LIN Point[237] C_Dis C_Dis
+LIN Point[238] C_Dis C_Dis
+LIN Point[239] C_Dis C_Dis
+LIN Point[240] C_Dis C_Dis
+LIN Point[241] C_Dis C_Dis
+LIN Point[242] C_Dis C_Dis
+LIN Point[243] C_Dis C_Dis
+LIN Point[244] C_Dis C_Dis
+LIN Point[245] C_Dis C_Dis
+LIN Point[246] C_Dis C_Dis
+LIN Point[247] C_Dis C_Dis
+LIN Point[248] C_Dis C_Dis
+LIN Point[249] C_Dis C_Dis
+LIN Point[250] C_Dis C_Dis
+LIN Point[251] C_Dis C_Dis
+LIN Point[252] C_Dis C_Dis
+LIN Point[253] C_Dis C_Dis
+LIN Point[254] C_Dis C_Dis
+LIN Point[255] C_Dis C_Dis
+LIN Point[256] C_Dis C_Dis
+LIN Point[257] C_Dis C_Dis
+LIN Point[258] C_Dis C_Dis
+LIN Point[259] C_Dis C_Dis
+LIN Point[260] C_Dis C_Dis
+LIN Point[261] C_Dis C_Dis
+LIN Point[262] C_Dis C_Dis
+LIN Point[263] C_Dis C_Dis
+LIN Point[264] C_Dis C_Dis
+LIN Point[265] C_Dis C_Dis
+LIN Point[266] C_Dis C_Dis
+LIN Point[267] C_Dis C_Dis
+LIN Point[268] C_Dis C_Dis
+LIN Point[269] C_Dis C_Dis
+LIN Point[270] C_Dis C_Dis
+LIN Point[271] C_Dis C_Dis
+LIN Point[272] C_Dis C_Dis
+LIN Point[273] C_Dis C_Dis
+LIN Point[274] C_Dis C_Dis
+LIN Point[275] C_Dis C_Dis
+LIN Point[276] C_Dis C_Dis
+LIN Point[277] C_Dis C_Dis
+LIN Point[278] C_Dis C_Dis
+LIN Point[279] C_Dis C_Dis
+LIN Point[280] C_Dis C_Dis
+LIN Point[281] C_Dis C_Dis
+LIN Point[282] C_Dis C_Dis
+LIN Point[283] C_Dis C_Dis
+LIN Point[284] C_Dis C_Dis
+LIN Point[285] C_Dis C_Dis
+LIN Point[286] C_Dis C_Dis
+LIN Point[287] C_Dis C_Dis
+LIN Point[288]
+;ENDFOLD
+
+WeldingAct(#_OFF,Layer)
+WAIT SEC 1.0
+oIsScanning = FALSE
+MotionPar(#CPmotion,0.1)
+LIN XAPOJPX
+LIN XHOVERX
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEF PosCalc(Layer:IN,HightPitch:IN,SX:IN,SY:IN,SZ:IN)
+DECL INT i,Layer
+DECL REAL HightPitch,SX,SY,SZ,Correction,Value
+
+;FOLD Position Calculation
+   Correction = 0.0
+   FOR i = 1 TO 288
+      Point[i] = OrgPoint[i]
+   ENDFOR
+   FOR i = 1 TO 288
+      Point[i].X = Point[i].X + SX + Correction
+   ENDFOR
+   FOR i = 1 TO 288
+      Point[i].Y = Point[i].Y + SY
+   ENDFOR
+   FOR i = 1 TO 288
+      Point[i].Z = SZ + (HightPitch * (Layer - 1))
+   ENDFOR
+;ENDFOLD
+
+END
+
+DEFFCT REAL VelocityCalc(Velocity:IN)
+DECL REAL Velocity,Result
+
+;FOLD Velocity Calculation
+   IF ($OUT[9] == TRUE) OR ($OUT[10] == TRUE) THEN
+      Result = (Velocity / 60.0) / 1000.0
+   ELSE
+      Result = (Velocity / 60.0) / 1000.0
+   ENDIF
+   RETURN(Result)
+;ENDFOLD
+
+ENDFCT
+
+DEF WeldingAct(Type:IN,Layer:IN)
+DECL Action Type
+DECL INT Layer
+
+;FOLD Welding Action
+   SWITCH Type
+      CASE #_ON
+         IF Layer == 1 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+         ENDIF
+         IF Layer == 2 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT2) DO ArcMainNG(#PreDefinition, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#GasPreflow, WDAT2) DO ArcMainNG(#GasPreflow, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#ArcPreOn, WDAT2) DO ArcMainNG(#ArcOnMoveStd, WDAT2, WP2) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT2, WP2)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT2, WP2)
+         ENDIF
+         IF Layer == 3 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT3) DO ArcMainNG(#PreDefinition, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#GasPreflow, WDAT3) DO ArcMainNG(#GasPreflow, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#ArcPreOn, WDAT3) DO ArcMainNG(#ArcOnMoveStd, WDAT3, WP3) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT3, WP3)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT3, WP3)
+         ENDIF
+         IF Layer == 4 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT4) DO ArcMainNG(#PreDefinition, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#GasPreflow, WDAT4) DO ArcMainNG(#GasPreflow, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#ArcPreOn, WDAT4) DO ArcMainNG(#ArcOnMoveStd, WDAT4, WP4) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT4, WP4)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT4, WP4)
+         ENDIF
+         IF Layer >= 5 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT5) DO ArcMainNG(#PreDefinition, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#GasPreflow, WDAT5) DO ArcMainNG(#GasPreflow, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#ArcPreOn, WDAT5) DO ArcMainNG(#ArcOnMoveStd, WDAT5, WP5) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT5, WP5)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT5, WP5)
+         ENDIF
+      CASE #_OFF
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+         ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+         MotionPar(#CPmotion,0.1)
+         LIN $POS_ACT
+         ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END

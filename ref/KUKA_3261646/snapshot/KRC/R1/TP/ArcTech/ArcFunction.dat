@@ -1,0 +1,76 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEFDAT  ARCFUNCTION
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mNoMSG=FALSE
+DECL BOOL mArcCheckModeIdShowed=FALSE ;Memory message different Id Showed
+DECL BOOL mFirstCall=FALSE
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL INT mMsgHandlePLC=0
+DECL INT mOut=0
+DECL INT mMsgHandleLoop=0
+DECL INT mArcUnsupportedWeave=0
+DECL INT mArcMsgErrorNr[8]
+mArcMsgErrorNr[1]=0
+mArcMsgErrorNr[2]=0
+mArcMsgErrorNr[3]=0
+mArcMsgErrorNr[4]=0
+mArcMsgErrorNr[5]=0
+mArcMsgErrorNr[6]=0
+mArcMsgErrorNr[7]=0
+mArcMsgErrorNr[8]=0
+DECL INT mHandlMsgErrorNr[8]
+mHandlMsgErrorNr[1]=0
+mHandlMsgErrorNr[2]=0
+mHandlMsgErrorNr[3]=0
+mHandlMsgErrorNr[4]=0
+mHandlMsgErrorNr[5]=0
+mHandlMsgErrorNr[6]=0
+mHandlMsgErrorNr[7]=0
+mHandlMsgErrorNr[8]=0
+DECL INT mArcReadInputIndex=4
+DECL INT mMsgNo=0
+DECL INT mMsgNrSk=0
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL REAL mPLCTimeOut=10.0000 ;s
+;*****************************************************************************************
+;CHAR
+;*****************************************************************************************
+DECL CONST CHAR Ars_SigGen[24] ;Arc Sense Active
+Ars_SigGen[]="ASSIGGEN1"
+DECL CONST CHAR Ars_SigGen_Amplitude[24] ;Arc Sense Amplitude
+Ars_SigGen_Amplitude[]="Amplitude"
+DECL CONST CHAR Ars_SigGen_Period[24] ;Arc Sense Period
+Ars_SigGen_Period[]="Period"
+DECL CONST CHAR Ars_SigGen_Angle[24] ;Arc Sense Angle
+Ars_SigGen_Angle[]="Angle"
+
+DECL CONST CHAR Stt_SigGen[24] ;Seam Tech Tracking
+Stt_SigGen[]="SOURCE_WEAVING"
+DECL CONST CHAR Stt_SigGen_Amplitude[24] ;Seam Tech Tracking
+Stt_SigGen_Amplitude[]="Amplitude"
+DECL CONST CHAR Stt_SigGen_Period[24] ;Seam Tech Tracking
+Stt_SigGen_Period[]="Frequence"
+DECL CONST CHAR Stt_SigGen_Angle[24] ;Seam Tech Angle
+Stt_SigGen_Angle[]="Angle"
+DECL CHAR mVarName[24]
+mVarName[]="mArcPartOutput"
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+ENUM enStrucType Input,Output,SpecialOutput,BlockInput,SingleInput,GroupInput,ChannelInput,BlockOutput,SingleOutput,GroupOutput,ChannelOutput,SenseInput,PlcSingleInput,PlcGroupInput,PlcSingleOutput,PlcGroupOutput
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+STRUC stArcMsg_T MSGBUF_T MsgBuf,BOOL Active
+DECL stWeave_T mArcWeaveIni={Pattern #None,Length 0.0,Amplitude 0.0,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0}
+DECL stArcSlope_T mArcSlopeInit={Time 0.0,IlfDistance 0.0,DisBetween 0.0,ToPosNext FALSE,C1 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C2 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C3 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C4 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C5 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C6 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C7 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},C8 {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Velocity {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Length {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Amplitude {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0},Angle {Active FALSE,SValue 0.0,EValue 0.0,CValue 0.0}}
+ENDDAT

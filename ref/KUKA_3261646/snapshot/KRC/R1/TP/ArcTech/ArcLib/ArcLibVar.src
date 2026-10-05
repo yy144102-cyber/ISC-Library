@@ -1,0 +1,94 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibVar( )
+END
+;*****************************************************************************************
+;[Global Routine] Routine check if boolean Variable exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcVarExistB(tVar :OUT,tBool :IN)
+DECL BOOL tVar,tBool
+DECL INT tReturn,tReturn1
+ON_ERROR_PROCEED
+tVar = tVar
+tReturn = $ERR.NUMBER
+ERR_CLEAR($ERR)
+IF (tReturn > 0) THEN
+  ON_ERROR_PROCEED
+  tBool = tBool
+  tReturn1 = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tReturn1 == 0) THEN
+    tVar = tBool
+  ENDIF
+ENDIF
+RETURN (tReturn == 0)
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Routine check if Integer Variable exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcVarExistI(tVar :OUT,tInt :IN)
+DECL INT tVar,tInt
+DECL INT tReturn,tReturn1
+ON_ERROR_PROCEED
+tVar = tVar
+tReturn = $ERR.NUMBER
+ERR_CLEAR($ERR)
+IF (tReturn > 0) THEN
+  ON_ERROR_PROCEED
+  tInt = tInt
+  tReturn1 = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tReturn1 == 0) THEN
+    tVar = tInt
+  ENDIF
+ENDIF
+RETURN (tReturn == 0)
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Routine check if Real Variable exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcVarExistR(tVar :OUT,tReal :IN)
+DECL REAL tVar,tReal
+DECL INT tReturn,tReturn1
+ON_ERROR_PROCEED
+tVar = tVar
+tReturn = $ERR.NUMBER
+ERR_CLEAR($ERR)
+IF (tReturn > 0) THEN
+  ON_ERROR_PROCEED
+  tReal = tReal
+  tReturn1 = $ERR.NUMBER
+  ERR_CLEAR($ERR)
+  IF (tReturn1 == 0) THEN
+    tVar = tReal
+  ENDIF
+ENDIF
+RETURN (tReturn == 0)
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Routine check if String Variable exist
+;Krl bug for :OUT in one structure
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcVarExistS(tVar[] :OUT,tChar[] :IN)
+DECL CHAR tVar[],tChar[]
+IF (StrLen(tVar[]) == 0) THEN
+  IF (StrLen(tChar[]) > 0) THEN
+    IF STRCOPY(tVar[],tChar[]) THEN
+    ENDIF
+  ENDIF
+  RETURN FALSE
+ENDIF
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Routine check if Array Variable Signal exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcArraySignalExist(tVar[] :OUT,tNum :IN)
+DECL stArcSignal_T tVar[]
+DECL INT tReturn,tNum
+ON_ERROR_PROCEED
+tVar[tNum]=tVar[tNum]
+tReturn=$ERR.NUMBER
+ERR_CLEAR($ERR)
+RETURN (tReturn == 0)
+ENDFCT

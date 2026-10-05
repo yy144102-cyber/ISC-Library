@@ -1,0 +1,212 @@
+&ACCESS RVO1
+&COMMENT KRL Functions
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEFDAT KRLFunctions PUBLIC
+
+GLOBAL INT nMessageHandle=10955 ; Status Message Handle
+CONST INT cnWaitForTimer=1 ; Timer index for WaitFor routine
+GLOBAL STRUC MSG_DATA INT MsgId,CHAR Msg[300],Module[24],SignalName[24]
+DECL GLOBAL MSG_DATA MsgDataIN[10]
+MsgDataIN[1]={MsgId 1000,Msg[] "Timeout waiting for SetPoint Reached.",Module[] "SpindleOn",SignalName[] "iSetpointReached"}
+MsgDataIN[2]={MsgId 1001,Msg[] "Timeout waiting for FastStop Signal.",Module[] "SpindleOff",SignalName[] "iFastStop"}
+MsgDataIN[3]={MsgId 1002,Msg[] "Timeout waiting for Drive to stop",Module[] "SpindleOff",SignalName[] "bDriveStopped"}
+
+
+DECL INT nEKIRetryMax=5
+
+DECL CHAR chMsgToPLC[500]
+chMsgToPLC[]="Process <S8A_190NDNFP_TT140_AA   > Aborted due to Operator Safety"
+
+GLOBAL ENUM USER_BUTTON Abort,Retry,Ignore,Invalid,Waiting,OK,AbortAll,Yes,No,Complete,Proceed,XPointLS,ThreePtLS,TwoPt
+
+GLOBAL ENUM WindowTestMode BetweenOnly,BetweenOrEqual
+
+ENUM EKI_FlagOrOut EKIFlag,EKIOut,Invalid
+
+GLOBAL STRUC TYPEKIChannel CHAR XML[24],INT ConnectedFlag,ConnectedOutput,DataReceivedFlag,DataReceivedOutput
+
+GLOBAL STRUC USER_BUTTON_ARRAY USER_BUTTON UserButton,CHAR ButtonText[10]
+
+GLOBAL SIGNAL O_MessageCode $OUT[1889]  TO $OUT[1920]
+SIGNAL I_OperatorButton $IN[1889]  TO $IN[1896]
+
+SIGNAL I_DialogResend $IN[1921]
+SIGNAL I_DialogReceived $IN[1922]
+SIGNAL O_DialogSent $OUT[1922]
+
+SIGNAL O_ByteReady $OUT[1953]
+SIGNAL O_ByteReceived $OUT[1954]
+SIGNAL O_StringByte $OUT[1945]  TO $OUT[1952]
+SIGNAL O_LastByte $OUT[1955]
+SIGNAL I_ByteReady $IN[1953]
+SIGNAL I_ByteReceived $IN[1954]
+SIGNAL I_StringByte $IN[1945]  TO $IN[1952]
+SIGNAL I_LastByte $IN[1955]
+
+DECL GLOBAL USER_BUTTON_ARRAY UserBtnAbortRetryIgnore[7]
+UserBtnAbortRetryIgnore[1]={UserButton #Ignore,ButtonText[] "Ignore"}
+UserBtnAbortRetryIgnore[2]={UserButton #Invalid,ButtonText[] " "}
+UserBtnAbortRetryIgnore[3]={UserButton #Invalid,ButtonText[] " "}
+UserBtnAbortRetryIgnore[4]={UserButton #Retry,ButtonText[] "Retry"}
+UserBtnAbortRetryIgnore[5]={UserButton #Invalid,ButtonText[] " "}
+UserBtnAbortRetryIgnore[6]={UserButton #Invalid,ButtonText[] " "}
+UserBtnAbortRetryIgnore[7]={UserButton #Abort,ButtonText[] "Abort"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonArrayDefault[7]
+UserButtonArrayDefault[1]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonArrayDefault[2]={UserButton #AbortAll,ButtonText[] "AbortAll"}
+UserButtonArrayDefault[3]={UserButton #Yes,ButtonText[] "Yes"}
+UserButtonArrayDefault[4]={UserButton #No,ButtonText[] "No"}
+UserButtonArrayDefault[5]={UserButton #OK,ButtonText[] "OK"}
+UserButtonArrayDefault[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonArrayDefault[7]={UserButton #Retry,ButtonText[] "Retry"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonAbortRetry[7]
+UserButtonAbortRetry[1]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortRetry[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortRetry[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortRetry[4]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonAbortRetry[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortRetry[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortRetry[7]={UserButton #Retry,ButtonText[] "Retry"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonAbortWait[7]
+UserButtonAbortWait[1]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortWait[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortWait[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortWait[4]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonAbortWait[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortWait[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortWait[7]={UserButton #Waiting,ButtonText[] "Wait"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonOK[7]
+UserButtonOK[1]={UserButton #OK,ButtonText[] "OK"}
+UserButtonOK[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOK[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOK[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOK[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOK[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOK[7]={UserButton #Invalid,ButtonText[] " "}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonRetryAbortAll[7]
+UserButtonRetryAbortAll[1]={UserButton #AbortAll,ButtonText[] "Abort All"}
+UserButtonRetryAbortAll[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRetryAbortAll[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRetryAbortAll[4]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonRetryAbortAll[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRetryAbortAll[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRetryAbortAll[7]={UserButton #Retry,ButtonText[] "Retry"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonDownloadDB[7]
+UserButtonDownloadDB[1]={UserButton #Yes,ButtonText[] "Download"}
+UserButtonDownloadDB[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonDownloadDB[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonDownloadDB[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonDownloadDB[5]={UserButton #No,ButtonText[] "No"}
+UserButtonDownloadDB[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonDownloadDB[7]={UserButton #Invalid,ButtonText[] " "}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonOKAbortAll[7]
+UserButtonOKAbortAll[1]={UserButton #AbortAll,ButtonText[] "Abort All"}
+UserButtonOKAbortAll[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOKAbortAll[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOKAbortAll[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOKAbortAll[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOKAbortAll[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonOKAbortAll[7]={UserButton #OK,ButtonText[] "OK"}
+
+DECL GLOBAL USER_BUTTON_ARRAY AbortRecheckButton[7]
+AbortRecheckButton[1]={UserButton #Invalid,ButtonText[] " "}
+AbortRecheckButton[2]={UserButton #Invalid,ButtonText[] " "}
+AbortRecheckButton[3]={UserButton #Invalid,ButtonText[] " "}
+AbortRecheckButton[4]={UserButton #Retry,ButtonText[] "ReInitTC"}
+AbortRecheckButton[5]={UserButton #Invalid,ButtonText[] " "}
+AbortRecheckButton[6]={UserButton #Invalid,ButtonText[] " "}
+AbortRecheckButton[7]={UserButton #Abort,ButtonText[] "Abort"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonComplete[7]
+UserButtonComplete[1]={UserButton #Complete,ButtonText[] "Complete"}
+UserButtonComplete[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonComplete[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonComplete[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonComplete[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonComplete[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonComplete[7]={UserButton #Invalid,ButtonText[] " "}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonProceedAbort[7]
+UserButtonProceedAbort[1]={UserButton #Proceed,ButtonText[] "Proceed"}
+UserButtonProceedAbort[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonProceedAbort[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonProceedAbort[4]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonProceedAbort[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonProceedAbort[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonProceedAbort[7]={UserButton #Invalid,ButtonText[] " "}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonYesNo[7]
+UserButtonYesNo[1]={UserButton #Yes,ButtonText[] "Yes"}
+UserButtonYesNo[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonYesNo[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonYesNo[4]={UserButton #No,ButtonText[] "No"}
+UserButtonYesNo[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonYesNo[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonYesNo[7]={UserButton #Invalid,ButtonText[] " "}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonRegMethod[7]
+UserButtonRegMethod[1]={UserButton #XPointLS,ButtonText[] "XPointLS"}
+UserButtonRegMethod[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRegMethod[3]={UserButton #ThreePtLS,ButtonText[] "ThreePoint"}
+UserButtonRegMethod[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRegMethod[5]={UserButton #TwoPt,ButtonText[] "TwoPoint"}
+UserButtonRegMethod[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonRegMethod[7]={UserButton #Abort,ButtonText[] "Abort"}
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonAbortAll[7]
+UserButtonAbortAll[1]={UserButton #AbortAll,ButtonText[] "Abort All"}
+UserButtonAbortAll[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortAll[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortAll[4]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortAll[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortAll[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonAbortAll[7]={UserButton #OK,ButtonText[] " "}
+
+;vvvvvvvvvvvvvvv Dynamic Values vvvvvvvvvvvvvvvvvv
+
+DECL GLOBAL USER_BUTTON_ARRAY UserButtonArray[7]
+UserButtonArray[1]={UserButton #AbortAll,ButtonText[] "Abort All"}
+UserButtonArray[2]={UserButton #Invalid,ButtonText[] " "}
+UserButtonArray[3]={UserButton #Invalid,ButtonText[] " "}
+UserButtonArray[4]={UserButton #Abort,ButtonText[] "Abort"}
+UserButtonArray[5]={UserButton #Invalid,ButtonText[] " "}
+UserButtonArray[6]={UserButton #Invalid,ButtonText[] " "}
+UserButtonArray[7]={UserButton #Retry,ButtonText[] "Retry"}
+
+DECL TYPEKIChannel UserDialogToPLCChannel={XML[] "PLCDialog",ConnectedFlag 110,DataReceivedFlag 111}
+
+DECL BOOL bDialogToPLC=TRUE ; send dialog msgs to remote PLC/HMI and get responses?
+DECL BOOL bDialogToSmartPad=FALSE ; send dialog msgs to robot teach pendant and get responses?
+
+DECL INT nMessageCodeMemory=1101
+DECL INT nModuleCodeMemory=0
+
+DECL KRLMSGOPT_T ErrMsgOpts={VL_STOP TRUE,CLEAR_P_RESET TRUE,CLEAR_P_SAW TRUE,LOG_TO_DB TRUE}
+
+DECL KRLMSGPAR_T ErrMsgPar[3]
+ErrMsgPar[1]={PAR_TYPE #VALUE,PAR_TXT[] " "}
+ErrMsgPar[2]={PAR_TYPE #VALUE,PAR_TXT[] " "}
+ErrMsgPar[3]={PAR_TYPE #VALUE,PAR_REAL 0.0}
+
+DECL KRLMSGDLGSK_T ErrMsgSK[7]
+ErrMsgSK[1]={SK_TYPE #VALUE,SK_TXT[] "IGNORE"}
+ErrMsgSK[2]={SK_TYPE #VALUE,SK_TXT[] "-"}
+ErrMsgSK[3]={SK_TYPE #VALUE,SK_TXT[] "-"}
+ErrMsgSK[4]={SK_TYPE #VALUE,SK_TXT[] "RETRY"}
+ErrMsgSK[5]={SK_TYPE #VALUE,SK_TXT[] "-"}
+ErrMsgSK[6]={SK_TYPE #VALUE,SK_TXT[] "-"}
+ErrMsgSK[7]={SK_TYPE #VALUE,SK_TXT[] "ABORT"}
+
+DECL CHAR chTestString[300]
+chTestString[]=" "
+
+
+ENDDAT

@@ -1,0 +1,206 @@
+&ACCESS RVO1
+&COMMENT KRL Functions
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF KRLFunctions( )
+;************************************************ 
+;* Description: KUKAFunctions ()                * 
+;*                                              *
+;*    Contains routines for controlling the     *
+;*     S700 Spindle.                            *
+;*                                              *
+;************************************************
+;*      System: K05793 - R2-1246917             *
+;************************************************
+;*    Modified: KUKA UK                         *
+;*        Date: 2021.04.15                      *
+;************************************************
+
+END
+
+;FOLD WaitFor ()
+GLOBAL DEFFCT BOOL WaitFor (FO_bCond : OUT, FI_bState : IN, FI_nTimeout : IN, FI_nId : IN)
+  ;FOLD HEADER
+    ; Name:        WaitFor
+    ; Description: Routine to wait for an input of a given state, for a period of time.
+    ; Param:       FO_iSignal - Signal to wait for.
+    ; Param:       FI_bState - Signal Status.
+    ; Param:       FI_nTimeout - Timeout in ms.
+    ; Param:       FI_nId - Msg Id.
+    ; Return:      _bResult  Returns true if the Signal is of the passed state and the Timer did not elapsed, otherwise false.
+  ;ENDFOLD (HEADER)
+  ;FOLD DECLARATIONS
+  
+    DECL BOOL FO_bCond
+    DECL BOOL FI_bState
+    DECL INT  FI_nTimeout
+    DECL INT FI_nId
+    DECL BOOL _bReturn    
+    DECL BOOL _bResult    
+  
+  ;ENDFOLD (DECLARATIONS)
+  ;FOLD EXECUTABLE
+  
+  ; Reset
+  _bResult = FALSE
+  
+  $TIMER_STOP[cnWaitForTimer] = TRUE
+  $TIMER[cnWaitForTimer] = -(FI_nTimeout)
+  $TIMER_STOP[cnWaitForTimer] = FALSE
+  
+  ; Notify operator what we are waiting for
+  IF FI_bState == TRUE THEN
+    MsgState(nMessageHandle, "WAIT FOR %1 == TRUE", MsgDataIN[FI_nId].Module[],,MsgDataIN[FI_nId].SignalName[])     
+  ELSE
+    MsgState(nMessageHandle, "WAIT FOR %1 == FALSE", MsgDataIN[FI_nId].Module[],,MsgDataIN[FI_nId].SignalName[])     
+  ENDIF
+  
+  REPEAT
+    WAIT SEC 0.05
+  UNTIL ((FO_bCond == FI_bState) OR $TIMER_FLAG[cnWaitForTimer])
+  
+  ; Clear Status Message
+  IF Exists_KrlMsg(nMessageHandle) THEN
+    _bResult = Clear_KrlMsg(nMessageHandle) 
+  ENDIF      
+  
+  $TIMER_STOP[cnWaitForTimer] = TRUE
+  
+  IF $TIMER_FLAG[cnWaitForTimer] THEN         
+      MsgNotify ("Timeout Waiting For %1", "KRLFunctions.WaitFor",,MsgDataIN[FI_nId].SignalName[])
+  ENDIF
+  
+  _bReturn = ((FO_bCond == FI_bState) AND (NOT $TIMER_FLAG[cnWaitForTimer]))
+  
+  RETURN _bReturn
+  
+  ;ENDFOLD (EXECUTABLE)
+ENDFCT
+  ;ENDFOLD (Wait Input)
+  
+  GLOBAL DEFFCT BOOL Trim (FO_chDestination[] : OUT, FI_chSource[] : IN)
+  ;FOLD HEADER
+  
+  ;ENDFOLD (HEADER)
+  ;FOLD DECLARATIONS
+ 
+  DECL CHAR FO_chDestination[]
+  DECL CHAR FI_chSource[]
+  DECL INT  _nLength
+  DECL INT _nIndex
+  DECL BOOL _bResult
+    
+  ; ENDFOLD (DECLARATIONS)
+  ;FOLD EXECUTABLE
+ 
+  ; Copy Source to Destination String 
+  _bResult = STRCOPY (FO_chDestination[], FI_chSource[])
+  
+  IF _bResult THEN
+  
+    ; Get String Length
+    _nLength = STRLEN (FO_chDestination[])
+  
+    IF _nLength > 1 THEN
+      FOR _nIndex = _nLength TO 2 STEP -1
+        IF STRCOMP (FI_chSource[_nIndex], " ", #NOT_CASE_SENS) THEN
+          StringResize(FO_chDestination[], _nIndex - 1)
+        ELSE
+          EXIT
+        ENDIF
+      ENDFOR
+    ENDIF    
+  
+  ENDIF
+        
+  RETURN _bResult     
+      
+  ;ENDFOLD (EXECUTABLE)
+ENDFCT
+GLOBAL DEF ClearString (FI_nChars :IN, FI_nOffset :IN)
+  ;FOLD Header
+  ; Clears FI_nChars $OUT bytes starting at $OUT[FI_nOffset]
+  ; Used to null string output
+  ;ENDFOLD (HEADER)
+  ;FOLD DECLARATIONS
+  DECL INT FI_nChars, FI_nOffset, _nIndex
+  ;ENDFOLD (DECLARATIONS)
+  ;FOLD EXECUTABLE
+  FOR _nIndex = FI_nOffset TO (FI_nOffset + (FI_nChars * 8) -1)
+    CONTINUE
+    $OUT[_nIndex] =FALSE
+  ENDFOR
+  ;ENDFOLD (EXECUTABLE)
+END
+GLOBAL DEF StringClear (FO_chString[]: OUT)
+  ;FOLD HEADER
+  
+  ;ENDFOLD (HEADER)
+  ;FOLD DECLARATIONS
+  
+  DECL CHAR FO_chString[]  ; String to Clear
+  DECL INT  _nStringLength ; Declared length of string
+  DECL INT  _nIndex        ; 
+  DECL BOOL _bResult
+  
+  ; ENDFOLD (DECLARATIONS)
+  ;FOLD EXECUTABLE
+  
+  ; Determine length of String to clear
+  _nStringLength = STRDECLLEN(FO_chString[]) 
+  
+  IF _nStringLength > 0 THEN
+    
+    ; Workaround to clear ALL charactors
+    FOR _nIndex = 1 to _nStringLength
+      FO_chString[_nIndex] = 0
+    ENDFOR 
+    
+    _bResult = STRCLEAR(FO_chString[]) 
+    
+  ENDIF
+  
+  ;ENDFOLD (EXECUTABLE)
+END
+GLOBAL DEF StringResize(FO_chString[] : OUT, FI_nSize : IN)
+  ;FOLD HEADER
+  
+  ;ENDFOLD (HEADER)
+  ;FOLD DECLARATIONS
+  
+  DECL CHAR FO_chString[]
+  DECL INT FI_nSize  
+  DECL CHAR _chDummy[255]
+  DECL CHAR _chString[255]
+  DECL INT _nResult
+  DECL INT _nIndex
+  DECL BOOL _bResult
+  
+  ; ENDFOLD (DECLARATIONS)
+  ;FOLD EXECUTABLE
+  
+  ; Copy origional string
+  _bResult = STRCOPY(_chString[], FO_chString[])
+  
+  ; Clear origional string 
+  StringClear (FO_chString[])
+  
+  ; Determine the length of the string        
+  _nResult = STRLEN(_chString[])  
+  
+  ; Limit the size                        
+  IF _nResult > FI_nSize THEN 
+    _nResult = FI_nSize
+  ENDIF
+  
+  ; Copy resized string    
+  FOR _nIndex = 1 TO _nResult
+    FO_chString[_nIndex] = _chString[_nIndex]
+  ENDFOR
+  
+  ;ENDFOLD (EXECUTABLE)
+END
+
+
+
+

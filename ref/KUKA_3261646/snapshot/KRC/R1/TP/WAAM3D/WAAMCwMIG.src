@@ -1,0 +1,60 @@
+&ACCESS RVO2
+&REL 5
+DEF WAAMCwMIG( )
+
+   WAAMCwMIG_ERROR()
+   WAAMCwMIG_VAR_UPDATE()
+   
+END
+
+GLOBAL DEF WAAMCwMIG_ERROR()
+
+   IF bERROR_RESET == TRUE THEN
+      oMigErrorReset = TRUE
+   ELSE
+      oMigErrorReset = FALSE
+   ENDIF
+   
+END
+
+GLOBAL DEF WAAMCwMIG_VAR_UPDATE()
+
+   VOUT = (rMIGVoltage*10000)/32767
+   AOUT = (nMIGCurrent*100000)/32767
+   
+   rColdWireSetpoint = (oCWFSetpoint) * (19.8/65535)
+   rHotWireSpeed = iHotWireFeedSpeed ;* (327.6700/32767) ; 0.00122074
+   rHotWireSpeedSP = oHotWireSpeedSP ;* (25.0/32767)
+   
+   iWFHMotorCurrent1 = iWFHMotorCurrent1_UINT / 100.0 ;Hot wire (Fronius) Motor Current Primary Scaling factor == 0.01 
+   iWFHMotorCurrent2 = iWFHMotorCurrent2_UINT / 100.0 ;Hot wire (Fronius) Motor Current Secondary Scaling factor == 0.01
+   
+   ;Intermediate calculations are needed to convert to 'fronious' variables
+   
+   IF $IN[2003] == FALSE THEN
+   $SEN_PREA[4] = 0
+   $SEN_PREA[5] = 0
+   $SEN_PREA[6] = 0
+   $SEN_PREA[7] = 0   
+   $SEN_PREA[8] = 0
+   $SEN_PREA[9] = 0
+   $SEN_PREA[10] = 0
+
+   $SEN_PINT[2] = 0
+   $SEN_PINT[3] = 0
+   
+   ELSE
+   
+   $SEN_PREA[4] = iWFHMotorCurrent1 ; Wire Feeder A Primary Motor Current
+   $SEN_PREA[5] = iWFHMotorCurrent2 ; Wire Feeder A Secondary Motor Current
+   $SEN_PREA[6] = iWFCMotorCurrent1 ; Wire Feeder B Primary Motor Current
+   $SEN_PREA[7] = iWFCMotorCurrent2 ; Wire Feeder B Secondary Motor Current
+   $SEN_PREA[8] = rColdWireSetpoint
+   $SEN_PREA[9] = rHotWireSpeed / 100
+   $SEN_PREA[10] = rHotWireSpeedSP / 100
+
+   $SEN_PINT[2] = nMIGCurrent / 0.305185094
+   $SEN_PINT[3] = rMIGVoltage / 0.305185094
+   ENDIF
+   
+END

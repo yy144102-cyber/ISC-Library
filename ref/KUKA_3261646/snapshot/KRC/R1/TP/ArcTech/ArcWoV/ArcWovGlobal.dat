@@ -1,0 +1,105 @@
+&ACCESS AR2
+&REL 1
+&COMMENT Generated from WOV
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcWoV
+DEFDAT  ARCWOVGLOBAL PUBLIC
+
+;*****************************************************************************************
+;ArcTechBasic
+;*****************************************************************************************
+DECL GLOBAL INT ArcTechVersion=307020112
+DECL GLOBAL enArcToolDirection_T wArcToolDirection=#X
+DECL GLOBAL enArcErrStrategySelect_T wArcStrategySelectMaxErr=#OnlyBySmartPad
+DECL GLOBAL enArcErrContDecision_T wArcErrDecisionType=#Automatic
+DECL GLOBAL enArcWeaveMode_T wArcWeaveMode=#WeaveFrequency
+DECL GLOBAL BOOL wArcWeldingMaster=FALSE
+DECL GLOBAL BOOL wArcStrategyAfterTStop=TRUE
+DECL GLOBAL BOOL wArcWeldingInT1Mode=FALSE
+DECL GLOBAL BOOL wArcCollisionCtrlOption=FALSE
+DECL GLOBAL BOOL wArcStillStandOption=FALSE
+DECL GLOBAL BOOL wArcRestartFromOffset=FALSE
+DECL GLOBAL REAL wArcApoDistance=7.00000
+DECL GLOBAL REAL wArcCurrentOverTimeout=2.00000
+DECL GLOBAL REAL wArcCurrentTimeout=1.00000
+DECL GLOBAL REAL wArcGasFlowTimeout=2.50000
+DECL GLOBAL REAL wArcGasTimeoutOver=1.00000
+DECL GLOBAL REAL wArcWireFreeTimeout=0.500000
+DECL GLOBAL REAL wArcInputGroupTimeout=0.500000
+DECL GLOBAL REAL wArcStillstandTimeout=1.00000
+DECL GLOBAL REAL wArcWatchDogTime=1.00000
+DECL GLOBAL REAL wArcZeroVelocity=0.000780000
+DECL GLOBAL BOOL wATBEnabled=TRUE
+DECL GLOBAL BOOL wATAEnabled=TRUE
+DECL GLOBAL BOOL wARSEnabled=FALSE
+DECL GLOBAL BOOL wAMLEnabled=FALSE
+DECL GLOBAL BOOL wAAWEnabled=FALSE
+DECL GLOBAL BOOL wDoArcSubmitInit=FALSE
+DECL GLOBAL stArcStrategy_T wArcIgnitionStrategy[10]
+wArcIgnitionStrategy[1]={MsgType #NOTIFY,IgnitionFailureMsgType #QUIT,IgnitionReaction #MoveForward,MaxRestart 3,MaxErrStrategies 1,Index 1,RecoveryTime 1.00000,FwdDistance 0.500000,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[2]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[3]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[4]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[5]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[6]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[7]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[8]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[9]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+wArcIgnitionStrategy[10]={MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0,UpAndStopDistance 0.0,DoUpAndStop FALSE}
+DECL GLOBAL stArcStrategy_T wArcWeldingStrategy[10]
+wArcWeldingStrategy[1]={MsgType #QUIT,WeldErrReaction #MoveBackward,MaxBreaksOnSeam 3,Index 1,MotionOnSeam 3.00000,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[2]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[3]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[4]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[5]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[6]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[7]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[8]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[9]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+wArcWeldingStrategy[10]={MsgType #NONE,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,Index 0,MotionOnSeam 0.0,UpAndStopDistance 0.0,NoErrorUntilSeamEnd FALSE,DoUpAndStop FALSE}
+
+;*****************************************************************************************
+;ArcTechAdvanced
+;*****************************************************************************************
+DECL GLOBAL INT ArcTechAdvancedVersion=307010009
+DECL GLOBAL BOOL wArcWeaveDelayOption=TRUE
+DECL GLOBAL BOOL wArcSpeedOutputOption=FALSE
+DECL GLOBAL BOOL wArcSeamControlByPLC=FALSE
+DECL GLOBAL BOOL wArcOnlOptNoSlopeOption=FALSE
+DECL GLOBAL BOOL wArcSlopeOption=FALSE
+DECL GLOBAL REAL wArcSpeedFactor=0.00502512557
+DECL GLOBAL enSeamCtrlOptType_T wArcSeamLengthCtrlOpt=#None
+DECL GLOBAL REAL wArcSeamLengthMinTol=-1000.00
+DECL GLOBAL REAL wArcSeamLengthMaxTol=1000.00
+DECL GLOBAL BOOL wArcSeamLengthPlcConf=FALSE
+DECL GLOBAL BOOL wArcSeamLengthIgnoreMsg=FALSE
+DECL GLOBAL BOOL wArcSeamLengthCheckOff=FALSE
+DECL GLOBAL BOOL wArcPreStartEnabled=FALSE
+DECL GLOBAL REAL wArcPreStartTime=0.0
+DECL GLOBAL BOOL wArcMoveBackAtOffOption=FALSE
+DECL GLOBAL BOOL wArcThermalControlOption=FALSE
+DECL GLOBAL BOOL wArcStepWeldOption=FALSE
+
+;*****************************************************************************************
+;ArcSense
+;*****************************************************************************************
+DECL GLOBAL INT ArcSenseVersion=0
+DECL GLOBAL BOOL wArcErrorMaxDeviation=FALSE
+DECL GLOBAL BOOL wArcSensorError=FALSE
+DECL GLOBAL BOOL wArcToolSenseDirPositive=FALSE
+DECL GLOBAL enArcFindSeamMiddleVis_T enArcFindSeamMiddleVis=#ILF
+DECL GLOBAL BOOL wArcTrackingDelayVis=TRUE
+DECL GLOBAL BOOL wArcHeightCorrValueVis=TRUE
+DECL GLOBAL INT wArcDeviationErrorOutNr=0
+DECL GLOBAL INT wArcSensorErrorOutNr=0
+
+;*****************************************************************************************
+;ArcTechMultiLayer
+;*****************************************************************************************
+DECL GLOBAL INT ArcTechMultiLayerVersion=0
+
+;*****************************************************************************************
+;ArcTechAdaptiveWelding
+;*****************************************************************************************
+DECL GLOBAL INT AdaptiveWeldingVersion=0
+
+ENDDAT

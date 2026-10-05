@@ -1,0 +1,55 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEFDAT  ARCPART
+;*****************************************************************************************
+;ArcTech Seam Length Configuration Option
+;*****************************************************************************************
+DECL BOOL mArcSeamLengthSyncCsv=FALSE ;Save data base to csv file
+DECL BOOL mArcSeamLengthInitDone=FALSE ;SubMit Initialization Done
+DECL REAL mArcMinTolerance=0.200000 ;Minimum tolerance distance [Default 0.2]
+DECL INT mMaxParts=19 ;Maximal part numer  (ArcPartSeamLength[19,200])
+DECL INT mMaxSeamIndex=200 ;Maximal seam number (ArcPartSeamLength[19,200])
+DECL INT mArcArchiveNrLineChar=260 ;Number of char pro line [Default = 260]
+DECL INT mArcArchiveMaxSize=7000000 ;Maximum archive file size [Default: 7MB]
+DECL enArcMessageType_T mArcSeamMsgType=#QUIT ;$FCT_CALL Message default #NOTIFY (#NONE,#QUIT)
+;*****************************************************************************************
+;Temp declaration
+;*****************************************************************************************
+DECL BOOL mArcSeamTestPlc=FALSE ;Signal Test with PLC default = FALSE
+DECL INT mArcLastHandleNr=1
+DECL INT mPartNr=0
+DECL INT mNrSeams
+DECL INT mNrSeamsTemp
+DECL INT mMsgHandle[200]
+DECL CHAR mArcArchiveStr[512]
+DECL stSeamLenght_T mArcPartSeamLength[19,200] ;[a1,a2] a1: Number of Parts a2: Number of seams (mMaxSeamIndex must have the same value)
+DECL stSeamLenght_T mArcPartSeamLengthTemp[19,200]
+DECL STATE_T mState
+DECL MODUS_T mMode
+;*****************************************************************************************
+;Init struc declaration
+;*****************************************************************************************
+DECL stSeamTemp_T mArcSeamTempInit={ErrorOnSeam FALSE,Active FALSE,FilePresent FALSE,FileHandle 0,FileSize 0,FilePointer 0,NrOfSeam 0,PathToFile[] " ",Part #None}
+DECL stSeamLenght_T ArcPartInit={Active FALSE,NewLength FALSE,ErrorSequence FALSE,RemoveSeam FALSE,SeamDisabled FALSE,SeamNumber 0,PartNumber 0,PlcErrorNr 0,SeamState #NONE,DesiredLength 0.0,TolerancePos 0.0,ToleranceNeg 0.0,PrgPointName[] " ",SeamName[] " ",PartName[] " "}
+DECL stArcWeldDist_T stArcWeldDistInit={Active FALSE,LineSelect FALSE,Error FALSE,CheckDisabled FALSE,NewSeam FALSE,ErrorSequence FALSE,SkipSeam FALSE,DesiredLength 0.0,TolerancePos 0.0,ToleranceNeg 0.0,Min 0.0,Max 0.0,StartWeld 0.0,EndWeld 0.0,SeamLength 0.0,WeldedDist 0.0,ErrorExecuted 0.0,NotWeldedDist 0.0,Divide 0.0,Overlap 0.0,Index 0,MsgNr 0,PartNumber 0,SeamNumber 0,PlcErrorNr 0,NrStrikeError 0,NrWeldError 0,NrRtWeldError 0,NrRecoveryError 0,SNR 0,OutPartId 0,State #NONE,PrgPointName[] " ",SeamName[] " ",PartName[] " "}
+DECL CHAR mArcArchiveHeader[260]
+mArcArchiveHeader[]="Date;Time;SerialNumber;RobotName;Trafoname;State;Prog&Point;PLine;PartName;SeamName;PlcPartId;PartNumber;SeamNumber;MasterLength;MasterTolNegative;MasterTolPositive;SeamLength;WeldedDist;NotWelded;Overlap;NrIgnitionError;NrWeldErr;NrRemoteErr;NrRecoveryErr"
+DECL CHAR mArcDir[7]
+mArcDir[]="ArcTech"
+;*****************************************************************************************
+;Signal declaration
+;*****************************************************************************************
+;Input
+DECL stArcSignal_T mArcPartInput[4]
+mArcPartInput[1]={Active FALSE,State TRUE,Index 31,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}} ;Confirmation received faulty seam number
+mArcPartInput[2]={Active FALSE,State TRUE,Index 32,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}} ;Reset error state
+mArcPartInput[3]={Active FALSE,State TRUE,Index 33,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+mArcPartInput[4]={Active FALSE,State TRUE,Index 34,SignNr 0,TimeOut 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SIN,Offset {Offset 0,SignNr 0}}
+;Output
+DECL stArcSignal_T mArcPartOutput[4]
+mArcPartOutput[1]={Active FALSE,State TRUE,Index 31,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}} ;Transfer faulty seam number
+mArcPartOutput[2]={Active FALSE,State TRUE,Index 32,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}} ;Faulty seam number present
+mArcPartOutput[3]={Active FALSE,State TRUE,Index 33,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}} ;Component OK
+mArcPartOutput[4]={Active FALSE,State TRUE,Index 34,SignNr 0,PulsTime 0.0,VarName #NONE,Description[] " ",Source #None,SigType #SOUT,Offset {Offset 0,SignNr 0}} ;Component not OK
+
+ENDDAT

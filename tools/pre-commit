@@ -1,0 +1,52 @@
+#!/bin/sh
+# pre-commit hook for the Library repository.
+# Runs the correlations machine checks and aborts the commit if they fail.
+#
+# This file is the source of truth and is tracked by git. The copy that git
+# actually executes lives in .git/hooks/pre-commit, which git does NOT track:
+# deleting that copy silently disables the check and the deletion appears in
+# no diff. That is a type-3 hole recorded in the project's accepted-risk
+# table (UH-8). Reinstall with:
+#
+#     cp Library/tools/pre-commit Library/.git/hooks/pre-commit
+#     chmod +x Library/.git/hooks/pre-commit
+#
+# Known limits, stated rather than hidden:
+#   - The checker inspects the WORKING TREE, not the staged snapshot. Content
+#     staged separately from what is on disk is not what gets verified.
+#   - git commit --no-verify skips this hook entirely.
+#
+# ASCII-only per project rule P-7.
+
+set -e
+
+ROOT=$(git rev-parse --show-toplevel)
+CHECK="$ROOT/tools/check_correlations.py"
+
+if [ ! -f "$CHECK" ]; then
+    echo "pre-commit: checker not found: $CHECK" >&2
+    echo "pre-commit: commit aborted (cannot verify)." >&2
+    exit 1
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+    PY=python3
+elif command -v python >/dev/null 2>&1; then
+    PY=python
+else
+    echo "pre-commit: no python interpreter on PATH" >&2
+    echo "pre-commit: commit aborted (cannot verify)." >&2
+    exit 1
+fi
+
+echo "pre-commit: running check_correlations.py"
+
+if ! "$PY" "$CHECK"; then
+    echo "" >&2
+    echo "pre-commit: CHECKS FAILED - commit aborted." >&2
+    echo "pre-commit: fix the findings above before committing." >&2
+    exit 1
+fi
+
+echo "pre-commit: checks passed"
+exit 0

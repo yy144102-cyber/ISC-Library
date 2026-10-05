@@ -1,0 +1,11 @@
+&ACCESS R2
+&REL 2
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcLib
+DEFDAT  ARCLIBCOMMON
+DECL INT mOverTimeNr=0 ;SubMit Mux nr of TimeOut
+DECL INT mSubmitTimer=318429 ;SubMit Local mem
+DECL REAL mActSubmitTimer=82.0000 ;SubMit Actual Time
+DECL REAL mMinSubmitTimer=56.0000 ;SubMit Minimum Time
+DECL REAL mMaxSubmitTimer=212.000 ;SubMit Maximum Time
+ENDDAT

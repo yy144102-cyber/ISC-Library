@@ -1,0 +1,28 @@
+&ACCESS R2
+&COMMENT Generated from WOV
+DEFDAT ArcWovW1AdaptiveWelding PUBLIC
+
+;*****************************************************************************************
+;Adaptive Welding function types
+;*****************************************************************************************
+GLOBAL ENUM enW1AwFunction_T None,ConstValue,SourceValue,UserFunction1,UserFunction2,UserFunction3,UserFunction4
+
+;*****************************************************************************************
+;Adaptive Welding strike parameters
+;*****************************************************************************************
+DECL GLOBAL stAdaptiveWelding_T wW1OutAwParamSetStrike[16,16,15]
+wW1OutAwParamSetStrike[1,1,1]={KrlId #NONE}
+
+;*****************************************************************************************
+;Adaptive Welding welding parameters
+;*****************************************************************************************
+DECL GLOBAL stAdaptiveWelding_T wW1OutAwParamSetWelding[16,16,15]
+wW1OutAwParamSetWelding[1,1,1]={KrlId #NONE}
+
+;*****************************************************************************************
+;Adaptive Welding crater parameters
+;*****************************************************************************************
+DECL GLOBAL stAdaptiveWelding_T wW1OutAwParamSetCrater[16,16,15]
+wW1OutAwParamSetCrater[1,1,1]={KrlId #NONE}
+
+ENDDAT

@@ -1,0 +1,121 @@
+&ACCESS RVO1
+&REL 8
+&COMMENT Robot to Home Position
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program
+DEF Home( )
+;************************************************
+;* Description: Home ()                         *
+;*                                              *
+;*              Robot to Home                   *
+;*                                              *
+;************************************************
+;*    Software: KSS 8.5                         *
+;************************************************
+;*    Modified: KUKA UK                         *
+;*        Date: 2020.02.12                      *
+;*     Version: 01.01.03                        *
+;************************************************ 
+;FOLD INI;%{PE}
+
+DECL FRAME _fEscapeFrame
+
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+CONTINUE
+IF NOT $IN_HOME THEN
+  REPEAT
+    IF $T1 THEN
+ 
+      PTP $POS_ACT
+
+      ; Set Tool & Base
+      $TOOL = TOOL_DATA[1]
+      $ACT_TOOL = 1
+      
+      $BASE = $NULLFRAME
+      $ACT_BASE = 0
+      
+      ; Set Robot Velocity
+      $VEL.CP = 0.2
+
+      IF $POS_ACT_MES.Z < 1250 THEN
+         
+         _fEscapeFrame = $NULLFRAME
+         _fEscapeFrame.Z = 1250 - $POS_ACT_MES.Z
+
+         LIN $POS_ACT_MES : _fEscapeFrame
+         
+      ENDIF
+
+;FOLD PTP HOME Vel=10 % DEFAULT;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=10; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PDEFAULT
+FDAT_ACT = FHOME
+BAS(#PTP_PARAMS, 10.0)
+SET_CD_PARAMS (0)
+PTP XHOME
+;ENDFOLD
+
+    ELSE
+      MsgQuit("Move Robot Home In $T1", "Home")
+      HALT
+    ENDIF
+  UNTIL $IN_HOME
+ENDIF
+
+; Check if Mastering/Braketeset required
+MasteringTest ()
+
+END
+
+;FOLD MasteringTest ()
+DEF MasteringTest ()
+  ;FOLD HEADER
+  ; This routine will check if a Mastering
+  ; or Brake test is required
+  ;ENDFOLD (Header)
+  ;FOLD DECLARATIONS
+  ;ENDFOLD (Declarations)
+  ;FOLD EXECUTABLE
+  
+  CONTINUE
+  IF $IN_HOME THEN
+    CONTINUE
+    IF ($BRAKETEST_REQ_INT) THEN
+      
+      CONTINUE
+      IF $T1 THEN
+        REPEAT
+          MsgQuit ("$T2 OR $EXT required to perform a Brake Test", "Home")
+        UNTIL (NOT $T1)
+      ENDIF
+            
+      BRAKETESTREQ()
+    
+    ENDIF
+  
+    CONTINUE
+    IF $MASTERINGTEST_REQ_INT THEN
+      MasRef_Main()
+    ENDIF
+         
+  ENDIF
+    
+  ;ENDFOLD (Executable)
+END
+;ENDFOLD (MasteringTest)   
+

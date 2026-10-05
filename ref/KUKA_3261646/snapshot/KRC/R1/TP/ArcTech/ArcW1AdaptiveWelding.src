@@ -1,0 +1,545 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcW1AdaptiveWelding()
+END
+;*****************************************************************************************
+;[Routine] Arc Submitt Init variable
+;*****************************************************************************************
+GLOBAL DEF AawW1LoopInit()
+DECL INT tI
+DECL INT tII
+DECL INT tIII
+DECL stAdaptiveWelding_T tAdaptiveWelding[32]
+gAawDiagSaveToFile = FALSE
+mArcAwMaxModStrike = 0
+mArcAwMaxModWelding = 0
+mArcAwMaxModCrater = 0
+gAawCFrequencyValue = mAawCFrequencyInt
+FOR tI =1 TO 32
+  FOR tII =1 TO 32
+    gArcW1AwMaxParamStrike[tI,tII] = 0
+    gArcW1AwMaxParamWelding[tI,tII] = 0
+    gArcW1AwMaxParamCrater[tI,tII] = 0
+  ENDFOR
+  mHandle[tI] = 0
+ENDFOR
+IF (gArcAWOption == FALSE) THEN
+  RETURN
+ENDIF
+FOR tI = 1 TO 32
+  IF (AawStrucExist(wW1OutAwParamSetStrike[,,],tI,1,1) == TRUE) THEN
+    tAdaptiveWelding[tI] = wW1OutAwParamSetStrike[tI,1,1]
+    IF (AawSourceExist(tAdaptiveWelding[],1) == TRUE) THEN
+      mArcAwMaxModStrike = tI
+    ENDIF
+  ENDIF
+  IF (AawStrucExist(wW1OutAwParamSetWelding[,,],tI,1,1) == TRUE) THEN
+    tAdaptiveWelding[tI] = wW1OutAwParamSetWelding[tI,1,1]
+    IF (AawSourceExist(tAdaptiveWelding[],1) == TRUE) THEN
+      mArcAwMaxModWelding = tI
+    ENDIF
+  ENDIF
+  IF (AawStrucExist(wW1OutAwParamSetCrater[,,],tI,1,1) == TRUE) THEN
+    tAdaptiveWelding[tI] = wW1OutAwParamSetCrater[tI,1,1]
+    IF (AawSourceExist(tAdaptiveWelding[],1) == TRUE) THEN
+      mArcAwMaxModCrater = tI
+    ENDIF
+  ENDIF
+ENDFOR
+
+FOR tI = 1 TO mArcAwMaxModStrike
+  FOR tII = 1 TO 32
+    FOR tIII = 1 TO 32
+      IF ((AawStrucExist(wW1OutAwParamSetStrike[,,],tI,tII,tIII) == TRUE) AND (ArcStrucParamExist(wArcW1StrikeParams[,,],tI,tII,tIII) == TRUE)) THEN
+        gArcW1AwMaxParamStrike[tI,tII] = tIII
+        wW1OutAwParamSetStrike[tI,tII,tIII] = AawInitLastValue(wW1OutAwParamSetStrike[tI,tII,tIII])
+      ENDIF
+   ENDFOR
+  ENDFOR
+ENDFOR
+FOR tI = 1 TO mArcAwMaxModWelding
+  FOR tII = 1 TO 32
+    FOR tIII = 1 TO 32
+      IF ((AawStrucExist(wW1OutAwParamSetWelding[,,],tI,tII,tIII) == TRUE) AND (ArcStrucParamExist(wArcW1WeldParams[,,],tI,tII,tIII) == TRUE)) THEN
+        gArcW1AwMaxParamWelding[tI,tII] = tIII
+        wW1OutAwParamSetWelding[tI,tII,tIII] = AawInitLastValue(wW1OutAwParamSetWelding[tI,tII,tIII])
+      ENDIF
+   ENDFOR
+  ENDFOR
+ENDFOR
+FOR tI = 1 TO mArcAwMaxModCrater
+  FOR tII = 1 TO 32
+    FOR tIII = 1 TO 32
+      IF ((AawStrucExist(wW1OutAwParamSetCrater[,,],tI,tII,tIII) == TRUE) AND (ArcStrucParamExist(wArcW1CraterParams[,,],tI,tII,tIII) == TRUE)) THEN
+        gArcW1AwMaxParamCrater[tI,tII] = tIII
+        wW1OutAwParamSetCrater[tI,tII,tIII] = AawInitLastValue(wW1OutAwParamSetCrater[tI,tII,tIII])
+      ENDIF
+   ENDFOR
+  ENDFOR
+ENDFOR
+END
+;*****************************************************************************************
+;[Routine] Arc Strike
+;*****************************************************************************************
+GLOBAL DEFFCT stStrike_T AawW1Strike(tArcDat :IN)
+DECL BOOL tFind
+DECL INT tI,tII,tIII
+DECL INT tSelectMode
+DECL INT tSelectParam
+DECL INT tMaxParam
+DECL stAdaptiveWelding_T tAdaptiveWelding
+DECL stArcDat_T tArcDat
+DECL stStrike_T tStrike
+DECL stParam_T tParam
+DECL enAawSourceState_T tSourceState
+tStrike = tArcDat.Strike
+tFind = FALSE
+IF (gArcAWOption == FALSE) THEN
+  RETURN tStrike
+ENDIF
+IF ((gArcAWFuncEnable B_AND cAawStrikeEnable) == 0) THEN
+  RETURN tStrike
+ENDIF
+IF (mArcAwMaxModStrike == 0) THEN ;Missing Wov Configuration
+  RETURN tStrike
+ENDIF
+IF (tArcDat.Advanced.SlopeOption <> #None) THEN
+  RETURN tStrike
+ENDIF
+tSelectMode = gArcActModeOn
+IF (tSelectMode > mArcAwMaxModStrike) THEN
+  ArcMsgWriteS(mHandle[1],#STATE,"WarningSelectedParamIsOverflow","AAW",60011,OPt_VLSTOP_LOG,"STRIKE")
+  RETURN tStrike
+ENDIF
+ArcMsgWriteClearHandle(mHandle[1])
+tSelectParam = gArcActParamStrike
+IF (tSelectParam == 0) THEN ;Strike Param Disable
+  RETURN tStrike
+ENDIF
+IF (tSelectParam < 1) THEN
+  ArcMsgWriteS(mHandle[2],#STATE,"WarningSelectedParamIsMinus","AAW",60012,OPt_VLSTOP_LOG,"STRIKE")
+  RETURN tStrike
+ENDIF
+ArcMsgWriteClearHandle(mHandle[2])
+tMaxParam = gArcW1AwMaxParamStrike[tSelectMode,tSelectParam]
+FOR tI = 1 TO tMaxParam
+  tAdaptiveWelding = wW1OutAwParamSetStrike[tSelectMode,tSelectParam,tI]
+  tAdaptiveWelding.Active = FALSE
+  tParam = wArcW1StrikeParams[tSelectMode,tSelectParam,tI]
+  IF (tAdaptiveWelding.KrlId <> tParam.KrlId) THEN
+    FOR tIII = 1 TO tMaxParam
+      tParam = wArcW1StrikeParams[tSelectMode,tSelectParam,tIII]
+      IF (tAdaptiveWelding.KrlId == tParam.KrlId) THEN
+        tFind = TRUE
+        EXIT
+      ENDIF
+    ENDFOR
+    IF (tFind == FALSE) THEN
+      ;ArcMsgWriteS(mHandle[3],#STATE,"WarningMissingParameter","AAW",60013,OPt_VLSTOP_LOG,"STRIKE")
+      RETURN tStrike
+    ENDIF
+  ENDIF
+  tAdaptiveWelding = AawStrikeLoadDefValue(tAdaptiveWelding,tStrike)
+  FOR tII = 1 TO 5
+    tSourceState = AawCalcValue(#STRIKE,tAdaptiveWelding,tII)
+    SWITCH tSourceState
+      CASE #DEACTIVE           ;No active Source
+        EXIT                   
+      CASE #ILF                ;Last Source Load ILF Value
+        EXIT                   
+      CASE #FUNCTION           ;Source Function Enable
+        EXIT
+      CASE  #ILFWEAVEDEACTIV   ;Source Enable but Weave ILF Disable (#Length,#Amplitude)
+        EXIT        
+      CASE #PEAK               ;Peak on Source Value
+        EXIT
+    ENDSWITCH
+  ENDFOR
+  SWITCH tSourceState
+    CASE #ILF,#FUNCTION
+      tAdaptiveWelding = AawCheckMinMaxValue(tAdaptiveWelding,tParam)
+      tStrike = AawSetValueStrike(tStrike,tAdaptiveWelding)
+  ENDSWITCH
+  wW1OutAwParamSetStrike[tSelectMode,tSelectParam,tI] = tAdaptiveWelding
+  AawWriteDiag(#STRIKE,tSelectMode,tSelectParam,tI,tII,tAdaptiveWelding,tSourceState)
+ENDFOR
+AawInitDiag()
+RETURN tStrike
+ENDFCT
+;*****************************************************************************************
+;[Routine] Arc Welding Call from SubMit Loop
+;*****************************************************************************************
+GLOBAL DEF AawW1WeldingLoop()
+DECL BOOL tFind
+DECL INT tI,tII,tIII
+DECL INT tSelectMode
+DECL INT tSelectParam
+DECL INT tMaxParam
+DECL stAdaptiveWelding_T tConstOut
+DECL stAdaptiveWelding_T tAdaptiveWelding
+DECL enAawWeaveConst_T tenAawWeaveConst
+DECL stWeld_T tWeld
+DECL stWeave_T tWeave
+DECL stParam_T tParam
+DECL enAawSourceState_T tSourceState
+tFind = FALSE
+IF (gArcAWOption == FALSE) THEN
+  gAawDiagSaveToFile = FALSE
+  RETURN
+ENDIF
+IF (enArcCurrentState <> #Welding) THEN
+  AawDiagSaveToFile() ;Diagnostic Save to File
+ENDIF
+IF ((gArcAWFuncEnable B_AND cAawWeldingEnable) == 0) THEN
+  RETURN
+ENDIF
+IF (gArcOnSeam == FALSE) THEN
+  mInitFilter = TRUE
+  RETURN
+ENDIF
+IF (enArcCurrentState <> #Welding) THEN
+  mInitFilter = TRUE
+  RETURN
+ENDIF
+IF (mArcAwMaxModWelding == 0) THEN ;Missing Wov Configuration
+  RETURN 
+ENDIF
+IF (gArcActSlopeActive == TRUE) THEN
+  RETURN
+ENDIF
+tSelectMode = gArcActModeSwi
+IF (tSelectMode > mArcAwMaxModWelding) THEN
+  ArcMsgWriteS(mHandle[5],#STATE,"WarningSelectedParamIsOverflow","AAW",60011,OPt_VLSTOP_LOG,"WELDING")
+  RETURN
+ENDIF
+ArcMsgWriteClearHandle(mHandle[5])
+tSelectParam = gArcActParamWelding
+IF (tSelectParam < 1) THEN
+  ArcMsgWriteS(mHandle[6],#STATE,"WarningSelectedParamIsMinus","AAW",60012,OPt_VLSTOP_LOG,"WELDING")
+  RETURN
+ENDIF
+ArcMsgWriteClearHandle(mHandle[6])
+tWeld = stArcActWeldSet
+tWeave = stArcActWeaveSet
+tMaxParam = gArcW1AwMaxParamWelding[tSelectMode,tSelectParam]
+IF (mInitFilter == TRUE) THEN
+  FOR tI = 1 TO tMaxParam
+    wW1OutAwParamSetWelding[tSelectMode,tSelectParam,tI] = AawInitLastValue(wW1OutAwParamSetWelding[tSelectMode,tSelectParam,tI])
+  ENDFOR
+  gAawWeaveValue = mAawWeaveValueInit
+  gAawCFrequencyValue = mAawCFrequencyInt
+  mInitFilter = FALSE
+ENDIF
+FOR tI = 1 TO tMaxParam
+  tAdaptiveWelding = wW1OutAwParamSetWelding[tSelectMode,tSelectParam,tI]
+  tAdaptiveWelding.Active = FALSE
+  tParam = wArcW1WeldParams[tSelectMode,tSelectParam,tI]
+  IF (tAdaptiveWelding.KrlId <> tParam.KrlId) THEN
+    FOR tIII = 1 TO tMaxParam
+      tParam = wArcW1WeldParams[tSelectMode,tSelectParam,tIII]
+      IF (tAdaptiveWelding.KrlId == tParam.KrlId) THEN
+        tFind = TRUE
+        EXIT
+      ENDIF
+    ENDFOR
+    IF (tFind == FALSE) THEN ;Enum Not find RETURN
+      ;ArcMsgWriteS(mHandle[7],#STATE,"WarningMissingParameter","AAW",60013,OPt_VLSTOP_LOG,"WELDING")
+      RETURN
+    ENDIF
+  ENDIF
+  tAdaptiveWelding = AawWeldLoadDefValue(tAdaptiveWelding,tWeld,tWeave)
+  FOR tII = 1 TO 5
+    tSourceState = AawCalcValue(#WELDING,tAdaptiveWelding,tII,tWeave)
+    SWITCH tSourceState
+      CASE #DEACTIVE           ;No active Source
+        EXIT                   
+      CASE #ILF                ;Last Source Load ILF Value
+        EXIT                   
+      CASE #FUNCTION           ;Source Function Enable
+        EXIT
+      CASE  #ILFWEAVEDEACTIV   ;Source Enable but Weave ILF Disable (#Length,#Amplitude)
+        EXIT        
+      CASE #PEAK               ;Peak on Source Value
+        EXIT
+    ENDSWITCH
+  ENDFOR  
+  tenAawWeaveConst = #None
+  SWITCH tSourceState
+    CASE #ILF,#FUNCTION
+      AawDisableIlfWeave(tAdaptiveWelding,tSourceState)
+      tAdaptiveWelding = AawCheckMinMaxValue(tAdaptiveWelding,tParam)
+      tenAawWeaveConst = AawSetConstant(tAdaptiveWelding,tConstOut)
+      SWITCH tenAawWeaveConst
+        CASE #ConstVelocity
+          AawSetValueWeld(tConstOut,tWeave)
+        CASE #ConstLength
+          AawSetValueWeld(tConstOut,tWeave)
+      ENDSWITCH
+      AawSetValueWeld(tAdaptiveWelding,tWeave)
+  ENDSWITCH
+  wW1OutAwParamSetWelding[tSelectMode,tSelectParam,tI] = tAdaptiveWelding
+  AawWriteDiag(#WELDING,tSelectMode,tSelectParam,tI,tII,tAdaptiveWelding,tSourceState,tenAawWeaveConst)
+ENDFOR
+END
+;*****************************************************************************************
+;[Routine] Arc Crater
+;*****************************************************************************************
+GLOBAL DEFFCT stCrater_T AawW1Crater(tArcDat :IN)
+DECL BOOL tSetDefaultValue
+DECL BOOL tFind
+DECL INT tI,tII,tIII
+DECL INT tSelectMode
+DECL INT tSelectParam
+DECL INT tMaxParam
+DECL stAdaptiveWelding_T tAdaptiveWelding
+DECL stArcDat_T tArcDat
+DECL stCrater_T tCrater
+DECL stParam_T tParam
+DECL enAawSourceState_T tSourceState
+tCrater = tArcDat.Crater
+tFind = FALSE
+IF (gArcAWOption == FALSE) THEN
+  RETURN tCrater
+ENDIF
+IF ((gArcAWFuncEnable B_AND cAawCraterEnable) == 0) THEN
+  RETURN tCrater
+ENDIF
+IF (mArcAwMaxModCrater == 0) THEN 
+  RETURN tCrater
+ENDIF
+IF (tArcDat.Advanced.SlopeOption <> #None) THEN
+  RETURN tCrater
+ENDIF
+tSelectMode = gArcActModeOn
+IF (tSelectMode > mArcAwMaxModCrater) THEN
+  ArcMsgWriteS(mHandle[8],#STATE,"WarningSelectedParamIsOverflow","AAW",60011,OPt_VLSTOP_LOG,"CRATER")
+  RETURN tCrater
+ENDIF
+ArcMsgWriteClearHandle(mHandle[8])
+tSelectParam = gArcActParamCrater
+IF (tSelectParam < 1) THEN
+  ArcMsgWriteS(mHandle[9],#STATE,"WarningSelectedParamIsMinus","AAW",60012,OPt_VLSTOP_LOG,"CRATER")
+  RETURN tCrater
+ENDIF
+ArcMsgWriteClearHandle(mHandle[9])
+tMaxParam = gArcW1AwMaxParamCrater[tSelectMode,tSelectParam]
+FOR tI = 1 TO tMaxParam
+  tAdaptiveWelding = wW1OutAwParamSetCrater[tSelectMode,tSelectParam,tI]
+  tAdaptiveWelding.Active = FALSE
+  tParam = wArcW1CraterParams[tSelectMode,tSelectParam,tI]
+  IF (tAdaptiveWelding.KrlId <> tParam.KrlId) THEN
+    FOR tIII = 1 TO tMaxParam
+      tParam = wArcW1CraterParams[tSelectMode,tSelectParam,tIII]
+      IF (tAdaptiveWelding.KrlId == tParam.KrlId) THEN
+        tFind = TRUE
+        EXIT
+      ENDIF
+    ENDFOR
+    IF (tFind == FALSE) THEN
+      ;ArcMsgWriteS(mHandle[10],#STATE,"WarningMissingParameter","AAW",60013,OPt_VLSTOP_LOG,"CRATER")
+      RETURN tCrater
+    ENDIF
+  ENDIF
+  tAdaptiveWelding = AawCraterLoadDefValue(tAdaptiveWelding,tCrater)
+  FOR tII = 1 TO 5
+    tSourceState = AawCalcValue(#CRATER,tAdaptiveWelding,tII)
+    SWITCH tSourceState
+      CASE #DEACTIVE           ;No active Source
+        EXIT                   
+      CASE #ILF                ;Last Source Load ILF Value
+        EXIT                   
+      CASE #FUNCTION           ;Source Function Enable
+        EXIT
+      CASE  #ILFWEAVEDEACTIV   ;Source Enable but Weave ILF Disable (#Length,#Amplitude)
+        EXIT        
+      CASE #PEAK               ;Peak on Source Value
+        EXIT
+    ENDSWITCH
+  ENDFOR
+  SWITCH tSourceState
+    CASE #ILF,#FUNCTION
+      tAdaptiveWelding = AawCheckMinMaxValue(tAdaptiveWelding,tParam)
+      tCrater = AawSetValueCrater(tCrater,tAdaptiveWelding)
+  ENDSWITCH
+  wW1OutAwParamSetCrater[tSelectMode,tSelectParam,tI] = tAdaptiveWelding
+  AawWriteDiag(#CRATER,tSelectMode,tSelectParam,tI,tII,tAdaptiveWelding,tSourceState)
+ENDFOR
+RETURN tCrater
+ENDFCT
+;*****************************************************************************************
+;[Routine] Calc Value from Source
+; Return(enAawSourceState_T):
+;         DEACTIVE         = Disable All Source
+;         ILF              = Source Disabled Set Value from
+;         PEAK             = Peak on Source Value
+;         NEXTSOURCE       = Source Active
+;         FUNCTION         = Source Function Enable
+;         ILFWEAVEDEACTIV  = Source Enable but Weave ILF Disable (#Length,#Amplitude)
+;*****************************************************************************************
+GLOBAL DEFFCT enAawSourceState_T AawCalcValue(tRoutine :IN,tAdaptiveWelding :OUT,tSourceNr :IN,tWeave :IN)
+DECL INT tSourceNr
+DECL REAL tCalcValue
+DECL stSource_T tSource
+DECL enAawSwc_T tRoutine
+DECL stWeave_T tWeave
+DECL stAdaptiveWelding_T tAdaptiveWelding
+tCalcValue = 0
+tAdaptiveWelding.Active  = FALSE
+tAdaptiveWelding.CalcValue = tCalcValue
+SWITCH tSourceNr
+  CASE 1
+    tSource = tAdaptiveWelding.Source1
+    IF (tSource.Active == FALSE) THEN
+      tAdaptiveWelding.OutValue  = tAdaptiveWelding.IlfValue
+      RETURN #DEACTIVE
+    ENDIF
+  CASE 2
+    tSource = tAdaptiveWelding.Source2
+  CASE 3
+    tSource = tAdaptiveWelding.Source3
+  CASE 4
+    tSource = tAdaptiveWelding.Source4
+  CASE 5
+    tSource = tAdaptiveWelding.Source5
+ENDSWITCH
+IF (tSource.Active == FALSE) THEN
+  tAdaptiveWelding.OutValue  = tAdaptiveWelding.IlfValue
+  RETURN #ILF
+ENDIF
+tAdaptiveWelding.InValue = AawLoadSourceValue(tSource)
+IF (tRoutine == #WELDING) THEN
+    SWITCH tAdaptiveWelding.KrlId
+      CASE #Length,#Amplitude
+        IF (tWeave.Pattern == #NONE) THEN
+          RETURN #ILFWEAVEDEACTIV
+        ENDIF
+    ENDSWITCH
+   SWITCH tSourceNr
+     CASE 1
+       IF (AawSourceFilter(tAdaptiveWelding.Source1,tAdaptiveWelding.InValue) == FALSE) THEN
+          RETURN #PEAK ;Source value out of medium
+       ENDIF
+     CASE 2
+       IF (AawSourceFilter(tAdaptiveWelding.Source2,tAdaptiveWelding.InValue) == FALSE) THEN
+          RETURN #PEAK ;Source value out of medium
+       ENDIF
+     CASE 3
+       IF (AawSourceFilter(tAdaptiveWelding.Source3,tAdaptiveWelding.InValue) == FALSE) THEN
+          RETURN #PEAK ;Source value out of medium
+       ENDIF
+     CASE 4
+       IF (AawSourceFilter(tAdaptiveWelding.Source4,tAdaptiveWelding.InValue) == FALSE) THEN
+          RETURN #PEAK ;Source value out of medium
+       ENDIF
+     CASE 5
+       IF (AawSourceFilter(tAdaptiveWelding.Source5,tAdaptiveWelding.InValue) == FALSE) THEN
+          RETURN #PEAK ;Source value out of medium
+       ENDIF
+   ENDSWITCH
+ENDIF
+tAdaptiveWelding.Active = TRUE
+IF (AawOperator(tAdaptiveWelding.InValue,tSource) == TRUE) THEN
+  SWITCH tSource.W1Function
+    CASE #ConstValue
+      tCalcValue = tSource.ConstValue
+    CASE #SourceValue
+      tCalcValue = tAdaptiveWelding.InValue
+    CASE #UserFunction1
+      tCalcValue = ArcUserAwFunction1(tAdaptiveWelding.InValue,tSource,tSourceNr,tAdaptiveWelding)
+    CASE #UserFunction2
+      tCalcValue = ArcUserAwFunction2(tAdaptiveWelding.InValue,tSource,tSourceNr,tAdaptiveWelding)
+    CASE #UserFunction3
+      tCalcValue = ArcUserAwFunction3(tAdaptiveWelding.InValue,tSource,tSourceNr,tAdaptiveWelding)
+    CASE #UserFunction4
+      tCalcValue = ArcUserAwFunction4(tAdaptiveWelding.InValue,tSource,tSourceNr,tAdaptiveWelding)
+    DEFAULT
+      tCalcValue = ArcWovW1AwFunction(tAdaptiveWelding.InValue,tSource,tSourceNr,tAdaptiveWelding)
+  ENDSWITCH
+  tAdaptiveWelding.CalcValue = tCalcValue
+  tAdaptiveWelding.OutValue  = tCalcValue
+  RETURN #FUNCTION
+ENDIF
+IF (tSourceNr >= 5) THEN
+  tAdaptiveWelding.OutValue  = tAdaptiveWelding.IlfValue
+  RETURN #ILF
+ELSE
+  RETURN #NEXTSOURCE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Strike Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawW1GetStrikeParamId(tNumModi :IN)
+DECL INT tNumModi
+DECL INT tNumModiCalc
+ON_ERROR_PROCEED
+tNumModiCalc = gArcW1AwMaxParamStrike[tNumModi,1]
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN -1
+ENDIF
+RETURN ArcCheckParamId(wArcW1StrikeParams[,,],tNumModi,tNumModiCalc,stArcActStartSet.ParamSetId[])
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Welding Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawW1GetWeldingParamId(tNumModi :IN)
+DECL INT tNumModi
+DECL INT tNumModiCalc
+ON_ERROR_PROCEED
+tNumModiCalc = gArcW1AwMaxParamWelding[tNumModi,1]
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN -1
+ENDIF
+RETURN ArcCheckParamId(wArcW1WeldParams[,,],tNumModi,tNumModiCalc,stArcActWeldSet.ParamSetId[])
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Crater Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawW1GetCraterParamId(tNumModi :IN)
+DECL INT tNumModi
+DECL INT tNumModiCalc
+ON_ERROR_PROCEED
+tNumModiCalc = gArcW1AwMaxParamCrater[tNumModi,1]
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN -1
+ENDIF
+RETURN ArcCheckParamId(wArcW1CraterParams[,,],tNumModi,tNumModiCalc,stArcActCraterSet.ParamSetId[])
+ENDFCT
+;********************************************************
+;Arc Adaptive Welding speed active
+;********************************************************
+GLOBAL DEFFCT BOOL AawW1SpeedActiveOnSource()
+DECL BOOL tActive
+DECL INT tI
+DECL INT tMaxParam
+DECL stAdaptiveWelding_T tAdaptiveWelding
+IF (gArcAWOption == FALSE) THEN
+  RETURN FALSE
+ENDIF
+IF (gArcActIlfWelder <> 1) THEN
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tMaxParam = gArcW1AwMaxParamWelding[gArcActModeSwi,gArcActParamWelding]
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+FOR tI = 1 TO tMaxParam
+  ON_ERROR_PROCEED
+  tAdaptiveWelding = wW1OutAwParamSetWelding[gArcActModeSwi,gArcActParamWelding,tI]
+  IF (tAdaptiveWelding.KrlId == #Velocity) THEN
+    ON_ERROR_PROCEED
+    tActive = tAdaptiveWelding.Active
+    IF ($ERR.NUMBER > 0) THEN
+      tActive = FALSE
+      ERR_CLEAR($ERR)
+    ENDIF
+    RETURN ((tActive == TRUE) OR (tAdaptiveWelding.Source1.Active == TRUE) OR (tAdaptiveWelding.Source2.Active == TRUE) OR (tAdaptiveWelding.Source3.Active == TRUE) OR (tAdaptiveWelding.Source4.Active == TRUE) OR (tAdaptiveWelding.Source5.Active == TRUE))    
+  ENDIF
+ENDFOR
+RETURN FALSE
+ENDFCT

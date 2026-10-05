@@ -1,0 +1,56 @@
+{
+  "key": "mission-delta-v-budget",
+  "form": "Δv_mission = Δv_orbit + Σ_i loss_i,   既定 loss = { 重力損失 1200, 空力損失 120, 操舵損失 80 } [m/s]",
+  "variables": {
+    "Δv_mission": "ミッション所要ΔV [m/s]",
+    "Δv_orbit": "軌道投入に必要なΔV [m/s]",
+    "loss_i": "上昇損失の各成分（重力・空力・操舵）[m/s]"
+  },
+  "common_name": "ΔVバジェット（上昇損失込み）",
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "21,118-121",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "40",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    },
+    {
+      "id": "gate",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "46",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "validity_gate"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "losses": "既定値は定数推定値であり、軌道・機体形状・飛行経路に依らず同じ値を使う（rocket.py:20-21）",
+    "replacement": "6c で軌道積分に置換する前提の暫定値（rocket.py:119）",
+    "override": "losses 引数で差し替え可能（rocket.py:118,120）"
+  },
+  "validity_gate": "軌道3DOF積分を含む3点が揃うまで高忠実度化に進まない（06_adversarial_review_v2.md:46）",
+  "validity_gate_ref": "gate",
+  "limitations": "上昇損失が定数推定であり、±数百 m/s の不確かさを持つ。軌道積分を行っていないため、軌道高度・投入傾斜角・機体のTWR履歴による損失の差が反映されない。要求ΔVの絶対値としては使えない。",
+  "limitations_ref": "lim",
+  "limitations_basis": "explicit",
+  "limitations_inference": null,
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "式の形は標準だが、既定の損失値 1200/120/80 は原典の定数推定値であり文献値ではない（rocket.py:20-21 に『定数推定値。6cで軌道積分に置換』と明記）。"
+}

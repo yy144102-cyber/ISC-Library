@@ -1,0 +1,142 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibMath( )
+END
+;******************************************************************************
+;[Routine] Exponent Routine
+;******************************************************************************
+GLOBAL DEFFCT INT ArcExp(tNr :IN,tExp :IN)
+DECL INT tNr
+DECL INT tExp
+DECL INT tI
+DECL INT tReturn
+SWITCH tExp 
+  CASE 0
+    RETURN 1
+  CASE 1
+    RETURN tNr
+ENDSWITCH
+tReturn  = tNr
+FOR tI = 2 TO tExp
+  tReturn = tReturn + tReturn
+ENDFOR
+RETURN tReturn
+ENDFCT
+;******************************************************************************
+;[Routine] Exponent Routine
+;******************************************************************************
+GLOBAL DEFFCT BOOL ArcRestPresent(tRealNr :IN)
+DECL REAL tRealNr
+DECL INT tIntNr
+DECL REAL tReturnNr
+tIntNr = tRealNr
+tReturnNr = (tRealNr - tIntNr)
+IF (tReturnNr == 0.0) THEN
+  RETURN FALSE
+ELSE
+  RETURN TRUE
+ENDIF 
+ENDFCT
+;***************************************************************
+;[Global Routine] Check Range Between Min Max Value
+;Parameter:
+;         -tValue    : Value To Check
+;         -tMinValue : Minimum Value
+;         -tMaxValue : Maximum Value
+; Return:
+;         1 = In range
+;         0 = Internal Error
+;        -1 = Value too small
+;        -2 = Value too Big
+;***************************************************************
+GLOBAL DEFFCT INT ArcCheckRangeValue(tValue:IN, tMinValue :IN,tMaxValue :IN)
+DECL REAL tValue
+DECL REAL tMinValue
+DECL REAL tMaxValue
+DECL REAL tMinValue1
+DECL REAL tMaxValue1
+DECL REAL tReturn
+tReturn    = 0
+tMinValue1 = tMinValue
+tMaxValue1 = tMaxValue
+IF (tMinValue > tMaxValue) THEN
+  tMaxValue1 = tMinValue
+  tMinValue1 = tMaxValue
+ENDIF
+IF ((tValue >= tMinValue1) AND (tValue <= tMaxValue1)) THEN
+  tReturn = 1
+ENDIF
+IF ((tValue > tMinValue1) AND (tValue > tMaxValue1)) THEN
+  tReturn = -2
+ENDIF
+IF ((tValue < tMinValue1) AND (tValue < tMaxValue1)) THEN
+  tReturn = -1
+ENDIF
+RETURN tReturn
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Set Range Return: Min or Max Real Value
+; tOnRange:
+;         1 = In range
+;         0 = Internal Error
+;        -1 = Value too small
+;        -2 = Value too Big
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcSetRangeValue(tValue:IN, tMinValue :IN,tMaxValue :IN,tOnRange :OUT)
+DECL INT tOnRange
+DECL REAL tValue
+DECL REAL tMinValue
+DECL REAL tMaxValue
+DECL REAL tMinValue1
+DECL REAL tMaxValue1
+DECL REAL tReturn
+tOnRange   = 0
+tReturn    = 0
+tMinValue1 = tMinValue
+tMaxValue1 = tMaxValue
+IF (tMinValue > tMaxValue) THEN
+  tMaxValue1 = tMinValue
+  tMinValue1 = tMaxValue
+ENDIF
+IF ((tValue >= tMinValue1) AND (tValue <= tMaxValue1)) THEN
+  tReturn = tValue
+  tOnRange = 1
+ENDIF
+IF ((tValue > tMinValue1) AND (tValue > tMaxValue1)) THEN
+  tReturn = tMaxValue1
+  tOnRange = -2
+ENDIF
+IF ((tValue < tMinValue1) AND (tValue < tMaxValue1)) THEN
+  tReturn = tMinValue1
+  tOnRange = -1
+ENDIF
+RETURN tReturn
+ENDFCT
+;******************************************************************************
+;[Global Routine] Get Difference between points or frames
+;******************************************************************************
+GLOBAL DEFFCT REAL ArcDiffBetween(tFrame1:IN, tFrame2:IN)
+DECL FRAME tFrame1
+DECL FRAME tFrame2
+DECL REAL tResult
+tResult = 0.0
+tResult = tResult + (tFrame1.X - tFrame2.X) * (tFrame1.X - tFrame2.X)
+tResult = tResult + (tFrame1.Y - tFrame2.Y) * (tFrame1.Y - tFrame2.Y)
+tResult = tResult + (tFrame1.Z - tFrame2.Z) * (tFrame1.Z - tFrame2.Z)
+tResult = SQRT(tResult)
+RETURN tResult
+ENDFCT
+;******************************************************************************
+;[Global Routine] Get distance of 2 E6POS positions P1 and P2
+;******************************************************************************
+GLOBAL DEFFCT REAL ArcGetDistance(tP1:IN, tP2:IN )
+DECL E6POS tP1
+DECL E6POS tP2
+DECL REAL tdX
+DECL REAL tdY
+DECL REAL tdZ
+tdX = tP1.x-tP2.x
+tdY = tP1.y-tP2.y
+tdZ = tP1.z-tP2.z
+RETURN(SQRT((tdX*tdX)+(tdY*tdY)+(tdZ*tdZ)))
+ENDFCT

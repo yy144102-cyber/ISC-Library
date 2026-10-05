@@ -1,0 +1,29 @@
+&ACCESS RVO2
+&REL 24
+&PARAM DISKPATH = KRC:\R1
+DEF PYRO_FUNCTIONS()
+   ;/////////////////////////////////////////////////////////
+   ;                                                        ;
+   ;               SensorTherm Profinet Pyrometer           ;
+   ;                                                        ;
+   ;                    Created: 11/04/22                   ;
+   ;                                                        ;
+   ;                                                        ;
+   ; These are a set of functions used to configure the     ;
+   ; the Trailing pyrometer, the included functions         ;
+   ; provide initial setup and configuration of the device  ;
+   ; once first powered on. Scale the incoming data  and    ;
+   ; perform basic signal processing and displaying         ;
+   ;                                                        ;
+   ;                  Last Updated: 11/04/22                ;
+   ;                                                        ;
+   ;/////////////////////////////////////////////////////////
+END
+
+GLOBAL DEF PYRO_READ()
+   
+   r2ColourTemperature = i2ColourTemperature/10.0
+   r1ColourTemperatureCh1 = i1ColourTemperatureCh1/10.0
+   r1ColourTemperatureCh2 = i1ColourTemperatureCh2/10.0
+
+END

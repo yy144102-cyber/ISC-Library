@@ -1,0 +1,5 @@
+&ACCESS R
+&COMMENT Global ArcTech Weldings Dat
+DEFDAT  UserArcGlobalWDats PUBLIC
+
+ENDDAT

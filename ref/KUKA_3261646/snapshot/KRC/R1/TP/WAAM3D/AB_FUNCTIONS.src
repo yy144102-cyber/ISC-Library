@@ -1,0 +1,250 @@
+&ACCESS RVO2
+&REL 40
+&PARAM DISKPATH = KRC:\R1\TP\WAAM3D
+DEF AB_FUNCTIONS( )
+   ;/////////////////////////////////////////////////////////
+   ;                                                        ;
+   ;           Abicor Binzel Wire Feeder Functions          ;
+   ;                                                        ;
+   ;                    Created: 06/12/21                   ;
+   ;                                                        ;
+   ;                                                        ;
+   ; These are a set of functions used to configure the     ;
+   ; the Abicor Binzel Wire Feeder, the included functions  ;
+   ; provide initial setup and configuration of the drive   ;
+   ; once first powered on. Selection of either Job mode    ;
+   ; or automatic drive of the control unit and a submit    ;
+   ; loop for assigning and reading wirefeed speeds.        ;
+   ; Control of cold wire via PLC and MIG ArcTech.          ;
+   ; Fix for plasma systems so inching on pendant sets wire ;
+   ; feeder speed depending on the pressing of the button.  ;
+   ; Added reset function through the Welder Teach pendant  ;
+   ; error reset button to reconfigure the wire feeder      ;   
+   ;                                                        ;
+   ;                                                        ;
+   ;                  Last Updated: 25/04/23                ;
+   ;                                                        ;
+   ;/////////////////////////////////////////////////////////
+END
+
+GLOBAL DEF AB_Setup()
+   
+   AB_RESET()
+   
+   OP_MODE = 5
+   AB_PGNO = 0
+   
+   PULSE(ACK_FLT, TRUE, 0.5)
+   
+   REL_PRO = TRUE
+   
+   WAIT SEC 1
+   
+END
+
+GLOBAL DEF AB_RESET()
+   
+   AB_PGNO = 0
+   OP_MODE = 0
+   AB_WIREFEED_D_LSB = 0
+   AB_WIREFEED_D_MSB = 0
+   AB_WIREFEED_OUTPUT = 0
+   REL_PRO = FALSE
+   ACK_FLT = FALSE
+   START_WF = FALSE
+   FEED_WIRE = FALSE
+   START_WB = FALSE
+   
+END
+
+GLOBAL DEF AB_JOB_SELECTION(JNO :IN)
+   
+   DECL INT JNO
+   DECL INT OP_MIR
+   DECL INT PGNO_MIR
+   
+   AB_SETUP()
+   
+   OP_MODE = 2
+   AB_PGNO = JNO
+   
+   PULSE(ACK_FLT, TRUE, 0.5)
+   
+   REL_PRO = TRUE
+   
+   WAIT SEC 1
+   
+   PGNO_MIR = AB_PGNO_MIR
+   OP_MIR = OP_MODE_MIR
+   
+   IF OP_MODE == OP_MIR THEN
+      MsgNotify("AB OPERATOR MODE IS VALID.","AB WIREFEED")
+   ELSE
+      MsgNotify("AB OPERATOR MODE IS NOT VALID.","AB WIREFEED ERROR")
+   ENDIF
+   
+   IF AB_PGNO == PGNO_MIR THEN
+      MsgNotify("AB JOB NUMBER IS VALID.","AB WIREFEED")
+   ELSE
+      MsgNotify("AB JOB NUMBER IS NOT VALID.","AB WIREFEED ERROR")
+   ENDIF
+   
+END
+
+GLOBAL DEF AB_AUTOMATIC()
+   
+   DECL INT OP_MIR
+   
+   AB_RESET()
+   
+   OP_MODE = 5
+   AB_PGNO = 0
+   
+   PULSE(ACK_FLT, TRUE, 0.5)
+   
+   REL_PRO = TRUE
+   
+   WAIT SEC 1
+   
+   OP_MIR = OP_MODE_MIR
+   
+   IF OP_MODE == OP_MIR THEN
+      MsgNotify("AB OPERATOR MODE IS VALID AND IN AUTOMATIC.","AB WIREFEED")
+   ELSE
+      MsgNotify("AB OPERATOR MODE IS NOT VALID.","AB WIREFEED ERROR")
+   ENDIF
+   
+END
+
+GLOBAL DEF AB_SUBMIT_LOOP()
+   
+   IF NOT(skABWireFeedHistory == skArcWireFeed) THEN
+      IF (skArcWireFeed == 0) THEN
+         AB_WIREFEED_SPEED = 0
+         ERROR_INCH = TRUE
+      ELSE
+         SWITCH skArcWireFeed
+            CASE -1,1
+               AB_WIREFEED_SPEED = WIRE_INCH_SPEED * 1638.35
+            DEFAULT
+               ERROR_INCH = FALSE
+         ENDSWITCH
+      ENDIF
+      skABWireFeedHistory = skArcWireFeed
+   ENDIF
+   
+ 
+   
+   AB_WIREFEED_ACTUAL = ((AB_ACTUAL_MSB*256) + AB_ACTUAL_LSB) * ConversionFactor
+   AB_WIREFEED_OUTPUT = (AB_WIREFEED_ACTUAL * 1000)
+   $SEN_PREA[9] = AB_WIREFEED_ACTUAL
+   $SEN_PREA[10] = 2 * AB_WIREFEED_SPEED * 0.00015259
+   WIREFEED_SIGNALS[1] = WIRE_AVAILABLE
+   WIREFEED_SIGNALS[2] = WIRE_FEEDER_READY
+   WIREFEED_SIGNALS[3] = TRUE
+   WIREFEED_SIGNALS[4] = ERROR_INCH
+   WIREFEED_SIGNALS[5] = TRUE
+   WIREFEED_SIGNALS[6] = TRUE
+   WIREFEED_SIGNALS[7] = TRUE
+   WIREFEED_SIGNALS[8] = TRUE
+   WIREFEED_SIGNALS[9] = TRUE
+   WIREFEED_SIGNALS[10] = TRUE
+   
+   FOR MsgNum = 1 to 10
+      IF WIREFEED_SIGNALS[MsgNum] == FALSE THEN
+         IF ABData[MsgNum].AB_nHandle == 0 THEN
+            ABData[MsgNum].AB_nHandle = Set_KrlMsg (#state, ABData[MsgNum].AB_Msg, AB_Par[], ABData[MsgNum].AB_Opt)
+         ENDIF
+      ENDIF
+      
+      IF (ABData[MsgNum].AB_nHandle > 0) THEN
+         IF WIREFEED_SIGNALS[MsgNum] == TRUE THEN
+            AB_Result[MsgNum] = Clear_KrlMsg(ABData[MsgNum].AB_nHandle)
+            ABData[MsgNum].AB_nHandle = 0
+         ENDIF
+      ENDIF
+   ENDFOR
+   
+END
+
+GLOBAL DEF AB_SUBMIT_LOOP_PLC()
+   
+   IF (skArcKrlSetErrQuit == TRUE) THEN
+      AB_Setup()
+   ENDIF
+   
+   
+   AB_WIREFEED_ACTUAL = ((AB_ACTUAL_MSB*256) + AB_ACTUAL_LSB) * ConversionFactor
+   AB_WIREFEED_OUTPUT = (AB_WIREFEED_ACTUAL * 1000)
+   $SEN_PREA[1] = AB_WIREFEED_ACTUAL
+   
+   PLCWireOutputMSB = AB_ACTUAL_MSB
+   PLCWireOutputLSB = AB_ACTUAL_LSB
+   
+   ;ArcTech Control of Wire Feeder
+   IF ((CWFeed == TRUE) AND (COLD_WIRE == TRUE)) THEN
+      START_WF = TRUE
+      ;Switching of MSB and LSB from Arctech to AB Wire Feeder since it is reversed on the  manual
+      AB_WIREFEED_LSB = AB_WIREFEED_D_MSB
+      AB_WIREFEED_MSB = AB_WIREFEED_D_LSB
+   ELSE
+      IF ((CWRetract == TRUE) AND (COLD_WIRE == TRUE))THEN
+         START_WB = TRUE
+         AB_WIREFEED_LSB = AB_WIREFEED_D_MSB
+         AB_WIREFEED_MSB = AB_WIREFEED_D_LSB
+      ELSE  
+         ;PLC Control of Cold Wire Feed
+         IF ((PLCFeed == TRUE) AND (COLD_WIRE == FALSE)) THEN
+            START_WF = TRUE
+            ;Flipped, PLC needs flipping too
+            AB_WIREFEED_LSB = PLCWireFeedSpeedMSB
+            AB_WIREFEED_MSB = PLCWireFeedSpeedLSB
+         ELSE   
+            IF ((PLCRetract == TRUE) AND (COLD_WIRE == FALSE)) THEN
+               START_WB = TRUE
+               AB_WIREFEED_LSB = PLCWireFeedSpeedMSB
+               AB_WIREFEED_MSB = PLCWireFeedSpeedLSB
+            ELSE
+               START_WB = FALSE
+               AB_WIREFEED_LSB = 0
+               AB_WIREFEED_MSB = 0 
+               START_WF = FALSE
+            ENDIF
+         ENDIF
+      ENDIF
+   ENDIF
+   
+
+   
+   
+   AB_WIREFEED_ACTUAL = ((AB_ACTUAL_MSB*256) + AB_ACTUAL_LSB) * ConversionFactor
+   AB_WIREFEED_OUTPUT = (AB_WIREFEED_ACTUAL * 1000)
+   ;$SEN_PREA[9] = AB_WIREFEED_ACTUAL
+   ;$SEN_PREA[10] = 2 * AB_WIREFEED_SPEED * 0.00015259
+   WIREFEED_SIGNALS[1] = WIRE_AVAILABLE
+   WIREFEED_SIGNALS[2] = WIRE_FEEDER_READY
+   WIREFEED_SIGNALS[3] = TRUE
+   WIREFEED_SIGNALS[4] = ERROR_INCH
+   WIREFEED_SIGNALS[5] = TRUE
+   WIREFEED_SIGNALS[6] = TRUE
+   WIREFEED_SIGNALS[7] = TRUE
+   WIREFEED_SIGNALS[8] = TRUE
+   WIREFEED_SIGNALS[9] = TRUE
+   WIREFEED_SIGNALS[10] = TRUE
+   
+   FOR MsgNum = 1 to 10
+      IF WIREFEED_SIGNALS[MsgNum] == FALSE THEN
+         IF ABData[MsgNum].AB_nHandle == 0 THEN
+            ABData[MsgNum].AB_nHandle = Set_KrlMsg (#state, ABData[MsgNum].AB_Msg, AB_Par[], ABData[MsgNum].AB_Opt)
+         ENDIF
+      ENDIF
+      
+      IF (ABData[MsgNum].AB_nHandle > 0) THEN
+         IF WIREFEED_SIGNALS[MsgNum] == TRUE THEN
+            AB_Result[MsgNum] = Clear_KrlMsg(ABData[MsgNum].AB_nHandle)
+            ABData[MsgNum].AB_nHandle = 0
+         ENDIF
+      ENDIF
+   ENDFOR
+   
+END

@@ -1,0 +1,78 @@
+&ACCESS RVO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF WVDepositionMaster( )
+DECL INT i,StartLayer,EndLayer
+DECL REAL HightPitch,Velocity,SX,SY,SZ
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+StartLayer = 3
+EndLayer = 20
+HightPitch = 4.0
+Velocity = 1200.0
+SX = 110.0
+SY = 0.0
+SZ = 0.0
+
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+PTP XHOMEX
+
+FOR i = StartLayer TO EndLayer
+   I[1] = i
+   oLayerNum = i
+   oSideNum = 1
+   oLayerType = 10
+   oLayerIndex = 1
+   WAAM_RSI_ON()
+   IF i <> (i / 2) * 2 THEN
+      WVDepositionOJ(i,HightPitch,Velocity,SX,SY,SZ)
+   ELSE
+      WVDepositionRJ(i,HightPitch,Velocity,SX,SY,SZ)
+   ENDIF
+   WAAM_RSI_OFF()
+   IF i < EndLayer THEN
+      HALT
+      ;WAIT SEC 30.0
+   ENDIF
+ENDFOR
+
+MotionPar(#PTPmotion,10.0)
+PTP XHOMEX
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END

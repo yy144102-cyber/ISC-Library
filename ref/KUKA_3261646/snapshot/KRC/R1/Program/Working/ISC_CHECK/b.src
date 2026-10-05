@@ -1,0 +1,63 @@
+&ACCESS RVO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF b( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD PTP P1 Vel=100 % PDAT1 Tool[1]:EE_CWGMA Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=100; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = FP1
+BAS(#PTP_PARAMS, 100.0)
+SET_CD_PARAMS (0)
+PTP XP1
+;ENDFOLD
+;FOLD ARCON WDAT1 (Layer3 Seam12) LIN P1 Vel=0.1 m/s CPDAT1 Tool[1]:EE_CWGMA Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arconlin; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.1; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT1; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = FP1
+BAS(#CP_PARAMS, 0.1)
+SET_CD_PARAMS (0)
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+LIN XP1
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+;ENDFOLD
+;FOLD ARCOFF WDAT1 LIN P2 CPDAT1 Tool[1]:EE_CWGMA Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arcofflin; Kuka.IsGlobalPoint=False; Kuka.PointName=P2; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.1; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT1; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = FP2
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS (0)
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP2) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP2) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP2) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP2)
+LIN XP2
+ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP2)
+;ENDFOLD
+
+END

@@ -1,0 +1,50 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcApplInterface( )
+END
+;*****************************************************************************************
+; Is STT 4.X > Active
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcIsSttActive()
+IF (gArcSttV4Option == TRUE) THEN
+  RETURN (STTCmdInterface(1) == 1) ;SimTechTracking option present and active
+ENDIF
+RETURN FALSE  ;SimTechTracking not active
+ENDFCT
+;***************************************************************************************** 
+; Command Arc Commands
+; INT = ArcCmdInterface(tCmd,tArg1,tArg2,tArg3,tArg4)
+;                         Return: -1 Disable
+;***************************************************************************************** 
+;--------------------------------------------------
+; Get Command:
+;--------------------------------------------------
+;       ArcCmdInterface(1) ;Set error and stop restart                                              (tCmd=1)
+;                          Return: ;Nothing not used  
+;
+;       ArcCmdInterface(2) ;Reset error and restart                                                 (tCmd=2)
+;                          Return: ;Nothing not used  
+;
+;       ArcCmdInterface(3) ;Remote ArcOff                                                           (tCmd=3)
+;                         Return: ;Nothing not used  
+GLOBAL DEFFCT INT ArcCmdInterface(tCmd:IN,tArg1:OUT,tArg2:OUT,tArg3:OUT,tArg4:OUT)
+DECL BOOL tBool
+DECL INT  tCmd  ;Command
+DECL INT  tArg1 ;Argument 1
+DECL REAL tArg2 ;Argument 2
+DECL REAL tArg3 ;Argument 3
+DECL REAL tArg4 ;Argument 4
+SWITCH tCmd
+  CASE 1
+    gArcNoErrorRestart = TRUE
+    SetErrorState(#DefaultError) ;SetErrorToArcTech
+    RETURN 0 ;Nothing not used
+  CASE 2
+    gArcNoErrorRestart = FALSE
+    RETURN 0 ;Nothing not used
+  CASE 3
+    ArcRemoteArcOff()
+    RETURN 0 ;Nothing not used
+ENDSWITCH
+RETURN 0 ;Nothing not used
+ENDFCT

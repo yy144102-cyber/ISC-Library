@@ -1,0 +1,167 @@
+&ACCESS RVO
+&REL 22
+DEF LAYER_HANDLER()
+
+   ;FOLD USER DECL
+
+       SIGNAL LYNO $IN[33] TO $IN[48]
+
+       SIGNAL MIRROR_LYNO $OUT[33] TO $OUT[48]
+
+       SIGNAL LYNO_VALID $IN[11]
+
+       SIGNAL LYNO_ERR $IN[12]
+
+       SIGNAL LAYER_COMPLETE $OUT[67]
+
+       SIGNAL STOP_AUTO $OUT[68]
+
+   ;ENDFOLD (USER DECL)
+
+
+   STOP_AUTO = FALSE
+
+   LAYER_COMPLETE = FALSE
+
+   MIRROR_LYNO = LYNO
+
+
+
+
+   WAIT FOR (LYNO_VALID OR LYNO_ERR)
+
+
+   IF LYNO_ERR == TRUE THEN
+
+       MsgNotify("LAYER NUMBER IS NOT VALID","ERROR")
+
+   ENDIF
+
+
+   IF LYNO_VALID == TRUE THEN
+
+       MsgNotify("LAYER NUMBER IS VALID","LAYER")
+
+       SWITCH LYNO
+
+
+          CASE 1
+             CircD2015_10mm()
+          CASE 2 
+             ;SingleDeposition5mm()
+          CASE 3
+             ;SingleDeposition10mm()
+          CASE 4 
+             ;layer4()
+          
+          CASE 5 
+             ;SATCylinder5()          
+          
+          CASE 6 
+             ;SATCylinder6()
+             
+          CASE 7 
+            ;SATCylinder7()
+             
+          CASE 8 
+             ;SATCylinder8()
+             
+          CASE 9 
+            ;SATCylinder9()
+             
+          CASE 10 
+             ExtAxis_Rotation()
+             
+          ;CASE 11 
+             ;layer11()
+             
+          ;CASE 12 
+             ;layer12()
+             
+          ;CASE 13 
+             ;layer13()
+                
+          ;CASE 14 
+             ;layer14()
+             
+          ;CASE 15 
+             ;layer15()
+             
+          ;CASE 16 
+             ;layer16()
+             
+          ;CASE 17 
+             ;layer17()
+             
+          ;CASE 18 
+             ;layer18()
+             
+          ;CASE 19 
+             ;layer19()
+             
+          ;CASE 20 
+             ;layer20()
+             
+          ;CASE 21 
+             ;layer21()
+             
+          ;CASE 22 
+             ;layer22()
+             
+          ;CASE 23 
+             ;layer23()
+                       
+          ;CASE 24 
+             ;layer24()
+             
+          ;CASE 25 
+             ;layer25()
+             
+          ;CASE 26 
+             ;layer26()
+             
+          ;CASE 27 
+             ;layer27()
+                
+          ;CASE 28 
+             ;layer28()
+             
+          ;CASE 29 
+             ;layer29()
+             
+          ;CASE 30 
+             ;layer30()
+             
+          ;CASE 31 
+             ;layer31()
+             
+          ;CASE 32 
+             ;layer32()
+             
+          ;CASE 33 
+             ;layer33()
+             
+          ;CASE 34 
+             ;layer34()
+             
+          ;CASE 35 
+             ;layer35()
+             
+          ;CASE 36 
+             ;layer36()
+           DEFAULT
+
+
+             PULSE(STOP_AUTO, TRUE, 0.2)
+       ENDSWITCH
+
+
+   ENDIF
+
+
+   MIRROR_LYNO = 0
+
+   LAYER_COMPLETE = TRUE
+
+
+END

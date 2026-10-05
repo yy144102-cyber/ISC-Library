@@ -1,0 +1,1146 @@
+&ACCESS R2
+&COMMENT ArcWeave
+DEF ArcWeave( )
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Init All Arc MechGenerator Tech Standard + Spline
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveSubMitInit()
+;Standard
+ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator1])
+ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator2])
+ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator3])
+$TECH_C[ctArcMechGenerator1].FCTCTRL               = mArcInitFctCtrlWeavePtp
+$TECH_C[ctArcMechGenerator2].FCTCTRL               = mArcInitFctCtrlWeavePtp
+$TECH_C[ctArcMechGenerator3].FCTCTRL               = mArcInitFctCtrlWeavePtp
+;Spline
+ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator1])
+ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator2])
+ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator3])
+$SPL_TECH_C[ctArcMechGenerator1].REF_SYS.GEOREF    = #NONE
+$SPL_TECH_C[ctArcMechGenerator2].REF_SYS.GEOREF    = #NONE
+$SPL_TECH_C[ctArcMechGenerator3].REF_SYS.GEOREF    = #NONE
+mArcWeaveFGActive1                                 = FALSE
+mArcWeaveFGActive2                                 = FALSE
+mArcWeaveFGActive3                                 = FALSE
+gArcWeaveFGDelayActive                             = FALSE
+mWeavePattern                                      = mArcWeavePatternInit
+stActWeaveTrigger                                  = mArcWeavePatternInit
+stActWeaveContinue                                 = mArcWeavePatternInit
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Init All Arc MechGenerator Tech Standard + Spline
+;*****************************************************************************************
+GLOBAL DEF ArcWeavePreDefinition()
+mArcWeaveFGActive1           = FALSE
+mArcWeaveFGActive2           = FALSE
+mArcWeaveFGActive3           = FALSE
+gArcWeaveFGDelayActive       = FALSE
+mWeavePattern                = mArcWeavePatternInit
+stActWeaveTrigger            = mArcWeavePatternInit
+stActWeaveContinue           = mArcWeavePatternInit
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Check All Arc MechGenerator Tech Standard + Spline
+;*****************************************************************************************
+GLOBAL DEF ArcCheckWeaveCondition()
+DECL BOOL tMechGeneratorOk
+tMechGeneratorOk = TRUE
+IF ($TECH_OPT == FALSE) THEN
+  LOOP
+    ArcMsgWrite(,#QUIT,"TechOptionNotSet","ARC",10120,Opt_VLSTOP_LOG)
+  ENDLOOP
+ENDIF
+IF (ArcCheckRangeValue(ctArcMechGenerator1,1,6) < 0) THEN
+  tMechGeneratorOk = FALSE
+ENDIF
+IF (ArcCheckRangeValue(ctArcMechGenerator2,1,6) < 0) THEN
+  tMechGeneratorOk = FALSE
+ENDIF
+IF (ArcCheckRangeValue(ctArcMechGenerator3,1,6) < 0) THEN
+  tMechGeneratorOk = FALSE
+ENDIF
+IF (ctArcMechGenerator1 == ctArcMechGenerator2) THEN
+  tMechGeneratorOk = FALSE
+ENDIF
+IF (ctArcMechGenerator2 == ctArcMechGenerator3) THEN
+  tMechGeneratorOk = FALSE
+ENDIF
+IF (tMechGeneratorOk == FALSE) THEN
+  IF (stArcCallState.MoveType == #SplBlock) THEN
+    BRAKE
+  ENDIF
+  LOOP
+    ArcMsgWrite(,#QUIT,"NumbersOfFunctiongeneratorsZeroOrInvalid","ARC",10121,Opt_VLSTOP_LOG)
+  ENDLOOP
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] GetPattern
+;*****************************************************************************************
+DEFFCT stWeavePattern_T ArcGetPattern(tWeaveSet :IN)
+DECL stWeave_T tWeaveSet
+DECL stWeavePattern_T tWeavePattern
+SWITCH tWeaveSet.Pattern
+  CASE #None
+    ArcWriteDiag(gArcDebugWeave,"[WEAVE] ArcSetWeaveParameter None")
+    tWeavePattern = mArcWeavePatternInit
+  CASE #Triangle
+    tWeavePattern = ArcWeavePattern[1]
+  CASE #Trapecoid
+    IF (stArcCallState.MoveType == #Std) THEN
+      IF ((tWeaveSet.LeftSideDelay > 0) OR (tWeaveSet.RightSideDelay > 0)) THEN
+        tWeavePattern = ArcWeavePattern[9] ;Dynamic calculated Trapezoid
+      ELSE
+        tWeavePattern = ArcWeavePattern[2]
+      ENDIF
+    ELSE
+      IF ((tWeaveSet.LeftSideDelay > 0) OR (tWeaveSet.RightSideDelay > 0)) THEN
+        tWeavePattern = ArcWeavePattern[9] ;Dynamic calculated Trapezoid
+      ELSE
+        tWeavePattern = gArcTrapezoidSpl
+      ENDIF
+    ENDIF
+  CASE #UnsymetricTrapecoid
+    IF (stArcCallState.MoveType == #Std) THEN
+      tWeavePattern = ArcWeavePattern[3]
+    ELSE
+      tWeavePattern = gArcUnsymTrapezoidSpl
+    ENDIF
+  CASE #Spiral
+    tWeavePattern = ArcWeavePattern[4]
+  CASE #Double8
+    tWeavePattern = ArcWeavePattern[5]
+  CASE #OnSeam
+    tWeavePattern = ArcWeavePattern[6]
+  CASE #EdgeBottom
+    tWeavePattern = ArcWeavePattern[7]
+  CASE #EdgeTop
+    tWeavePattern = ArcWeavePattern[8]
+  CASE #UserDefined1
+    tWeavePattern = ArcWeavePattern[cArcUserFigure1]
+  CASE #UserDefined2
+    tWeavePattern = ArcWeavePattern[cArcUserFigure2]
+  CASE #UserDefined3
+    tWeavePattern = ArcWeavePattern[cArcUserFigure3]
+  CASE #UserDefined4
+    tWeavePattern = ArcWeavePattern[cArcUserFigure4]
+  CASE #UserDefined5
+    tWeavePattern = ArcWeavePattern[cArcUserFigure5]
+  DEFAULT
+    LOOP
+      ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"Pattern not found")
+    ENDLOOP
+ENDSWITCH
+ArcWriteDiag(gArcDebugWeave,"[WEAVE] ArcSetWeaveParameter",tWeavePattern.Name[])
+RETURN tWeavePattern
+ENDFCT
+;*****************************************************************************************
+;[GLOBAL Routine] Weaving Start
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveOn(tExecType :IN,tWeaveSet :IN)
+DECL stWeave_T tWeaveSet
+DECL enArcExecType_T tExecType
+DECL stWeavePattern_T tWeavePattern
+DECL INT iCall
+
+;Workaround for KukaSim Function ArcCallFromRoutine not working
+iCall = 1
+IF (tExecType == #TriggerCall) THEN
+ iCall = 2
+ENDIF
+
+IF (gArcColdSeam == TRUE) THEN
+  ArcWriteDiag(gArcDebugWeave,"[WEAVE] ArcWeaveOn: ColdSeam") 
+  ArcWeaveOff()
+  RETURN
+ENDIF
+
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  iCall = ArcCallFromRoutine()
+ENDIF
+
+ArcWriteDiag(gArcDebugWeave,"[WEAVE] ArcWeaveOn")
+
+IF (tExecType == #TriggerCall) THEN
+  SWITCH stArcCallState.MoveType
+    CASE #SplBlock
+      tWeavePattern = stActWeaveTrigger
+    DEFAULT
+      tWeavePattern = stActWeaveContinue
+  ENDSWITCH
+ELSE
+  tWeavePattern = stActWeaveContinue
+ENDIF
+
+IF (IsAnySpline()) THEN
+  ;Spline
+  SWITCH iCall
+    CASE 1 ;Call From Robot
+      IF (stArcCallState.MoveType == #SplBlock) THEN
+        LOOP
+          ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Spline")
+        ENDLOOP
+      ENDIF
+      IF (tWeavePattern.Tech1.Active == TRUE) THEN
+        $SPL_TECH[ctArcMechGenerator1].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator1])
+      ENDIF
+      IF (tWeavePattern.Tech2.Active == TRUE) THEN
+        $SPL_TECH[ctArcMechGenerator2].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator2])
+      ENDIF
+      IF (tWeavePattern.Tech3.Active == TRUE) THEN
+        $SPL_TECH[ctArcMechGenerator3].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator3])
+      ENDIF
+      ArcWeaveSetLAValue(tWeaveSet)
+    CASE 2 ;Call From Robot Trigger
+      IF (tWeavePattern.Tech1.Active == TRUE) THEN
+        $SPL_TECH_C[ctArcMechGenerator1].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator1])
+      ENDIF
+      IF (tWeavePattern.Tech2.Active == TRUE) THEN
+        $SPL_TECH_C[ctArcMechGenerator2].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator2])
+      ENDIF
+      IF (tWeavePattern.Tech3.Active == TRUE) THEN
+        $SPL_TECH_C[ctArcMechGenerator3].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator3])
+      ENDIF
+      ArcWeaveSetLAValue_C(tWeaveSet)
+    DEFAULT
+      LOOP
+        ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Spline")
+      ENDLOOP
+  ENDSWITCH
+ENDIF
+IF (stArcCallState.MoveType == #Std) THEN
+  ;Standard
+  SWITCH iCall
+    CASE 1 ;Call From Robot
+      IF (tWeavePattern.Tech1.Active == TRUE) THEN
+        $TECH[ctArcMechGenerator1].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH[ctArcMechGenerator1])
+      ENDIF
+      IF (tWeavePattern.Tech2.Active == TRUE) THEN
+        $TECH[ctArcMechGenerator2].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH[ctArcMechGenerator2])
+      ENDIF
+      IF (tWeavePattern.Tech3.Active == TRUE) THEN
+        $TECH[ctArcMechGenerator3].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH[ctArcMechGenerator3])
+      ENDIF
+      IF ((tWeavePattern.Tech1.Active == TRUE) OR (tWeavePattern.Tech2.Active == TRUE) OR (tWeavePattern.Tech3.Active == TRUE)) THEN 
+        ArcWeaveSetLAValue(tWeaveSet)
+      ENDIF
+    CASE 2 ;Call From Robot Trigger
+      IF (tWeavePattern.Tech1.Active == TRUE) THEN
+        $TECH_C[ctArcMechGenerator1].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator1])
+      ENDIF
+      IF (tWeavePattern.Tech2.Active == TRUE) THEN
+        $TECH_C[ctArcMechGenerator2].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator2])
+      ENDIF
+      IF (tWeavePattern.Tech3.Active == TRUE) THEN
+        $TECH_C[ctArcMechGenerator3].MODE = #CYCLE
+      ELSE
+        ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator3])
+      ENDIF
+      ArcWeaveSetLAValue_C(tWeaveSet)
+    DEFAULT 
+      LOOP
+        ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Standard")
+      ENDLOOP
+  ENDSWITCH
+ENDIF
+SWITCH iCall
+  CASE 1 ;Call From Robot
+    ArcWeaveDelayActive(stActWeaveContinue)
+  CASE 2 ;Call From Robot Trigger
+    ArcWeaveDelayActive(stActWeaveTrigger)
+ENDSWITCH
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Weaving Stop
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveOff(iCall:IN)
+DECL INT iCall
+
+IF (stArcCallState.MoveType == #SplBlock) THEN
+  iCall = 2
+ENDIF
+
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  iCall = ArcCallFromRoutine()
+ENDIF
+
+SWITCH iCall
+  CASE 1 ;Call From Robot
+    ;Standard
+    ArcWriteDiag(gArcDebugWeave,"[WEAVE] Call From Robot ArcWeaveOff") 
+    ArcWeaveSetTechOff($TECH[ctArcMechGenerator1])
+    ArcWeaveSetTechOff($TECH[ctArcMechGenerator2])
+    ArcWeaveSetTechOff($TECH[ctArcMechGenerator3])
+    ;Spline
+    ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator1])
+    ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator2])
+    ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator3])
+  CASE 2,3,4 ;Call From Robot Trigger
+    ;Standard
+    ArcWriteDiag(gArcDebugWeave,"[WEAVE] Call From Robot Trigger ArcWeaveOff") 
+    ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator1])
+    ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator2])
+    ArcWeaveSetTechOff($TECH_C[ctArcMechGenerator3])
+    ;Spline
+    ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator1])
+    ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator2])
+    ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator3])
+  DEFAULT 
+ENDSWITCH 
+mArcWeaveFGActive1                                     = FALSE
+mArcWeaveFGActive2                                     = FALSE
+mArcWeaveFGActive3                                     = FALSE
+gArcWeaveFGDelayActive                                 = FALSE
+mWeavePattern                                          = mArcWeavePatternInit
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Init All Tech Standard + Spline
+;*****************************************************************************************
+GLOBAL DEF ArcSetWeaveParameter(tExecType :IN,tWeaveSetIn :IN)
+DECL enArcExecType_T tExecType
+DECL INT tI
+DECL REAL tLength,tAmplitude,tAngle,tLTimeDelay,tRTimeDelay,tTimeOut
+DECL stWeave_T tWeaveSetIn
+DECL stWeave_T tWeaveSet
+DECL TECHANGLE tTechAngle
+DECL stWeavePattern_T tWeavePattern
+DECL INT iCall
+
+tWeaveSet = tWeaveSetIn
+;Workaround for KukaSim Function ArcCallFromRoutine not working
+iCall = 1
+IF (tExecType == #TriggerCall) THEN
+ iCall = 2
+ENDIF
+
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  iCall = ArcCallFromRoutine()
+ENDIF
+
+;ToDo Check Call InAdvance ArcMain
+;IF (ArcCheckFgCondition() == FALSE) THEN
+;  tWeaveSet.Pattern = #None
+;ENDIF
+
+tTechAngle = {A 0.0,B 0.0,C 0.0}
+tWeavePattern = ArcGetPattern(tWeaveSet)
+IF (tWeaveSet.Amplitude > 100) THEN
+  tWeaveSet.Amplitude = tWeaveSet.Amplitude - 100
+ENDIF
+tAngle                                  = ArcSetRangeValue(tWeaveSet.Angle,cArcWeaveMinAngle,cArcWeaveMaxAngle)
+tLength                                 = ArcSetRangeValue(tWeaveSet.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+tAmplitude                              = ArcSetRangeValue(tWeaveSet.Amplitude,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+tLTimeDelay                             = ArcSetRangeValue(tWeaveSet.LeftSideDelay,cArcWeaveMinDelayTime,cArcWeaveMaxDelayTime)
+tRTimeDelay                             = ArcSetRangeValue(tWeaveSet.RightSideDelay,cArcWeaveMinDelayTime,cArcWeaveMaxDelayTime)
+tWeavePattern.Tech1                     = ArcCheckDelayValue(tWeavePattern.Tech1,tLTimeDelay,tRTimeDelay)
+tWeavePattern.Tech2                     = ArcCheckDelayValue(tWeavePattern.Tech2,tLTimeDelay,tRTimeDelay)
+tWeavePattern.Tech3                     = ArcCheckDelayValue(tWeavePattern.Tech3,tLTimeDelay,tRTimeDelay)
+tWeavePattern.Tech1.Active              = FALSE
+tWeavePattern.Tech2.Active              = FALSE
+tWeavePattern.Tech3.Active              = FALSE
+IF (ArcTechGeoRefActive(tWeavePattern.Tech1.FCTCTRL.GEOREF) == TRUE) THEN
+  tWeavePattern.Tech1.FCTCTRL.SCALE_IN  = tLength    ;Length
+  tWeavePattern.Tech1.FCTCTRL.SCALE_OUT = tAmplitude ;Amplitude
+  tWeavePattern.Tech1.ANGLE             = tAngle     ;Angle
+  tTechAngle.C                          = tAngle     ;Angle
+  tWeavePattern.Tech1.Active            = TRUE
+ENDIF
+IF (ArcTechGeoRefActive(tWeavePattern.Tech2.FCTCTRL.GEOREF) == TRUE) THEN
+  tWeavePattern.Tech2.FCTCTRL.SCALE_IN  = tLength    ;Length
+  tWeavePattern.Tech2.FCTCTRL.SCALE_OUT = tAmplitude ;Amplitude
+  tWeavePattern.Tech2.ANGLE             = tAngle     ;Angle
+  tTechAngle.C                          = tAngle     ;Angle
+  tWeavePattern.Tech2.Active            = TRUE
+ENDIF
+IF (ArcTechGeoRefActive(tWeavePattern.Tech3.FCTCTRL.GEOREF) == TRUE) THEN
+  tWeavePattern.Tech3.FCTCTRL.SCALE_IN  = tLength    ;Length
+  tWeavePattern.Tech3.FCTCTRL.SCALE_OUT = tAmplitude ;Amplitude
+  tWeavePattern.Tech3.ANGLE             = tAngle     ;Angle
+  tTechAngle.C                          = tAngle     ;Angle
+  tWeavePattern.Tech3.Active            = TRUE
+ENDIF
+IF (IsAnySpline()) THEN
+  SWITCH iCall
+    CASE 1 ;Call From Robot
+      IF (stArcCallState.MoveType == #SplBlock) THEN
+        LOOP
+          ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Spline")
+        ENDLOOP
+      ENDIF
+      gArcWeaveFGDelayActive = FALSE
+      IF (stActWeaveTrigger.WeavePatternKey <> #None) THEN
+        IF (stActWeaveTrigger.WeavePatternKey <> tWeavePattern.WeavePatternKey) THEN
+          ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator1])
+          ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator2])
+          ArcWeaveSetTechSplOff($SPL_TECH[ctArcMechGenerator3])
+          FOR tI = 0 TO 2
+            tTimeOut = 0.5 ;s
+            WAIT FOR (($TECHVAL[ctArcMechGenerator1] == 0) OR TIMER_LIMIT(tTimeOut))
+            WAIT FOR (($TECHVAL[ctArcMechGenerator2] == 0) OR TIMER_LIMIT(tTimeOut))
+            WAIT FOR (($TECHVAL[ctArcMechGenerator3] == 0) OR TIMER_LIMIT(tTimeOut))
+          ENDFOR
+        ENDIF
+      ENDIF
+      IF (gArcIsOnSimEnvironment == TRUE) THEN
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,$TECH[ctArcMechGenerator1],$SPL_TECH[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,$TECH[ctArcMechGenerator2],$SPL_TECH[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,$TECH[ctArcMechGenerator3],$SPL_TECH[ctArcMechGenerator3])
+      ELSE
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,,$SPL_TECH[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,,$SPL_TECH[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,,$SPL_TECH[ctArcMechGenerator3])
+      ENDIF
+    CASE 2 ;Call From Robot Trigger
+      gArcWeaveFGDelayActive = FALSE
+      IF (stActWeaveTrigger.WeavePatternKey <> #None) THEN
+        IF (stActWeaveTrigger.WeavePatternKey <> tWeavePattern.WeavePatternKey) THEN
+          ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator1])
+          ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator2])
+          ArcWeaveSetTechSplOff($SPL_TECH_C[ctArcMechGenerator3])
+          FOR tI = 0 TO 2
+            tTimeOut = 0.5 ;s
+            WAIT FOR (($TECHVAL[ctArcMechGenerator1] == 0) OR TIMER_LIMIT(tTimeOut))
+            WAIT FOR (($TECHVAL[ctArcMechGenerator2] == 0) OR TIMER_LIMIT(tTimeOut))
+            WAIT FOR (($TECHVAL[ctArcMechGenerator3] == 0) OR TIMER_LIMIT(tTimeOut))
+          ENDFOR
+        ENDIF
+      ENDIF
+      IF (gArcIsOnSimEnvironment == TRUE) THEN
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,$TECH_C[ctArcMechGenerator1],$SPL_TECH_C[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,$TECH_C[ctArcMechGenerator2],$SPL_TECH_C[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,$TECH_C[ctArcMechGenerator3],$SPL_TECH_C[ctArcMechGenerator3])
+      ELSE
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,,$SPL_TECH_C[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,,$SPL_TECH_C[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,,$SPL_TECH_C[ctArcMechGenerator3])
+      ENDIF
+
+    DEFAULT 
+      LOOP
+        ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Spline")
+      ENDLOOP
+  ENDSWITCH
+ENDIF
+IF (stArcCallState.MoveType == #Std) THEN
+  ;Standard
+  SWITCH iCall
+    CASE 1 ;Call From Robot
+      IF (gArcIsOnSimEnvironment == TRUE) THEN
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,$TECH[ctArcMechGenerator1],$SPL_TECH[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,$TECH[ctArcMechGenerator2],$SPL_TECH[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,$TECH[ctArcMechGenerator3],$SPL_TECH[ctArcMechGenerator3])
+      ELSE
+        ArcSetTechWeave(tWeavePattern.Tech1,tWeaveSet,$TECH[ctArcMechGenerator1])
+        ArcSetTechWeave(tWeavePattern.Tech2,tWeaveSet,$TECH[ctArcMechGenerator2])
+        ArcSetTechWeave(tWeavePattern.Tech3,tWeaveSet,$TECH[ctArcMechGenerator3])
+      ENDIF
+      $TECHANGLE = tTechAngle
+    CASE 2 ;Call From Robot Trigger
+    DEFAULT 
+      LOOP
+        ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"WEAVE: Call Standard")
+      ENDLOOP
+  ENDSWITCH
+ENDIF
+  SWITCH iCall
+  CASE 1 ;Call From Robot
+    stActWeaveContinue = tWeavePattern
+  CASE 2 ;Call From Robot Trigger
+    stActWeaveTrigger = tWeavePattern
+ENDSWITCH
+END
+;*****************************************************************************************
+;[GLOBAL Routine] Set ActWeave to Trigger Weave
+;*****************************************************************************************
+GLOBAL DEF ArcOnSetWeaveParameter()
+  stActWeaveTrigger = stActWeaveContinue
+END
+;*****************************************************************************************
+;[Routine] Set Weave Value
+;*****************************************************************************************
+DEF ArcSetTechWeave(tPattern :OUT,tWeaveSet :OUT,tArcWeaveSetStandard :OUT,tArcWeaveSetSpline :OUT)
+DECL BOOL tBool
+DECL INT tCpNum
+DECL stWeave_T tWeaveSet
+DECL stPattern_T tPattern
+DECL TECH tArcWeaveSetStandard
+DECL SPL_TECH tArcWeaveSetSpline
+ON_ERROR_PROCEED
+tPattern = tPattern
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  ArcMsgWriteS(,#NOTIFY,"UnknownMechanicalPattern","ARC",10122,Opt_NOVLSTOP_NOLOG,gArcSeamName[])
+  RETURN
+ENDIF
+IF (tPattern.Active == FALSE) THEN
+  RETURN
+ENDIF
+;+++++++++++++++++++++++++++++++
+;              CS1
+;+++++++++++++++++++++++++++++++
+tCpNum = 0
+tBool = TRUE
+IF (ArcVarExistR(tPattern.CPS1.X1) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X1 = tPattern.CPS1.X1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X1 = tPattern.CPS1.X1
+  tArcWeaveSetStandard.FCT.CPS1.Y1 = tPattern.CPS1.Y1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y1 = tPattern.CPS1.Y1
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X2) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X2 = tPattern.CPS1.X2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X2 = tPattern.CPS1.X2
+  tArcWeaveSetStandard.FCT.CPS1.Y2 = tPattern.CPS1.Y2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y2 = tPattern.CPS1.Y2
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X3) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X3 = tPattern.CPS1.X3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X3 = tPattern.CPS1.X3
+  tArcWeaveSetStandard.FCT.CPS1.Y3 = tPattern.CPS1.Y3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y3 = tPattern.CPS1.Y3
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X4) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X4 = tPattern.CPS1.X4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X4 = tPattern.CPS1.X4
+  tArcWeaveSetStandard.FCT.CPS1.Y4 = tPattern.CPS1.Y4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y4 = tPattern.CPS1.Y4
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X5) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X5 = tPattern.CPS1.X5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X5 = tPattern.CPS1.X5
+  tArcWeaveSetStandard.FCT.CPS1.Y5 = tPattern.CPS1.Y5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y5 = tPattern.CPS1.Y5
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X6) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X6 = tPattern.CPS1.X6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X6 = tPattern.CPS1.X6
+  tArcWeaveSetStandard.FCT.CPS1.Y6 = tPattern.CPS1.Y6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y6 = tPattern.CPS1.Y6
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X7) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X7 = tPattern.CPS1.X7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X7 = tPattern.CPS1.X7
+  tArcWeaveSetStandard.FCT.CPS1.Y7 = tPattern.CPS1.Y7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y7 = tPattern.CPS1.Y7
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X8) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X8 = tPattern.CPS1.X8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X8 = tPattern.CPS1.X8
+  tArcWeaveSetStandard.FCT.CPS1.Y8 = tPattern.CPS1.Y8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y8 = tPattern.CPS1.Y8
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X9) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X9 = tPattern.CPS1.X9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X9 = tPattern.CPS1.X9
+  tArcWeaveSetStandard.FCT.CPS1.Y9 = tPattern.CPS1.Y9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y9 = tPattern.CPS1.Y9
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS1.X10) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS1.X10 = tPattern.CPS1.X10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.X10 = tPattern.CPS1.X10
+  tArcWeaveSetStandard.FCT.CPS1.Y10 = tPattern.CPS1.Y10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS1.Y10 = tPattern.CPS1.Y10
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+;+++++++++++++++++++++++++++++++
+;             CS2
+;+++++++++++++++++++++++++++++++
+IF (ArcVarExistR(tPattern.CPS2.X1) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X1 = tPattern.CPS2.X1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X1 = tPattern.CPS2.X1
+  tArcWeaveSetStandard.FCT.CPS2.Y1 = tPattern.CPS2.Y1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y1 = tPattern.CPS2.Y1
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X2) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X2 = tPattern.CPS2.X2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X2 = tPattern.CPS2.X2
+  tArcWeaveSetStandard.FCT.CPS2.Y2 = tPattern.CPS2.Y2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y2 = tPattern.CPS2.Y2
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X3) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X3 = tPattern.CPS2.X3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X3 = tPattern.CPS2.X3
+  tArcWeaveSetStandard.FCT.CPS2.Y3 = tPattern.CPS2.Y3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y3 = tPattern.CPS2.Y3
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X4) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X4 = tPattern.CPS2.X4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X4 = tPattern.CPS2.X4
+  tArcWeaveSetStandard.FCT.CPS2.Y4 = tPattern.CPS2.Y4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y4 = tPattern.CPS2.Y4
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X5) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X5 = tPattern.CPS2.X5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X5 = tPattern.CPS2.X5
+  tArcWeaveSetStandard.FCT.CPS2.Y5 = tPattern.CPS2.Y5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y5 = tPattern.CPS2.Y5
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X6) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X6 = tPattern.CPS2.X6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X6 = tPattern.CPS2.X6
+  tArcWeaveSetStandard.FCT.CPS2.Y6 = tPattern.CPS2.Y6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y6 = tPattern.CPS2.Y6
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X7) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X7 = tPattern.CPS2.X7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X7 = tPattern.CPS2.X7
+  tArcWeaveSetStandard.FCT.CPS2.Y7 = tPattern.CPS2.Y7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y7 = tPattern.CPS2.Y7
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X8) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X8 = tPattern.CPS2.X8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X8 = tPattern.CPS2.X8
+  tArcWeaveSetStandard.FCT.CPS2.Y8 = tPattern.CPS2.Y8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y8 = tPattern.CPS2.Y8
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS2.X9) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X9 = tPattern.CPS2.X9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X9 = tPattern.CPS2.X9
+  tArcWeaveSetStandard.FCT.CPS2.Y9 = tPattern.CPS2.Y9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y9 = tPattern.CPS2.Y9
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF 
+IF (ArcVarExistR(tPattern.CPS2.X10) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS2.X10 = tPattern.CPS2.X10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.X10 = tPattern.CPS2.X10
+  tArcWeaveSetStandard.FCT.CPS2.Y10 = tPattern.CPS2.Y10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS2.Y10 = tPattern.CPS2.Y10  
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE  
+ENDIF
+;+++++++++++++++++++++++++++++++
+;            CS3
+;+++++++++++++++++++++++++++++++
+IF (ArcVarExistR(tPattern.CPS3.X1) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X1 = tPattern.CPS3.X1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X1 = tPattern.CPS3.X1
+  tArcWeaveSetStandard.FCT.CPS3.Y1 = tPattern.CPS3.Y1
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y1 = tPattern.CPS3.Y1
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X2) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X2 = tPattern.CPS3.X2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X2 = tPattern.CPS3.X2
+  tArcWeaveSetStandard.FCT.CPS3.Y2 = tPattern.CPS3.Y2
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y2 = tPattern.CPS3.Y2
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X3) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X3 = tPattern.CPS3.X3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X3 = tPattern.CPS3.X3
+  tArcWeaveSetStandard.FCT.CPS3.Y3 = tPattern.CPS3.Y3
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y3 = tPattern.CPS3.Y3
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X4) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X4 = tPattern.CPS3.X4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X4 = tPattern.CPS3.X4
+  tArcWeaveSetStandard.FCT.CPS3.Y4 = tPattern.CPS3.Y4
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y4 = tPattern.CPS3.Y4
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X5) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X5 = tPattern.CPS3.X5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X5 = tPattern.CPS3.X5
+  tArcWeaveSetStandard.FCT.CPS3.Y5 = tPattern.CPS3.Y5
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y5 = tPattern.CPS3.Y5
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X6) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X6 = tPattern.CPS3.X6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X6 = tPattern.CPS3.X6
+  tArcWeaveSetStandard.FCT.CPS3.Y6 = tPattern.CPS3.Y6
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y6 = tPattern.CPS3.Y6
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X7) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X7 = tPattern.CPS3.X7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X7 = tPattern.CPS3.X7
+  tArcWeaveSetStandard.FCT.CPS3.Y7 = tPattern.CPS3.Y7
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y7 = tPattern.CPS3.Y7
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X8) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X8 = tPattern.CPS3.X8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X8 = tPattern.CPS3.X8
+  tArcWeaveSetStandard.FCT.CPS3.Y8 = tPattern.CPS3.Y8
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y8 = tPattern.CPS3.Y8
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X9) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X9 = tPattern.CPS3.X9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X9 = tPattern.CPS3.X9
+  tArcWeaveSetStandard.FCT.CPS3.Y9 = tPattern.CPS3.Y9
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y9 = tPattern.CPS3.Y9
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (ArcVarExistR(tPattern.CPS3.X10) AND (tBool == TRUE)) THEN
+  tArcWeaveSetStandard.FCT.CPS3.X10 = tPattern.CPS3.X10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.X10 = tPattern.CPS3.X10
+  tArcWeaveSetStandard.FCT.CPS3.Y10 = tPattern.CPS3.Y10
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPS3.Y10 = tPattern.CPS3.Y10
+  tCpNum = tCpNum + 1
+ELSE
+  tBool = FALSE
+ENDIF
+IF (tCpNum > 0) THEN
+  tArcWeaveSetStandard.FCT.CPNUM = tCpNum                             ;Total number of valid control points with reference to the following 4 control point structures
+  tArcWeaveSetStandard.CLASS = #PATH                                  ;The input variable is the arc Length of a spline motion $DISTANCE (unit: mm)
+  tArcWeaveSetStandard.FCTCTRL.GEOREF = tPattern.FCTCTRL.GEOREF       ;Reference coordinate system selection (TECHSYS sys)
+  tArcWeaveSetStandard.FCT.ORDER = 1                                  ;Weave pattern is defined by a polygon (sufficient in the case of thermal weaving alone)
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.CPNUM = tCpNum                    ;Total number of valid control points with reference to the following 4 control point structures
+  tArcWeaveSetSpline.FCT.POLYNOMIAL.BOUND_COND = #CYCLIC              ;the function is evaluated cyclically.
+  tArcWeaveSetSpline.CLASS = #PATH                                    ;the input variable is the arc Length of a spline motion $DISTANCE (unit: mm)
+  tArcWeaveSetSpline.REF_SYS.GEOREF = tPattern.FCTCTRL.GEOREF         ;Reference coordinate system selection (TECHSYS sys)
+  tArcWeaveSetSpline.REF_SYS.ANGLES.C = tPattern.ANGLE                ;The orientation of the TCP changes
+  IF ((tWeaveSet.Pattern == #Trapecoid) AND ((tWeaveSet.LeftSideDelay > 0) OR (tWeaveSet.RightSideDelay > 0))) THEN
+    tArcWeaveSetSpline.FCT.POLYNOMIAL.ORDER = 1                         ;Weave pattern is defined by a polygon (sufficient in the case of thermal weaving alone)
+    tArcWeaveSetSpline.FADE_IN = 0.25
+    tArcWeaveSetSpline.FADE_OUT = 0.25
+  ELSE
+    tArcWeaveSetSpline.FCT.POLYNOMIAL.ORDER = 3                         ;Weave pattern is defined by a cubic spline (required in the case of mechanical weaving)
+  ENDIF
+ELSE
+  tArcWeaveSetStandard = mArcInitWeavePtp
+  tArcWeaveSetSpline.MODE = #OFF
+  tArcWeaveSetSpline.FCTCTRL.SCALE_IN   = mDefault_SPL_SCALE_IN
+  tArcWeaveSetSpline.FCTCTRL.SCALE_OUT  = mDefault_SPL_SCALE_OUT
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] Set Weave Length and Aplitude
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveSetLAValue(tWeaveSet :IN)
+DECL REAL tLength,tAmplitude
+DECL stWeave_T tWeaveSet
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  IF (ArcCallFromRoutine() <> 1) THEN ;Must been Call From Robot
+    RETURN
+  ENDIF
+ENDIF
+IF (ArcCheckFgCondition() == TRUE) THEN
+  tLength    = ArcSetRangeValue(tWeaveSet.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+  tAmplitude = ArcSetRangeValue(tWeaveSet.Amplitude,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+  IF (IsAnySpline()) THEN
+    IF (($SPL_TECH[ctArcMechGenerator1].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH[ctArcMechGenerator1].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($SPL_TECH[ctArcMechGenerator2].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH[ctArcMechGenerator2].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($SPL_TECH[ctArcMechGenerator2].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH[ctArcMechGenerator2].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+  ENDIF
+  IF (stArcCallState.MoveType == #Std) THEN
+    IF (($TECH[ctArcMechGenerator1].FCTCTRL.GEOREF <> #NONE) AND ($TECH[ctArcMechGenerator1].FCT.CPNUM > 2)) THEN
+      $TECH[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = tLength
+      $TECH[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($TECH[ctArcMechGenerator2].FCTCTRL.GEOREF <> #NONE) AND ($TECH[ctArcMechGenerator2].FCT.CPNUM > 2)) THEN
+      $TECH[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = tLength
+      $TECH[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($TECH[ctArcMechGenerator3].FCTCTRL.GEOREF <> #NONE) AND ($TECH[ctArcMechGenerator3].FCT.CPNUM > 2)) THEN
+      $TECH[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = tLength
+      $TECH[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF  
+  ENDIF
+ELSE
+  $TECH[ctArcMechGenerator1].FCTCTRL.SCALE_IN      = mDefault_SCALE_IN
+  $TECH[ctArcMechGenerator1].FCTCTRL.SCALE_OUT     = mDefault_SCALE_OUT
+  $TECH[ctArcMechGenerator2].FCTCTRL.SCALE_IN      = mDefault_SCALE_IN
+  $TECH[ctArcMechGenerator2].FCTCTRL.SCALE_OUT     = mDefault_SCALE_OUT
+  $TECH[ctArcMechGenerator3].FCTCTRL.SCALE_IN      = mDefault_SCALE_IN
+  $TECH[ctArcMechGenerator3].FCTCTRL.SCALE_OUT     = mDefault_SCALE_OUT
+  $SPL_TECH[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = mDefault_SPL_SCALE_IN
+  $SPL_TECH[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = mDefault_SPL_SCALE_OUT
+  $SPL_TECH[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = mDefault_SPL_SCALE_IN
+  $SPL_TECH[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = mDefault_SPL_SCALE_OUT
+  $SPL_TECH[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = mDefault_SPL_SCALE_IN
+  $SPL_TECH[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = mDefault_SPL_SCALE_OUT
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] Set from TRIGGER Weave Length and Amplitude
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveSetLAValue_C(tWeaveSet :IN)
+DECL REAL tLength,tAmplitude
+DECL stWeave_T tWeaveSet
+IF (gArcIsOnSimEnvironment == FALSE) THEN
+  IF (ArcCallFromRoutine() <> 2) THEN ;Must been Call From Robot Trigger
+    RETURN
+  ENDIF
+ENDIF
+IF (ArcCheckFgCondition() == TRUE) THEN
+  tLength    = ArcSetRangeValue(tWeaveSet.Length,cArcWeaveMinLength,cArcWeaveMaxLength)
+  tAmplitude = ArcSetRangeValue(tWeaveSet.Amplitude,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+  IF (IsAnySpline()) THEN
+    IF (($SPL_TECH_C[ctArcMechGenerator1].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH_C[ctArcMechGenerator1].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($SPL_TECH_C[ctArcMechGenerator2].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH_C[ctArcMechGenerator2].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($SPL_TECH_C[ctArcMechGenerator3].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH_C[ctArcMechGenerator3].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      $SPL_TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = tLength
+      $SPL_TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+  ENDIF
+  IF (stArcCallState.MoveType == #Std) THEN
+    IF (($TECH_C[ctArcMechGenerator1].FCTCTRL.GEOREF <> #NONE) AND ($TECH_C[ctArcMechGenerator1].FCT.CPNUM > 2)) THEN
+      $TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = tLength
+      $TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($TECH_C[ctArcMechGenerator2].FCTCTRL.GEOREF <> #NONE) AND ($TECH_C[ctArcMechGenerator2].FCT.CPNUM > 2)) THEN
+      $TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = tLength
+      $TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+    IF (($TECH_C[ctArcMechGenerator3].FCTCTRL.GEOREF <> #NONE) AND ($TECH_C[ctArcMechGenerator3].FCT.CPNUM > 2)) THEN
+      $TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = tLength
+      $TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = tAmplitude
+    ENDIF
+  ENDIF
+ELSE
+  $TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_IN      = mDefault_C_SCALE_IN
+  $TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_OUT     = mDefault_C_SCALE_OUT
+  $TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_IN      = mDefault_C_SCALE_IN
+  $TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_OUT     = mDefault_C_SCALE_OUT
+  $TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_IN      = mDefault_C_SCALE_IN
+  $TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_OUT     = mDefault_C_SCALE_OUT
+  $SPL_TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_IN  = mDefault_C_SPL_SCALE_IN
+  $SPL_TECH_C[ctArcMechGenerator1].FCTCTRL.SCALE_OUT = mDefault_C_SPL_SCALE_OUT
+  $SPL_TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_IN  = mDefault_C_SPL_SCALE_IN
+  $SPL_TECH_C[ctArcMechGenerator2].FCTCTRL.SCALE_OUT = mDefault_C_SPL_SCALE_OUT
+  $SPL_TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_IN  = mDefault_C_SPL_SCALE_IN
+  $SPL_TECH_C[ctArcMechGenerator3].FCTCTRL.SCALE_OUT = mDefault_C_SPL_SCALE_OUT
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] Set from TRIGGER Weave Length and Amplitude
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveSetValue_C(tArcMechGenerator :IN,tKrlId :IN, tValue :IN)
+DECL REAL tLength
+DECL REAL tAmplitude
+DECL REAL tAngle
+DECL REAL tValue
+DECL INT tArcMechGenerator
+DECL enKrlId_T tKrlId
+IF (ArcCheckFgCondition() == TRUE) THEN
+  tLength    = ArcSetRangeValue(tValue,cArcWeaveMinLength,cArcWeaveMaxLength)
+  tAmplitude = ArcSetRangeValue(tValue,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+  tAngle     = ArcSetRangeValue(tValue,cArcWeaveMinAngle,cArcWeaveMaxAngle)
+  IF (IsAnySpline()) THEN
+    IF (($SPL_TECH_C[tArcMechGenerator].REF_SYS.GEOREF <> #NONE) AND ($SPL_TECH_C[tArcMechGenerator].FCT.POLYNOMIAL.CPNUM > 2)) THEN
+      SWITCH tKrlId
+        CASE #Length
+          $SPL_TECH_C[tArcMechGenerator].FCTCTRL.SCALE_IN  = tLength
+        CASE #Amplitude
+          $SPL_TECH_C[tArcMechGenerator].FCTCTRL.SCALE_OUT = tAmplitude
+        CASE #Angle
+          $SPL_TECH_C[tArcMechGenerator].REF_SYS.ANGLES.C = tAngle
+      ENDSWITCH
+    ENDIF
+  ENDIF
+  IF (stArcCallState.MoveType == #Std) THEN
+    IF (($TECH_C[tArcMechGenerator].FCTCTRL.GEOREF <> #NONE) AND ($TECH_C[tArcMechGenerator].FCT.CPNUM > 2)) THEN
+      SWITCH tKrlId
+        CASE #Length
+          $TECH_C[tArcMechGenerator].FCTCTRL.SCALE_IN  = tLength
+       CASE #Amplitude
+         $TECH_C[tArcMechGenerator].FCTCTRL.SCALE_OUT = tAmplitude
+       CASE #Angle
+         $TECHANGLE_C.C = tAngle
+       ENDSWITCH
+    ENDIF
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] Set Off Tech
+;*****************************************************************************************
+DEF ArcWeaveSetTechOff(tArcWeaveSetStandard :OUT)
+DECL TECH tArcWeaveSetStandard
+tArcWeaveSetStandard.MODE              = #OFF
+tArcWeaveSetStandard.FCTCTRL.SCALE_IN  = mDefault_SCALE_IN
+tArcWeaveSetStandard.FCTCTRL.SCALE_OUT = mDefault_SCALE_OUT
+END
+;*****************************************************************************************
+;[Routine] Set Off Spline Tech
+;*****************************************************************************************
+DEF ArcWeaveSetTechSplOff(tArcWeaveSetSpline :OUT)
+DECL SPL_TECH tArcWeaveSetSpline
+tArcWeaveSetSpline.MODE              = #OFF
+tArcWeaveSetSpline.FCTCTRL.SCALE_IN  = mDefault_SPL_SCALE_IN
+tArcWeaveSetSpline.FCTCTRL.SCALE_OUT = mDefault_SPL_SCALE_OUT
+END
+;*****************************************************************************************
+;Weave Delay On
+;*****************************************************************************************
+GLOBAL DEF ArcWeaveDelayActive(tWeavePattern:IN)
+DECL BOOL tBool
+DECL REAL tAmplitude
+DECL stWeavePattern_T tWeavePattern
+ON_ERROR_PROCEED
+tWeavePattern.Tech1 = tWeavePattern.Tech1
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN
+ENDIF
+tBool = FALSE
+IF ((tWeavePattern.Tech1.LDelay.Active == TRUE) OR (tWeavePattern.Tech1.RDelay.Active == TRUE)) THEN
+  tAmplitude = tWeavePattern.Tech1.FCTCTRL.SCALE_OUT
+  tBool = TRUE
+ENDIF  
+IF ((tWeavePattern.Tech2.LDelay.Active == TRUE) OR (tWeavePattern.Tech2.RDelay.Active == TRUE)) THEN
+  tAmplitude = tWeavePattern.Tech2.FCTCTRL.SCALE_OUT
+  tBool = TRUE
+ENDIF  
+IF ((tWeavePattern.Tech3.LDelay.Active == TRUE) OR (tWeavePattern.Tech3.RDelay.Active == TRUE)) THEN
+  tAmplitude = tWeavePattern.Tech3.FCTCTRL.SCALE_OUT
+  tBool = TRUE
+ENDIF  
+IF (tBool == FALSE) THEN
+  IF (gArcWeaveFGDelayActive == TRUE) THEN
+    INTERRUPT OFF irtArcWeaveDelay
+  ENDIF
+  gArcWeaveFGDelayActive = FALSE
+  mWeavePattern = mArcWeavePatternInit
+  ;ArcWriteDiag("[WEAVE] ArcWeaveDelayActive Deactive")
+  RETURN
+ENDIF
+mWeavePattern            = tWeavePattern
+gArcThresholdPosWeaveDly = tAmplitude * ABS(gArcTechValThreshold)
+gArcThresholdNegWeaveDly = (-gArcThresholdPosWeaveDly)
+IF (gArcWeaveFGDelayActive == TRUE) THEN
+  RETURN
+ENDIF
+gArcWeaveFGDelayActive   = TRUE
+$CYCFLAG[cfArcWeaveEdgeCfNr] = ((gArcWeaveFGDelayActive == TRUE) AND (gArcThresholdNegWeaveDly > $TECHVAL[ctArcMechGenerator1]) OR ($TECHVAL[ctArcMechGenerator1] > gArcThresholdPosWeaveDly) OR (gArcThresholdNegWeaveDly > $TECHVAL[ctArcMechGenerator2]) OR ($TECHVAL[ctArcMechGenerator2] > gArcThresholdPosWeaveDly) OR (gArcThresholdNegWeaveDly > $TECHVAL[ctArcMechGenerator3]) OR ($TECHVAL[ctArcMechGenerator3] > gArcThresholdPosWeaveDly))
+GLOBAL INTERRUPT DECL irtArcWeaveDelay WHEN $CYCFLAG[cfArcWeaveEdgeCfNr]  DO ArcWaitDelay()
+INTERRUPT ON irtArcWeaveDelay
+;ArcWriteDiag("[WEAVE] ArcWeaveDelayActive Active")
+END
+;*****************************************************************************************
+;Weave Delay Wait
+;*****************************************************************************************
+DEF ArcWaitDelay()
+INTERRUPT OFF irtArcWeaveDelay
+IF (ArcWeaveDelay(ctArcMechGenerator1,mWeavePattern.Tech1) == FALSE) THEN
+  IF (ArcWeaveDelay(ctArcMechGenerator1,mWeavePattern.Tech2) == FALSE) THEN
+    IF (ArcWeaveDelay(ctArcMechGenerator1,mWeavePattern.Tech3) == FALSE) THEN
+    ENDIF
+  ENDIF
+ENDIF
+INTERRUPT ON irtArcWeaveDelay
+END
+;*****************************************************************************************
+;Weave Delay
+;*****************************************************************************************
+DEFFCT BOOL ArcWeaveDelay(tNum :IN, tPattern: OUT)
+DECL INT tNum
+DECL INT tMemTime
+DECL REAL tWaitTime
+DECL REAL tArcActOvAppl
+DECL stPattern_T tPattern
+tWaitTime = 0.0
+IF ($TECH_C[tNum].FCTCTRL.GEOREF <> #NONE) OR ($SPL_TECH_C[tNum].REF_SYS.GEOREF <> #NONE)THEN
+  IF ($TECHVAL[tNum] > gArcTechValThreshold) THEN
+    IF (tPattern.LDelay.Active == TRUE) THEN
+      tWaitTime = tPattern.LDelay.TimeDelay
+    ENDIF    
+  ENDIF
+  IF ($TECHVAL[tNum] < (gArcTechValThreshold*(-1))) THEN
+    IF (tPattern.RDelay.Active == TRUE) THEN
+      tWaitTime = tPattern.RDelay.TimeDelay
+    ENDIF
+  ENDIF
+ENDIF
+IF (tWaitTime > 0.0) THEN
+  tArcActOvAppl = $OV_APPL
+  $OV_APPL = 0
+  ;WAIT FOR TIMER_LIMIT(tWaitTime) Problem with nesting when error
+  tMemTime = ArcCalcTimeoutSec(tWaitTime)
+  REPEAT
+  UNTIL ($ROB_TIMER > tMemTime)
+  IF (tArcActOvAppl > 0) THEN
+    $OV_APPL = tArcActOvAppl
+  ELSE
+    $OV_APPL = cOvApplDefault
+  ENDIF
+  RETURN TRUE
+ENDIF
+RETURN FALSE
+ENDFCT
+;*****************************************************************************************
+;[Routine] check ArcTechGeoRef Active
+;*****************************************************************************************
+DEFFCT BOOL ArcTechGeoRefActive(tTechGeoRef :OUT)
+DECL TECHGEOREF tTechGeoRef
+ON_ERROR_PROCEED
+tTechGeoRef = tTechGeoRef
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+IF (tTechGeoRef == #NONE) THEN
+  RETURN FALSE
+ENDIF
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Check Delay Value
+;*****************************************************************************************
+DEFFCT stPattern_T ArcCheckDelayValue(tPattern :OUT,tLTimeDelay :IN,tRTimeDelay :IN)
+DECL REAL tLTimeDelay,tRTimeDelay
+DECL stPattern_T tPattern
+ON_ERROR_PROCEED
+tPattern.LDelay.Active = tPattern.LDelay.Active
+IF ($ERR.NUMBER == 0) THEN
+  IF (tLTimeDelay > 0.0) THEN
+    tPattern.LDelay.TimeDelay = tLTimeDelay
+  ELSE
+    tPattern.LDelay = {Active FALSE,TimeDelay 0.0}
+  ENDIF
+ELSE
+  ERR_CLEAR($ERR)
+  tPattern.LDelay = {Active FALSE,TimeDelay 0.0}
+ENDIF
+ON_ERROR_PROCEED
+tPattern.RDelay.Active = tPattern.RDelay.Active
+IF ($ERR.NUMBER == 0) THEN
+  IF (tRTimeDelay > 0.0) THEN
+    tPattern.RDelay.TimeDelay = tRTimeDelay
+  ELSE
+    tPattern.RDelay = {Active FALSE,TimeDelay 0.0}
+  ENDIF
+ELSE
+  ERR_CLEAR($ERR)
+  tPattern.RDelay = {Active FALSE,TimeDelay 0.0}
+ENDIF
+ON_ERROR_PROCEED
+tPattern.FCTCTRL.GEOREF = tPattern.FCTCTRL.GEOREF
+IF ($ERR.NUMBER == 0) THEN
+  IF (tPattern.FCTCTRL.GEOREF == #NONE) THEN
+    tPattern.LDelay = {Active FALSE,TimeDelay 0.0}
+    tPattern.RDelay = {Active FALSE,TimeDelay 0.0}
+  ENDIF
+ELSE
+  ERR_CLEAR($ERR)
+  tPattern.LDelay = {Active FALSE,TimeDelay 0.0}
+  tPattern.RDelay = {Active FALSE,TimeDelay 0.0}
+ENDIF
+RETURN tPattern
+ENDFCT
+;*****************************************************************************************
+;[Routine] Check if Weave Pattern Valid Switch ON
+;*****************************************************************************************
+DEFFCT BOOL ArcCheckFgCondition()
+DECL BOOL tActive
+tActive = TRUE
+IF (stArcFeatureState.Act.Weave == FALSE) THEN 
+   tActive = FALSE
+ENDIF
+RETURN tActive
+ENDFCT

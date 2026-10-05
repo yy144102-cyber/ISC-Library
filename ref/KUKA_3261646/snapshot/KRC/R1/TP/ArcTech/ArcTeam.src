@@ -1,0 +1,1328 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcTeam( )
+END
+;*****************************************************************************************
+;Routine Robot Team State
+;*****************************************************************************************
+GLOBAL DEF ArcRTInit()
+  gArcRobotTeamState = #Init
+END
+;*****************************************************************************************
+;Routine Robot Team State
+;*****************************************************************************************
+GLOBAL DEF ArcRTState()
+DECL BOOL tRobotTeamOk
+DECL BOOL rRobotSlaveOk
+tRobotTeamOk = TRUE
+tRobotTeamOk = ($MOTIONCOOP == TRUE)          AND (tRobotTeamOk == TRUE)
+tRobotTeamOk = ($PINGCOOPKRC > 0)             AND (tRobotTeamOk == TRUE)
+tRobotTeamOk = ($LOCAL_NETWORK_OK == TRUE)    AND (tRobotTeamOk == TRUE)
+tRobotTeamOk = ($COMPLETE_NETWORK_OK == TRUE) AND (tRobotTeamOk == TRUE)
+
+SWITCH gArcRobotTeamState
+  ;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+  CASE #Init
+  ;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+   IF (tRobotTeamOk == TRUE) THEN
+     gArcRobotTeamState = #InitTeam
+   ENDIF
+   IF (($COOP_KRC[2].NAME[1] == " ") == TRUE) THEN
+     gArcRobotTeamState = #RobotTeamDisable
+   ENDIF
+  ;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+  CASE #InitTeam
+  ;MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+   ArcRTInitVars()
+   ArcRTResetStrategy()
+   IF (wArcWeldingMaster == TRUE) THEN
+     gArcRobotTeamState = #MasterInit
+   ELSE
+     gArcRobotTeamState = #SlaveInit
+   ENDIF
+   IF (ArcRTGetNrOfSlaves() == 0) THEN
+     gArcRobotTeamState = #MasterErrorNrOfSlave
+   ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+  CASE #MasterInit
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+    gArcRobotTeamState = #MasterWaitingSlaves
+    IF (ArcRTChecMaster() == FALSE) THEN
+      gArcRobotTeamState = #MasterErrorNrOfMaster
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+  CASE #MasterWaitingSlaves
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+    IF (ArcWaitingAllSlaveState() == TRUE) THEN
+      gArcRobotTeamState = #MasterSet
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+  CASE #MasterSet
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gArcNumberOfSlaves = ArcRTGetNrOfSlaves()
+    ArcRTSetSlaveId()
+    ArcLoadMasterName()
+    ArcSetMasterNameToSlaves()
+    ArcSetDataToMaster()
+    gArcRobotTeamState = #MasterReady
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MasterReady
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gArcRobotTeamOk = TRUE
+    mArcRTCheckRobotTeam = mArcRTCheckRobotTeam + 1
+    IF (mArcRTCheckRobotTeam > 50) THEN
+      mArcRTCheckRobotTeam = 0
+      gArcRobotTeamState = #MasterCheckRobotTeam
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MasterCheckRobotTeam
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+    gArcRobotTeamState = #MasterReady
+    IF (ArcRobotTeamOk() == FALSE) THEN
+      gArcRobotTeamState = #Init
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+  CASE #MasterErrorNrOfMaster
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcMsgWrite(mArcMsgHandle,#QUIT,"NotExactOneMaster","ARC",20001,Opt_VLSTOP_LOG)
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+  CASE #MasterErrorNrOfSlave
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcMsgWrite(mArcMsgHandle,#QUIT,"RobotTeamSlaveMissing","ARC",20001,Opt_VLSTOP_LOG)    
+  ;SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+  CASE #SlaveInit
+  ;SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    gArcRobotTeamState = #SlaveWaiting
+    ArcMsgWrite(mArcMsgHandle1,#STATE,"RobotTeamWaitingMaster","ARC",20025,Opt_VLSTOP_LOG)
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #SlaveWaiting
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+    IF (gArcIsOnSimEnvironment == FALSE) THEN
+     rRobotSlaveOk = ((gArcNumberOfSlaves > 0) AND (ArcIsStrEmpty(ArcMasterName[]) == FALSE))
+    ELSE
+       ArcMasterName[] = $COOP_KRC[2].NAME[]
+       rRobotSlaveOk = (gArcNumberOfSlaves > 0)
+    ENDIF      
+    IF (rRobotSlaveOk == TRUE) THEN      
+      ArcGetDatafromMaster()
+      gArcRobotTeamState = #SlaveReady 
+    ENDIF    
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #SlaveReady
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gArcRobotTeamOk = TRUE
+    ArcMsgWriteClearHandle(mArcMsgHandle1)
+    IF (gArcRobotTeamInit == TRUE) THEN
+      gArcRobotTeamInit = FALSE
+      gArcRobotTeamState = #Init
+    ENDIF
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #RobotTeamDisable
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ;Empty
+ENDSWITCH
+END
+;*****************************************************************************************
+;Routine Robot Team Initialization Variables
+;*****************************************************************************************
+GLOBAL DEF ArcRTInitVars()
+DECL BOOL tB
+  mArcRTCheckRobotTeam = 0
+  gArcRobotTeamOk = FALSE
+  gArcSlaveId = 0
+  gArcNumberOfSlaves = 0
+  tB = STRCOPY(ArcMasterName[]," ")
+  ArcMsgWriteClearHandle(mArcMsgHandle)
+  ArcMsgWriteClearHandle(mArcMsgHandle1)
+END
+;*****************************************************************************************
+;Routine Robot Team Reset
+;*****************************************************************************************
+GLOBAL DEF ArcRTResetStrategy()
+DECL INT tI
+tI = 1
+WHILE (ArcArrayStrategyExist(stArcTeamIgnStrategy[],tI) == TRUE)
+  stArcTeamIgnStrategy[tI]= {MsgType #NONE,IgnitionFailureMsgType #QUIT,IgnitionReaction #KeepOnPosition,MaxRestart 0,MaxErrStrategies 0,Index 0,RecoveryTime 0.0,FwdDistance 0.0}
+  tI = tI + 1
+ENDWHILE
+tI = 1
+WHILE ( ArcArrayStrategyExist(stArcTeamWeldStrategy[],tI) == TRUE)
+  stArcTeamWeldStrategy[tI]= {MsgType #QUIT,WeldErrReaction #KeepOnPosition,MaxBreaksOnSeam 0,MotionOnSeam 0,Index 0, NoErrorUntilSeamEnd FALSE}
+  tI = tI + 1
+ENDWHILE
+END
+;*****************************************************************************************
+;Routine Set Slave Id
+;*****************************************************************************************
+DEF ArcRTSetSlaveId()
+DECL INT tI
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcSlaveId",tI,#NONE)
+  tI = tI + 1
+ENDWHILE
+END
+;*****************************************************************************************
+;Routine Read number of robot slaves
+;*****************************************************************************************
+DEFFCT INT ArcRTGetNrOfSlaves()
+DECL INT tI
+DECL INT tNrRobots
+tNrRobots = 0
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  tNrRobots = tNrRobots + 1
+  tI = tI + 1
+ENDWHILE
+RETURN  tNrRobots
+ENDFCT
+;*****************************************************************************************
+;Routine Check how many masters robots are active
+;*****************************************************************************************
+DEFFCT BOOL ArcRTChecMaster()
+DECL INT tI
+DECL INT tNrOfMasters
+tNrOfMasters = 1
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  IF (ArcRemoteGetVarB($COOP_KRC[tI].NAME[],"wArcWeldingMaster",#NONE) == TRUE) THEN
+    tNrOfMasters = tNrOfMasters + 1
+  ENDIF
+  tI = tI + 1
+ENDWHILE
+RETURN (tNrOfMasters == 1)
+ENDFCT
+;*****************************************************************************************
+;Routine Check if Slave are Ok
+;*****************************************************************************************
+DEFFCT BOOL ArcRobotTeamOk()
+DECL INT tI
+DECL CHAR tSlaveState[256]
+IF ($PRO_STATE1 == #P_ACTIVE) THEN
+  RETURN TRUE
+ENDIF
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  tSlaveState[] = ArcRemoteGetVarS($COOP_KRC[tI].NAME[],"gArcRobotTeamState",#NONE)    
+  IF (STRCOMP(tSlaveState[],"#SlaveReady",#NOT_CASE_SENS) == FALSE) THEN
+    RETURN FALSE
+  ENDIF
+  tI = tI + 1
+ENDWHILE
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;Routine Waiting All slave on state 
+;*****************************************************************************************
+DEFFCT BOOL ArcWaitingAllSlaveState()
+DECL INT tI
+DECL INT tNrOfSlavesOnState
+DECL CHAR tSlaveState[256]
+tNrOfSlavesOnState = 2
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  tSlaveState[] = ArcRemoteGetVarS($COOP_KRC[tI].NAME[],"gArcRobotTeamState",#NONE)    
+  IF STRCOMP(tSlaveState[],"#SlaveWaiting",#NOT_CASE_SENS) THEN
+    tNrOfSlavesOnState = tNrOfSlavesOnState + 1
+  ENDIF
+  IF STRCOMP(tSlaveState[],"#SlaveReady",#NOT_CASE_SENS) THEN
+    ArcRemoteSetVarB($COOP_KRC[tI].NAME[],"gArcRobotTeamInit",TRUE,#NONE)
+  ENDIF  
+  tI = tI + 1
+ENDWHILE
+RETURN (tI == tNrOfSlavesOnState)
+ENDFCT
+;*****************************************************************************************
+;[Global Routine] Routine check if Robot coop exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcRTRobotExist(tNum :IN)
+DECL INT tNum
+IF ((tNum >= 1) AND (tNum <= 12)) THEN
+  RETURN (ArcIsStrEmpty($COOP_KRC[tNum].NAME[]) == FALSE)
+ENDIF
+RETURN FALSE
+ENDFCT
+;*****************************************************************************************
+; [Routine] Load Master Name 
+;*****************************************************************************************
+DEF ArcLoadMasterName()
+DECL BOOL tB
+tB = STRCOPY(ArcMasterName[],$COOP_KRC[1].NAME[])
+END
+;*****************************************************************************************
+; Master Send name to all Slaves
+;*****************************************************************************************
+DEF ArcSetMasterNameToSlaves()
+DECL INT tI
+DECL INT tNrOfRobots
+tI = 2
+WHILE (ArcRTRobotExist(tI) == TRUE)
+  ArcRemoteSetChar($COOP_KRC[tI].NAME[],"ArcMasterName[]",ArcMasterName[],#NONE)
+  ArcRemoteSetVarI($COOP_KRC[tI].NAME[],"gArcNumberOfSlaves",gArcNumberOfSlaves,#NONE)
+  tI = tI + 1
+ENDWHILE
+END
+;*****************************************************************************************
+; Slave Read Strategy from Master
+;*****************************************************************************************
+DEF ArcGetDatafromMaster()
+DECL INT tI
+FOR tI = 1 TO 10
+  stArcTeamIgnStrategy[tI].MsgType                = ArcStrMessageTypeToEnum(ArcRemoteGetVarS(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].MsgType"),#NONE))
+  stArcTeamIgnStrategy[tI].IgnitionFailureMsgType = ArcStrMessageTypeToEnum(ArcRemoteGetVarS(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].IgnitionFailureMsgType"),#NONE))
+  stArcTeamIgnStrategy[tI].IgnitionReaction       = ArcStrErrorMotionToEnum(ArcRemoteGetVarS(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].IgnitionReaction"),#NONE))
+  stArcTeamIgnStrategy[tI].MaxRestart             = ArcRemoteGetVarI(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].MaxRestart"),#NONE)
+  stArcTeamIgnStrategy[tI].MaxErrStrategies       = ArcRemoteGetVarI(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].MaxErrStrategies"),#NONE)
+  stArcTeamIgnStrategy[tI].RecoveryTime           = ArcRemoteGetVarR(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].RecoveryTime"),#NONE)
+  stArcTeamIgnStrategy[tI].FwdDistance            = ArcRemoteGetVarR(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].FwdDistance"),#NONE)
+  stArcTeamIgnStrategy[tI].Index                  = ArcRemoteGetVarI(ArcMasterName[],ArcStrAdd3("wArcIgnitionStrategy[", ArcIntToStr(tI),"].Index"),#NONE)
+  stArcTeamWeldStrategy[tI].MsgType               = ArcStrMessageTypeToEnum(ArcRemoteGetVarS(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].MsgType"),#NONE))
+  stArcTeamWeldStrategy[tI].WeldErrReaction       = ArcStrErrorMotionToEnum(ArcRemoteGetVarS(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].WeldErrReaction"),#NONE))
+  stArcTeamWeldStrategy[tI].MaxBreaksOnSeam       = ArcRemoteGetVarI(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].MaxBreaksOnSeam"),#NONE)
+  stArcTeamWeldStrategy[tI].MotionOnSeam          = ArcRemoteGetVarR(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].MotionOnSeam"),#NONE)
+  stArcTeamWeldStrategy[tI].Index                 = ArcRemoteGetVarI(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].Index"),#NONE)
+  stArcTeamWeldStrategy[tI].NoErrorUntilSeamEnd   = ArcRemoteGetVarB(ArcMasterName[],ArcStrAdd3("wArcWeldingStrategy[",  ArcIntToStr(tI),"].NoErrorUntilSeamEnd"),#NONE)
+ENDFOR
+END
+;*****************************************************************************************
+; Slave Set Strategy to Master
+;*****************************************************************************************
+DEF ArcSetDataToMaster()
+DECL INT tI
+tI = 1
+WHILE (ArcArrayStrategyExist(wArcIgnitionStrategy[],tI) == TRUE)
+  stArcTeamIgnStrategy[tI] = wArcIgnitionStrategy[tI]
+  tI = tI + 1
+ENDWHILE
+tI = 1
+WHILE (ArcArrayStrategyExist(wArcWeldingStrategy[],tI) == TRUE)
+  stArcTeamWeldStrategy[tI] = wArcWeldingStrategy[tI]
+  tI = tI + 1
+ENDWHILE
+END
+;*****************************************************************************************
+;[Global Routine] Routine PlugIn Glob Set on Changed
+;*****************************************************************************************
+GLOBAL DEF ArcPlugInGlobSetChanged()
+DECL INT tI
+IF (gArcRobotTeamOk == TRUE) THEN
+  IF (gArcPlugInGlobSetChanged == TRUE) THEN
+    gArcPlugInGlobSetChanged = FALSE
+    IF (wArcWeldingMaster == TRUE) THEN
+      ArcSetDataToMaster()
+      tI = 2
+      WHILE (ArcRTRobotExist(tI) == TRUE)
+        ArcRemoteSetVarB($COOP_KRC[tI].NAME[],"gArcPlugInGlobSetChanged",TRUE,#NONE)
+        tI = tI + 1
+      ENDWHILE
+    ELSE
+      ArcGetDatafromMaster()
+    ENDIF
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Global Routine] Routine check SyncListe
+;*****************************************************************************************
+GLOBAL DEFFCT INT GetgArcSyncList(SyncList:IN)
+INT SyncList
+IF $SYNCCMD_SIM > 1 THEN
+  IF (SyncList >1) AND (NOT ((($SYNCCMD_SIM B_AND 1) == 0) AND (($SYNCCMD_SIM) == (SyncList B_EXOR 1))))THEN
+    ArcMsgWrite(,#NOTIFY,"WrongSYCCMD_SIM","ARC",20007,Opt_NOVLSTOP_LOG)
+  ENDIF
+  RETURN -1
+ELSE
+  RETURN SyncList
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;Remote Set Arc State
+;*****************************************************************************************
+GLOBAL DEFFCT enArcState_T ArcAnalyseState(tState :IN)
+DECL enArcState_T tState,tState1, tNextState
+DECL INT tI
+tNextState = tState
+IF (gArcRobotTeamOk == TRUE) THEN
+  IF (gArcSyncList > 1) THEN
+    FOR tI = 1 TO 16
+      gArcRemoteStatesInt[tI] = stArcStateInt.Init
+    ENDFOR
+    IF (ArcStateSyncNeeded(tState) OR ArcIsErrorState(tState)) THEN
+      ArcProgramSync("Arc0",gArcSyncList)
+      IF (wArcWeldingMaster == FALSE) AND ArcIsErrorState(tState) THEN
+        ;Slave writes State to Master Array
+        ArcRemoteSetVarS(ArcMasterName[],ArcStrAdd3("gArcRemoteStatesInt[", ArcIntToStr(gArcSlaveId),"]"),ArcEnumStateToStr(tState),#NONE)
+      ENDIF
+      ArcProgramSync("Arc1",gArcSyncList)
+      ;Master Analyse Slave States
+      IF (wArcWeldingMaster == TRUE) THEN
+        gArcRemoteStatesInt[1]= ArcEnumStateToInt(tState)
+        FOR tI = 1 TO 16
+          tState1 = ArcIntStateToEnum(gArcRemoteStatesInt[tI])
+          IF ArcIsErrorState(tState1) THEN
+            tNextState = tState1
+            gArcRemoteStatesInt[1] = gArcRemoteStatesInt[tI]
+          ENDIF
+        ENDFOR
+      ENDIF
+      ArcProgramSync("Arc2",gArcSyncList)
+    ENDIF
+  ENDIF
+ENDIF
+RETURN tNextState
+ENDFCT
+;*****************************************************************************************
+;Set Remote Error
+;*****************************************************************************************
+GLOBAL DEFFCT enArcState_T ArcSyncState(tState :IN)
+DECL enArcState_T tState, tNextState, tMasterState
+DECL INT tI
+tNextState = tState
+IF (gArcRobotTeamOk == TRUE) THEN
+  IF (gArcSyncList > 1) THEN
+    IF (ArcStateSyncNeeded(tState) OR ArcIsErrorState(tState)) THEN
+      ;ArcMsg(ArcEnumStateToStr(tNextState))
+      IF (wArcWeldingMaster == TRUE) THEN
+        tMasterState = tState
+      ELSE
+        ;Slave Gets Master State
+        tMasterState = ArcIntStateToEnum(ArcRemoteGetVarI(ArcMasterName[],"gArcRemoteStatesInt[1]",#NONE))
+      ENDIF
+      IF ArcIsErrorState(tMasterState) THEN
+        ArcProgramSync("Arc3",gArcSyncList)
+        IF (wArcWeldingMaster == FALSE) THEN
+          tNextState = tMasterState
+        ENDIF
+        IF ((ATAg_ER_ArcGroupEnabled == TRUE) AND (tNextState == #IgnitionErrorStrategy) AND (stArcIgnErrSet.MaxRestart <= 1)) THEN
+          enArcCurrentState = #IgnitionFailed
+          IF ((gArcMyIgnitionError == TRUE) AND (gArcColdSeam == FALSE)) THEN
+            ArcOutputGroupSet(gArcActIlfWelder,wArcOIgnitProblem[,])
+            ArcSaveDatas(TRUE)
+            gArcMyIgnitionError = FALSE
+          ELSE
+            ArcSaveDatas(FALSE)
+          ENDIF
+          tNextState = #WaitArcStable
+        ENDIF
+      ELSE
+        IF ArcStateSyncNeeded(tState) THEN
+          ArcProgramSync("Arc4",gArcSyncList)
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+RETURN tNextState
+ENDFCT
+;*****************************************************************************************
+;ArcIsErrorState
+;*****************************************************************************************
+DEFFCT BOOL ArcIsErrorState(tState :IN)
+DECL enArcState_T tState
+DECL BOOL tBuffer
+tBuffer = FALSE
+SWITCH tState
+  CASE #NoGasFlow,#IgnitionErrorStrategy,#IgnitionErrorRestart,#IgnitionFailed
+    tBuffer = TRUE
+ENDSWITCH
+RETURN tBuffer
+ENDFCT
+;*****************************************************************************************
+;ArcStateSyncNeeded
+;*****************************************************************************************
+DEFFCT BOOL ArcStateSyncNeeded(tState :IN)
+DECL enArcState_T tState
+DECL BOOL tBuffer
+tBuffer = FALSE
+SWITCH tState
+  CASE #PrepIgnition,#Ignition,#WaitArcStable
+    tBuffer = TRUE
+ENDSWITCH
+RETURN tBuffer
+ENDFCT
+;*****************************************************************************************
+;Reads index of Ignition strategy from master
+;*****************************************************************************************
+GLOBAL DEFFCT stArcStrategy_T ArcGetIgnStrategy(tArcGetIgnStrategy :IN)
+DECL INT tArcGetIgnStrategy
+DECL stArcStrategy_T tArcStrategy
+gArcStrategyIgnIndex = tArcGetIgnStrategy
+tArcStrategy = wArcIgnitionStrategy[gArcStrategyIgnIndex]
+IF (gArcSyncList > 1) THEN
+  IF (wArcWeldingMaster == TRUE) THEN
+    ArcProgramSync("ArcSyncIgnStrategyStart",gArcSyncList)
+  ELSE
+    ArcProgramSync("ArcSyncIgnStrategyStart",gArcSyncList)
+    gArcStrategyIgnIndex = ArcRemoteGetVarI(ArcMasterName[],"gArcStrategyIgnIndex",#QUIT)
+    tArcStrategy = stArcTeamIgnStrategy[gArcStrategyIgnIndex]
+  ENDIF
+  ArcProgramSync("ArcSyncIgnStrategyEnd",gArcSyncList)
+ENDIF
+RETURN tArcStrategy
+ENDFCT
+;*****************************************************************************************
+;Reads index of Weld strategy from master
+;*****************************************************************************************
+GLOBAL DEFFCT stArcStrategy_T ArcGetWeldStrategy(tWeldErrorStrategy :IN)
+DECL INT tWeldErrorStrategy
+DECL stArcStrategy_T tArcStrategy
+gArcStrategyWeldIndex = tWeldErrorStrategy
+tArcStrategy = wArcWeldingStrategy[gArcStrategyWeldIndex]
+IF (gArcSyncList > 1) THEN
+  IF (wArcWeldingMaster == TRUE) THEN
+    ArcProgramSync("ArcSyncWeldStrategyStart",gArcSyncList)
+  ELSE
+    ArcProgramSync("ArcSyncWeldStrategyStart",gArcSyncList)
+    gArcStrategyWeldIndex = ArcRemoteGetVarI(ArcMasterName[],"gArcStrategyWeldIndex",#QUIT)
+    tArcStrategy = stArcTeamWeldStrategy[gArcStrategyWeldIndex]
+  ENDIF
+  ArcProgramSync("ArcSyncWeldStrategyEnd",gArcSyncList)
+ENDIF
+RETURN tArcStrategy
+ENDFCT
+;*****************************************************************************************
+; This procedure stops the motion of the robots in a spline block,
+; before the welding begins or ends.
+;*****************************************************************************************
+GLOBAL DEF SetRemoteCondStopActive()
+IF (gArcSyncList >1) THEN
+  ArcProgramSync("WaitForAllRobotArrived",gArcSyncList)
+  BRAKE
+ENDIF
+END
+;*****************************************************************************************
+;ArcHandleErrorSeamEnd
+;*****************************************************************************************
+GLOBAL DEF ArcHandleErrorSeamEnd()
+DECL REAL tDistance
+DECL REAL MaxDistanceBack
+DECL CHAR MsgText[64]
+DECL INT i
+IF ((gArcWeldErrorCounter > 0) AND (gArcSyncList <= 1)) THEN
+  BRAKE ;Only for Test with Single Robot
+ENDIF
+ArcWriteDiag(gArcGeneralDebug,"[TEAM] ArcHandleErrorSeamEnd")
+gArcHandleNoErrorActive = TRUE
+ArcProgramSync("SeamErrorEnd1",gArcSyncList)
+tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance
+;SWITCH stArcWeldErrSet.WeldErrReaction
+;  CASE #KeepOnPosition
+;    tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance
+;  CASE #MoveBackward
+;    tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance + stArcWeldErrSet.MotionOnSeam
+;    IF (tDistance > $Distance) THEN
+;      tDistance = $Distance
+;    ENDIF
+;  CASE #MoveForward
+;    tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance - stArcWeldErrSet.MotionOnSeam
+;  CASE #MoveUpAndStop
+;    tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance
+;  DEFAULT
+;    tDistance = $Distance - gArcAdvError[gArcWeldErrorCounter].ErrorDistance
+;ENDSWITCH
+ArcWeaveOff(2)
+ArcMoveTo($RET.INCL_SENSOR.CART)
+enArcActiveStrategy = #MoveBackward
+ArcMotionSplineMoveBack(tDistance,gArcSpeedMoveBack)
+IF (stArcWeldErrSet.WeldErrReaction == #MoveUpAndStop) THEN
+  ArcRobErrMoveUpAndStop(#WeldingError,stArcWeldErrSet)
+ENDIF
+ArcProgramSync("SeamErrorEnd2",gArcSyncList)
+stArcActWeldSet = stArcErrorWeldParams[gArcWeldErrorCounter]
+gArcActModeSwi = gArcAdvError[gArcWeldErrorCounter].ArcMode
+ArcWeaveOn(#TriggerCall,stArcErrorWeaveParams[gArcWeldErrorCounter])
+IF (gArcAdvError[gArcWeldErrorCounter].MyError == TRUE) THEN
+  gArcColdSeam = FALSE
+  ArcWriteDiag(gArcGeneralDebug,"[TEAM] ArcHandleErrorSeamEnd HOT")
+ELSE
+  gArcColdSeam = TRUE
+  ArcWriteDiag(gArcGeneralDebug,"[TEAM] ArcHandleErrorSeamEnd COLD")
+ENDIF
+gArcAdvError[gArcWeldErrorCounter] = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+gArcWeldErrorCounter = gArcWeldErrorCounter - 1
+StartIgnition()
+END
+;*****************************************************************************************
+;ArcRestart
+;*****************************************************************************************
+GLOBAL DEF ArcCheckIfHot()
+DECL enArcState_T stateResult
+IF (gArcWeldErrorCounter > 0) THEN
+  IF (gArcAdvError[gArcWeldErrorCounter].ErrorDistance  > 0) THEN
+    ;*** Load Parameter
+    ArcOutputSpecAllInit(gArcActIlfWelder,FALSE)
+    ArcSetArcMode(gArcActIlfWelder,gArcAdvError[gArcWeldErrorCounter].ArcMode)    
+    ArcSetWeldValueChannel(gArcActIlfWelder,gArcAdvError[gArcWeldErrorCounter].ArcMode,stArcErrorWeldParams[gArcWeldErrorCounter]) ;TODO Check
+  ENDIF
+  ;gArcSeamErrorCounter=0
+  IF (gArcAdvError[gArcWeldErrorCounter].MyError == TRUE) THEN
+    ArcWriteDiag(gArcGeneralDebug,"[TEAM] Restart HOT")
+    gArcColdSeam = FALSE
+  ELSE
+    ArcWriteDiag(gArcGeneralDebug,"[TEAM] Restart COLD")
+    gArcColdSeam = TRUE
+  ENDIF
+  gArcAdvError[gArcWeldErrorCounter] = {MyError FALSE, ErrorDistance 0.0, ArcMode 0}
+  gArcWeldErrorCounter = gArcWeldErrorCounter - 1
+ELSE
+  gArcColdSeam = FALSE
+ENDIF
+IF gArcWeldErrorCounter == 0 THEN
+  ATAg_ER_ErrorOnSeam = FALSE
+ENDIF
+gArcHandleNoErrorActive = FALSE
+END
+;*****************************************************************************************
+;*****************************************************************************************
+GLOBAL DEF ArcSaveDatas(tMyError:IN)
+BOOL tMyError
+;ArcMsg("Diag Team ArcSaveDatas")
+gArcWeldErrorCounter = gArcWeldErrorCounter + 1
+gArcBlockArcOff = FALSE
+;Already Cold
+IF (gArcColdSeam == TRUE) THEN
+  tMyError = FALSE
+ENDIF
+IF ATAg_ER_ArcGroupEnabled == TRUE THEN
+  enArcActiveStrategy = #AdvancedErrorRecovery
+ENDIF
+stArcErrorWeldParams[gArcWeldErrorCounter]  = stArcActWeldSet
+stArcErrorWeaveParams[gArcWeldErrorCounter] = stArcActWeaveSet
+gArcAdvError[gArcWeldErrorCounter].ArcMode  = gArcActModeSwi
+gArcAdvError[gArcWeldErrorCounter].MyError  = tMyError
+IF (tMyError == TRUE) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[TEAM] MyError TRUE")
+  gArcColdSeam = TRUE
+  ATAg_ER_IsMyError = TRUE
+ELSE
+  ArcWriteDiag(gArcGeneralDebug,"[TEAM] MyError FALSE")
+ENDIF
+;---------------------------------
+;WeldError
+;---------------------------------
+IF (enArcCurrentState == #Welding) THEN
+  ;ArcMsg("Diag Team Welding Error")
+  enArcCurrentState = #Error
+  enArcSaveState    = #Welding
+  SWITCH stArcWeldErrSet.WeldErrReaction
+    CASE #MoveBackward
+      ArcWriteDiag(gArcGeneralDebug,"[TEAM] MoveBack WeldError")
+      gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = $Distance - stArcWeldErrSet.MotionOnSeam
+    CASE #MoveForward
+      ArcWriteDiag(gArcGeneralDebug,"[TEAM] MoveFwd WeldError")
+      gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = $Distance + stArcWeldErrSet.MotionOnSeam
+    DEFAULT
+      ArcWriteDiag(gArcGeneralDebug,"[TEAM] Default WeldError")
+      gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = $Distance
+  ENDSWITCH
+ENDIF
+;---------------------------------
+;Ignition Error
+;---------------------------------
+IF (enArcCurrentState == #IgnitionFailed) THEN
+  ;---------------------------------
+  ;Igniton Error On Seam
+  ;---------------------------------
+  IF (enArcSaveState == #Welding) THEN
+    ;ArcMsg("Diag Team IgnitionError On Seam")
+    gArcNoErrorUntilSeamEnd = FALSE
+    ArcWriteDiag(gArcGeneralDebug,"[TEAM] IgnError OnSeam")
+    gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = $Distance
+  ENDIF
+  ;---------------------------------
+  ;Ignition Error ArcOn
+  ;---------------------------------
+  IF (enArcSaveState == #Nothing) THEN
+    ;ArcMsg("Diag Team IgnitionError ArcOn")
+    gArcNoErrorUntilSeamEnd = FALSE
+    ArcWriteDiag(gArcGeneralDebug,"[TEAM] IgnError ArcOn")
+    gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = 0
+  ENDIF
+ENDIF
+IF gArcAdvError[gArcWeldErrorCounter].ErrorDistance  <= 0 THEN
+  gArcAdvError[gArcWeldErrorCounter].ErrorDistance  = 0
+ENDIF
+END
+;*****************************************************************************************
+;Routine Convert enArcState_T State to stArcStateStr
+;*****************************************************************************************
+DEFFCT CHAR[5] ArcEnumStateToStr(tState :IN)
+DECL enArcState_T tState
+SWITCH tState
+  CASE #Init
+    RETURN stArcStateStr.Init[]
+  CASE #Error
+    RETURN stArcStateStr.Error[]
+  CASE #CheckRobotReady
+    RETURN stArcStateStr.CheckRobotReady[]
+  CASE #CheckPeriphery
+    RETURN stArcStateStr.CheckPeriphery[]
+  CASE #PrepIgnition
+    RETURN stArcStateStr.PrepIgnition[]
+  CASE #Ignition
+    RETURN stArcStateStr.Ignition[]
+  CASE #WaitArcStable
+    RETURN stArcStateStr.WaitArcStable[]
+  CASE #IgnitionFailed
+    RETURN stArcStateStr.IgnitionFailed[]
+  CASE #RobotNotRdy
+    RETURN stArcStateStr.RobotNotRdy[]
+  CASE #PowerSourceNotRdy
+    RETURN stArcStateStr.PowerSourceNotRdy[]
+  CASE #PeriNotRdy
+    RETURN stArcStateStr.PeriNotRdy[]
+  CASE #NoGasFlow
+    RETURN stArcStateStr.NoGasFlow[]
+  CASE #BreakStateMachine
+    RETURN stArcStateStr.BreakStateMachine[]
+  CASE #CheckPowerSource
+    RETURN stArcStateStr.CheckPowerSource[]
+  CASE #IgnitionErrorRestart
+    RETURN stArcStateStr.IgnitionErrorRestart[]
+  CASE #IgnitionErrorStrategy
+    RETURN stArcStateStr.IgnitionErrorStrategy[]
+  CASE #Welding
+    RETURN stArcStateStr.Welding[]
+  CASE #WeldingDone
+    RETURN stArcStateStr.WeldingDone[]
+  CASE #StopWelding
+    RETURN stArcStateStr.StopWelding[]
+  CASE #GasPostFlow
+    RETURN stArcStateStr.GasPostFlow[]
+  CASE #StopGasFlow
+    RETURN stArcStateStr.StopGasFlow[]
+  CASE #RestartAfterError
+    RETURN stArcStateStr.RestartAfterError[]
+  CASE #Nothing
+    RETURN stArcStateStr.Nothing[]
+ENDSWITCH
+ENDFCT
+;*****************************************************************************************
+;Routine Convert enArcState_T State to stArcStateInt
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArcEnumStateToInt(tState :IN)
+DECL enArcState_T tState
+SWITCH tState
+  CASE #Init
+    RETURN stArcStateInt.Init
+  CASE #Error
+    RETURN stArcStateInt.Error
+  CASE #CheckRobotReady
+    RETURN stArcStateInt.CheckRobotReady
+  CASE #CheckPeriphery
+    RETURN stArcStateInt.CheckPeriphery
+  CASE #PrepIgnition
+    RETURN stArcStateInt.PrepIgnition
+  CASE #Ignition
+    RETURN stArcStateInt.Ignition
+  CASE #WaitArcStable
+    RETURN stArcStateInt.WaitArcStable
+  CASE #IgnitionFailed
+    RETURN stArcStateInt.IgnitionFailed
+  CASE #RobotNotRdy
+    RETURN stArcStateInt.RobotNotRdy
+  CASE #PowerSourceNotRdy
+    RETURN stArcStateInt.PowerSourceNotRdy
+  CASE #PeriNotRdy
+    RETURN stArcStateInt.PeriNotRdy
+  CASE #NoGasFlow
+    RETURN stArcStateInt.NoGasFlow
+  CASE #BreakStateMachine
+    RETURN stArcStateInt.BreakStateMachine
+  CASE #CheckPowerSource
+    RETURN stArcStateInt.CheckPowerSource
+  CASE #IgnitionErrorRestart
+    RETURN stArcStateInt.IgnitionErrorRestart
+  CASE #IgnitionErrorStrategy
+    RETURN stArcStateInt.IgnitionErrorStrategy
+  CASE #Welding
+    RETURN stArcStateInt.Welding
+  CASE #WeldingDone
+    RETURN stArcStateInt.WeldingDone
+  CASE #StopWelding
+    RETURN stArcStateInt.StopWelding
+  CASE #GasPostFlow
+    RETURN stArcStateInt.GasPostFlow
+  CASE #StopGasFlow
+    RETURN stArcStateInt.StopGasFlow
+  CASE #RestartAfterError
+    RETURN stArcStateInt.RestartAfterError
+  CASE #Nothing
+    RETURN stArcStateInt.Nothing
+ENDSWITCH
+ENDFCT
+;*****************************************************************************************
+;Routine Convert stArcStateInt State to enArcState_T
+;*****************************************************************************************
+DEFFCT enArcState_T ArcIntStateToEnum(tState :IN)
+DECL INT tState
+DECL INT Init
+DECL INT Error
+DECL INT CheckRobotReady
+DECL INT CheckPeriphery
+DECL INT PrepIgnition
+DECL INT Ignition
+DECL INT WaitArcStable
+DECL INT IgnitionFailed
+DECL INT RobotNotRdy
+DECL INT PowerSourceNotRdy
+DECL INT PeriNotRdy
+DECL INT NoGasFlow
+DECL INT BreakStateMachine
+DECL INT CheckPowerSource
+DECL INT IgnitionErrorRestart
+DECL INT IgnitionErrorStrategy
+DECL INT Welding
+DECL INT WeldingDone
+DECL INT StopWelding
+DECL INT GasPostFlow
+DECL INT StopGasFlow
+DECL INT RestartAfterError
+DECL INT Nothing
+Init = stArcStateInt.Init
+Error = stArcStateInt.Error
+CheckRobotReady = stArcStateInt.CheckRobotReady
+CheckPeriphery = stArcStateInt.CheckPeriphery
+PrepIgnition = stArcStateInt.PrepIgnition
+Ignition = stArcStateInt.Ignition
+WaitArcStable = stArcStateInt.WaitArcStable
+IgnitionFailed = stArcStateInt.IgnitionFailed
+RobotNotRdy = stArcStateInt.RobotNotRdy
+PowerSourceNotRdy = stArcStateInt.PowerSourceNotRdy
+PeriNotRdy = stArcStateInt.PeriNotRdy
+NoGasFlow = stArcStateInt.NoGasFlow
+BreakStateMachine = stArcStateInt.BreakStateMachine
+CheckPowerSource = stArcStateInt.CheckPowerSource
+IgnitionErrorRestart = stArcStateInt.IgnitionErrorRestart
+IgnitionErrorStrategy = stArcStateInt.IgnitionErrorStrategy
+Welding = stArcStateInt.Welding
+WeldingDone = stArcStateInt.WeldingDone
+StopWelding = stArcStateInt.StopWelding
+GasPostFlow = stArcStateInt.GasPostFlow
+StopGasFlow = stArcStateInt.StopGasFlow
+RestartAfterError = stArcStateInt.RestartAfterError
+Nothing = stArcStateInt.Nothing
+SWITCH tState
+  CASE Init
+    RETURN #Init
+  CASE Error
+    RETURN #Error
+  CASE CheckRobotReady
+    RETURN #CheckRobotReady
+  CASE CheckPeriphery
+    RETURN #CheckPeriphery
+  CASE PrepIgnition
+    RETURN #PrepIgnition
+  CASE Ignition
+    RETURN #Ignition
+  CASE WaitArcStable
+    RETURN #WaitArcStable
+  CASE IgnitionFailed
+    RETURN #IgnitionFailed
+  CASE RobotNotRdy
+    RETURN #RobotNotRdy
+  CASE PowerSourceNotRdy
+    RETURN #PowerSourceNotRdy
+  CASE PeriNotRdy
+    RETURN #PeriNotRdy
+  CASE NoGasFlow
+    RETURN #NoGasFlow
+  CASE BreakStateMachine
+    RETURN #BreakStateMachine
+  CASE CheckPowerSource
+    RETURN #CheckPowerSource
+  CASE IgnitionErrorRestart
+    RETURN #IgnitionErrorRestart
+  CASE IgnitionErrorStrategy
+    RETURN #IgnitionErrorStrategy
+  CASE Welding
+    RETURN #Welding
+  CASE WeldingDone
+    RETURN #WeldingDone
+  CASE StopWelding
+    RETURN #StopWelding
+  CASE GasPostFlow
+    RETURN #GasPostFlow
+  CASE StopGasFlow
+    RETURN #StopGasFlow
+  CASE RestartAfterError
+    RETURN #RestartAfterError
+  CASE Nothing
+    RETURN #Nothing
+ENDSWITCH
+ENDFCT
+;*****************************************************************************************
+;[Error recovery]
+;*****************************************************************************************
+;*****************************************************************************************
+;[Error recovery] Initialization when prog reset or line select
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_EventInit()
+ATAg_ER_BeginMemPoint = FALSE
+ATAg_ER_ArcGroupEnabled = FALSE
+ATAg_ER_ExtSensorActive = FALSE
+ATAg_ER_Init()
+END
+;*****************************************************************************************
+;[Error recovery] Initialization all used signals
+;*****************************************************************************************
+DEF ATAg_ER_Init()
+DECL BOOL tB
+tB = STRCOPY(ATAg_ER_ProgNameError[]," ")
+tB = STRCOPY(ATAg_ER_PointLineError[]," ")
+tB = STRCOPY(ATAg_ER_ProgName[]," ")
+tB = STRCOPY(ATAg_ER_PointLine[]," ")  
+ATAg_ER_WeldDone = FALSE
+ATAg_ER_SkipSeam = FALSE
+ATAg_ER_ChkRepeatGroup = FALSE
+ATAg_ER_GoToNexSeam = FALSE
+ATAg_ER_IsMyError = FALSE
+ATAg_ER_ExtError = FALSE
+ATAg_ER_SensorActive = FALSE
+ATAg_ER_ExtSensorActive = FALSE
+ATAg_ER_ErrorOnSeam = FALSE
+ArcOutputReset(gArcActIlfWelder,wArcOPlcCleanPosition[])
+END
+;*****************************************************************************************
+;[Error recovery] On Service Position Dialogue Switch
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_Retry()
+IF (gArcTechAdvancedOption == TRUE) THEN
+  ATA_UserCall(#AdvErrSeamRepeat)
+ENDIF
+ATAg_ER_IsMyError = FALSE ;Reset My Error
+ATAg_ER_ChkRepeatGroup = TRUE ;RepeatGroup
+ArcWriteDiag(gArcGeneralDebug,"[TEAM] Retry Seam")
+END
+;*****************************************************************************************
+;[Error recovery] On Service Position Dialogue Switch
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_Abort()
+IF (gArcTechAdvancedOption == TRUE) THEN
+  ATA_UserCall(#AdvErrSeamSkip)
+ENDIF
+ATAg_ER_IsMyError = FALSE ;Reset My Error
+ArcWriteDiag(gArcGeneralDebug,"[TEAM] Abort Seam")
+END
+;*****************************************************************************************
+;[Error recovery] On Service GoTo next Seam
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_NextSeam()
+IF (gArcTechAdvancedOption == TRUE) THEN
+  ATA_UserCall(#AdvErrSeamSkip)
+ENDIF
+ATAg_ER_IsMyError = FALSE ;Reset My Error
+ATAg_ER_GoToNexSeam = TRUE
+ATAg_ER_ChkRepeatGroup = TRUE ;RepeatGroup
+gArcWeldErrorCounter = 0
+ArcWriteDiag(gArcGeneralDebug,"[TEAM] Skip Seam")
+END
+;*****************************************************************************************
+;[Error recovery] Routine on Service position
+;*****************************************************************************************
+;GLOBAL DEF enArcErrorDecision_T ATA_ER_ServicePos()
+GLOBAL DEF ATA_ER_ServicePos()
+DECL enArcErrorDecision_T retVal
+retVal = AdvancedErrorDecision()
+SWITCH retVal
+  CASE #Retry
+    ATA_ER_Retry()
+  CASE #Abort
+    ATA_ER_NextSeam()
+  DEFAULT
+    ATA_ER_Abort()
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Error recovery] Routine: use separate variable
+;*****************************************************************************************
+DEFFCT BOOL ATA_ER_ErrorOnSeam(tExError :IN)
+DECL INT tTimeout
+DECL BOOL tExError
+tTimeout = 10
+WAIT FOR ((enArcCurrentState == #WeldingDone) OR (enArcCurrentState == #Error) OR (enArcCurrentState == #IgnitionFailed) OR (enArcCurrentState == #Nothing) OR (TIMER_LIMIT(tTimeOut)))
+RETURN ((gArcWeldErrorCounter > 0) OR (tExError == TRUE)) 
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Routine Never used (check if error on seam to do Inspection program)
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_DoProgInspection()
+DECL INT tAdd
+DECL BOOL tRes
+CONTINUE
+IF (StrLen(ATAg_ER_ProgNameError[])) > 2 THEN
+  RETURN TRUE
+ELSE
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Routine Never used (Case1: "ErrorOnSeam if exist seam on this program or exit", Case2: NoError do this program)
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_DoProg()
+DECL INT tAdd
+DECL BOOL tB
+CONTINUE
+IF (StrLen(ATAg_ER_ProgNameError[]) > 2) THEN
+  tB = STRCOPY(ATAg_ER_ProgName[]," ")
+  mPRO_IP = $PRO_IP
+  IF (StrLen(mPRO_IP.NAME[]) > 0) THEN
+    tAdd=StrAdd(ATAg_ER_ProgName[],mPRO_IP.NAME[])
+    ATAg_ER_ProgName[] = ArcStrRemoveLeft(ATAg_ER_ProgName[],"/R1/")
+    ATAg_ER_ProgName[] = ArcStrRemoveRight(ATAg_ER_ProgName[],".src")
+    ATAg_ER_ProgName[] = ArcStrRemoveSpace(ATAg_ER_ProgName[])
+    IF (STRCOMP(ATAg_ER_ProgNameError[],ATAg_ER_ProgName[],#NOT_CASE_SENS)) THEN
+      RETURN TRUE
+    ELSE
+      RETURN FALSE
+    ENDIF
+  ELSE
+    ArcMsgWriteS(,#NOTIFY ,"AtAInternalError","ARC",20010,Opt_NOVLSTOP_LOG,"ProIp Name")
+    RETURN TRUE
+  ENDIF
+ELSE
+  RETURN TRUE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Routine On "ArcOn" flag position,name,line...
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_BeginMemPoint(tSetSpeed :IN)
+DECL BOOL tB
+DECL BOOL tSetSpeed
+DECL BOOL tRes
+DECL INT tI
+DECL INT tOffset
+DECL STATE_T tState
+ATAg_ER_WeldDone = FALSE
+ATAg_ER_SkipSeam = FALSE
+ATAg_ER_ChkRepeatGroup = FALSE
+ATAg_ER_BeginMemPoint = TRUE
+IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+  gArcDryVelFactor = 1
+  mPRO_IP = $PRO_IP
+  ATA_ER_RoutineVisible(mPRO_IP)  
+  tB = STRCOPY(ATAg_ER_ProgName[]," ")
+  tB = STRCOPY(ATAg_ER_PointLine[]," ")  
+  IF (mPRO_IP.SNR > 1)THEN
+    tB = STRCOPY(ATAg_ER_ProgName[],mPRO_IP.NAME[])
+    ATAg_ER_ProgName[]=ArcStrRemoveLeft(ATAg_ER_ProgName[],"/R1/")
+    ATAg_ER_ProgName[]=ArcStrRemoveRight(ATAg_ER_ProgName[],".src")
+    ATAg_ER_ProgName[]=ArcStrRemoveSpace(ATAg_ER_ProgName[])
+    tOffset = 0
+    SWRITE(ATAg_ER_PointLine[],tState,tOffset,"%s,Line:%d",ATAg_ER_ProgName[],mPRO_IP.SNR)
+    ATAg_ER_PointLine[]=ArcStrRemoveSpace(ATAg_ER_PointLine[])
+    IF (StrLen(ATAg_ER_PointLineError[])) > 2 THEN
+      IF (STRCOMP(ATAg_ER_PointLineError[],ATAg_ER_PointLine[],#NOT_CASE_SENS))AND(STRCOMP(ATAg_ER_ProgNameError[],ATAg_ER_ProgName[],#NOT_CASE_SENS)) THEN
+        IF ATAg_ER_GoToNexSeam THEN
+          ATAg_ER_Init()
+          ArcWriteDiag(gArcGeneralDebug,"[TEAM] ATA_ER_BeginMemPoint NextSeam")
+          ATAg_ER_WeldDone = TRUE
+          ATAg_ER_SkipSeam = TRUE
+          IF (tSetSpeed == TRUE) THEN
+            gArcDryVelFactor = gArcFactorFastSpeed
+          ENDIF
+        ENDIF
+        IF (gArcWeldErrorCounter <= 1) THEN
+          tB = STRCOPY(ATAg_ER_PointLineError[]," ")
+          tB = STRCOPY(ATAg_ER_ProgNameError[]," ")
+        ENDIF
+      ELSE
+        ArcWriteDiag(gArcGeneralDebug,"[TEAM] ATA_ER_BeginMemPoint WeldDone")
+        ATAg_ER_WeldDone = TRUE
+        tB = STRCOPY(ATAg_ER_PointLine[]," ")
+        tB = STRCOPY(ATAg_ER_ProgName[]," ")
+        IF (tSetSpeed == TRUE) THEN
+          gArcDryVelFactor = gArcFactorFastSpeed
+        ENDIF
+      ENDIF
+    ELSE
+      IF gArcSyncList > 1 THEN
+        IF ATAg_ER_ExtError THEN
+          ATAg_ER_WeldDone=TRUE
+          IF (tSetSpeed == TRUE) THEN
+            gArcDryVelFactor = gArcFactorFastSpeed
+          ENDIF
+        ENDIF
+      ENDIF
+    ENDIF
+  ELSE
+    ArcMsgWriteS(,#NOTIFY ,"AtAInternalError","ARC",20010,Opt_NOVLSTOP_LOG,"ProIp LineNr: ",ArcIntToStr(mPRO_IP.SNR))
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Error recovery] Routine On "ArcOff" on error flag position,name,line...
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_EndMemPoint()
+DECL BOOL tB
+IF ATAg_ER_ArcGroupEnabled == TRUE THEN
+  IF ATA_ER_ErrorOnSeam(FALSE) == TRUE THEN
+    ArcWriteDiag(gArcGeneralDebug,"[TEAM] ATA_ER_EndMemPoint Error")
+    ATAg_ER_ErrorOnSeam = TRUE
+    tB = STRCOPY(ATAg_ER_SeamName[],gArcSeamName[])
+    IF (StrLen(ATAg_ER_PointLineError[])) < 2 THEN
+      IF (StrLen(ATAg_ER_ProgName[])) > 2 THEN
+        ATAg_ER_PointLineError[] = ArcStrRemoveSpace(ATAg_ER_PointLine[])
+        ATAg_ER_ProgNameError[] = ArcStrRemoveSpace(ATAg_ER_ProgName[])
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+tB = STRCOPY(ATAg_ER_PointLine[]," ")
+tB = STRCOPY(ATAg_ER_ProgName[]," ")
+ATAg_ER_WeldDone = FALSE
+ATAg_ER_SkipSeam = FALSE
+ATAg_ER_BeginMemPoint = FALSE
+gArcDryVelFactor = 1
+END
+;*****************************************************************************************
+;[Error recovery] Reset Variables
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_Reset()
+DECL BOOL tB
+tB = STRCOPY(ATAg_ER_GroupName[]," ")
+tB = STRCOPY(ATAg_ER_SeamName[]," ")
+END
+;*****************************************************************************************
+;[Error recovery] Routine on end of group check ModeOp to-do
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_ChkSeamGroup(tInt :IN)
+DECL BOOL tBool
+DECL INT tInt
+DECL INT tI
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  RETURN FALSE
+ENDIF
+IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+  ;CONTINUE
+  ;ATO_PLCRepeatGroupNumber=tInt
+  SWITCH $MODE_OP
+    CASE #T1
+      RETURN ATA_ER_ChkSeamGroupT1(tInt)
+    CASE #T2
+      RETURN ATA_ER_ChkSeamGroupT2(tInt)
+    CASE #AUT
+      RETURN ATA_ER_ChkSeamGroupAUT(tInt)
+    CASE #EX
+      RETURN ATA_ER_ChkSeamGroupEX(tInt)
+    DEFAULT
+      ArcMsgWriteS(,#NOTIFY ,"AtAInternalError","ARC",20010,Opt_NOVLSTOP_LOG,"ErrorOnMODE_OP")
+      ATAg_ER_Init()
+      RETURN FALSE
+  ENDSWITCH
+ELSE
+  ArcMsgWrite(,#NOTIFY ,"ErrorRecoveryStrategyDisabled","ARC",20009,Opt_NOVLSTOP_LOG)
+  ATAg_ER_Init()
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Show Message on select line inside repeat until group
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_ForceExit()
+IF (ATAg_ER_SensorActive == TRUE) THEN
+  ArcMsgWrite(,#QUIT ,"ILFSenseRtUnsuitableOnErrorRecovery","ARC",20013,Opt_NOVLSTOP_LOG)
+  ArcRemoteSetClearMsg(20013)
+  ATAg_ER_SensorActive=FALSE
+ELSE
+  IF (gArcTechAdvancedOption == TRUE) THEN
+    ArcMsgWriteS(,#NOTIFY ,"GroupSelectedManually","ARC",20008,Opt_NOVLSTOP_LOG,"LineSelected")
+  ELSE
+    ArcMsgWriteS(,#NOTIFY ,"AtAInternalError","ARC",20010,Opt_NOVLSTOP_LOG,"Missing:ArcTechAdvanced")
+  ENDIF 
+ENDIF
+END
+;*****************************************************************************************
+;[Error recovery] Routine On End seam group ModeOp=T1 Show dialogue to-do
+;*****************************************************************************************
+DEFFCT BOOL ATA_ER_ChkSeamGroupT1(tInt :IN)
+DECL INT tInt
+DECL INT tAnswer
+IF ATA_ER_ErrorOnSeam(ATAg_ER_ExtError)==TRUE THEN
+  tAnswer = ArcMsgWriteDialog(,"ErrorOnSeamMoveToServicepostion","ARC",20014,Opt_VLSTOP_LOG,"Common#Ok")
+  ArcRemoteSetDialogAnswer(20014,tAnswer)
+  RETURN TRUE
+ELSE
+  IF ATAg_ER_NoErrorT1Dialog==TRUE THEN
+    tAnswer = ArcMsgWriteDialog(,"CheckUserPosition","ARC",20015,Opt_VLSTOP_LOG,"Common#Yes","Common#No")
+    ArcRemoteSetDialogAnswer(20015,tAnswer)
+    SWITCH tAnswer
+      CASE 1
+        RETURN TRUE
+    ENDSWITCH
+  ENDIF
+  ATAg_ER_Init()
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Routine On End seam group ModeOp=T2 Show dialogue only on error seam
+;*****************************************************************************************
+DEFFCT BOOL ATA_ER_ChkSeamGroupT2(tInt :IN)
+DECL INT tInt
+DECL INT tAnswer
+IF ATA_ER_ErrorOnSeam(ATAg_ER_ExtError)==TRUE THEN
+  tAnswer = ArcMsgWriteDialog(,"ErrorOnSeamMoveToServicepostion","ARC",20014,Opt_VLSTOP_LOG,"Common#Ok")
+  ArcRemoteSetDialogAnswer(10524,tAnswer)
+  RETURN TRUE
+ELSE
+  ATAg_ER_Init()
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Routine On End seam group ModeOp=#Aut no dialogue
+;*****************************************************************************************
+DEFFCT BOOL ATA_ER_ChkSeamGroupAUT(tInt :IN)
+DECL INT tInt
+IF ATA_ER_ErrorOnSeam(ATAg_ER_ExtError)==TRUE THEN
+  RETURN TRUE
+ELSE
+  ATAg_ER_Init()
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] On End seam group ModeOp=#EX no dialogue
+;*****************************************************************************************
+DEFFCT BOOL ATA_ER_ChkSeamGroupEX(tInt :IN)
+DECL INT tInt
+IF ATA_ER_ErrorOnSeam(ATAg_ER_ExtError)==TRUE THEN
+  RETURN TRUE
+ELSE
+  ATAg_ER_Init()
+  RETURN FALSE
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] check if Arc Routine are visible
+;*****************************************************************************************
+DEF ATA_ER_RoutineVisible(tPRO_IP:IN)
+DECL INT tI,tAdd
+DECL CHAR tFileVisible[128]
+STRUC FileName CHAR Name[128]
+DECL FileName FileVisible[2]
+DECL PRO_IP tPRO_IP 
+tFileVisible[]="Error recovery file is visible: "
+FileVisible[1].Name[]="arcmain.src"
+FileVisible[2].Name[]="arcteam.src"
+FOR tI=1 TO 2
+  IF (StrFind(1,tPRO_IP.NAME[],FileVisible[tI].Name[],#NOT_CASE_SENS) > 0) THEN
+    tAdd=StrAdd(tFileVisible[],tPRO_IP.NAME[])
+    ArcMsgWriteS(,#QUIT ,"WarningRoutineVisible","ARC",20011,Opt_NOVLSTOP_LOG,tFileVisible[])
+  ENDIF
+ENDFOR
+END
+;*****************************************************************************************
+;[Error recovery] check if Error is present on external Robot
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_GroupProgSync(tStr[] :IN, tNum :IN)
+DECL INT tNum,tI
+DECL CHAR tStr[]
+gArcSyncList = tNum
+ATAg_ER_ExtError = FALSE
+IF (gArcSyncList > 1) THEN
+  ArcProgramSync(tStr[],gArcSyncList)
+  IF (ATAg_ER_IsMyError == FALSE) THEN
+    tI = 2
+    WHILE ArcRTRobotExist(tI) == TRUE
+      IF (tI B_AND gArcSyncList)== tI THEN
+        IF (ArcRemoteGetVarB($COOP_KRC[tI].NAME[],"ATAg_ER_IsMyError",#NOTIFY) == TRUE) THEN
+          ATAg_ER_ExtError = TRUE
+        ENDIF
+      ENDIF
+      tI = tI + 1
+    ENDWHILE
+  ENDIF
+  ArcProgramSync("EndGroupSync",gArcSyncList)
+ENDIF
+END
+;*****************************************************************************************
+;[Error recovery] check if Plc Selection is same an all Robots
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_PLCSignalSync()
+DECL CHAR RmdCmd[128]
+DECL BOOL RemoteRes
+DECL BOOL tPlcSelection
+DECL INT tI,tArcErrRecoverySignExt
+tPlcSelection = TRUE
+IF (gArcSyncList > 1) THEN
+  ArcProgramSync("StartPlcSyncro",gArcSyncList)
+  tI = 2
+  WHILE ArcRTRobotExist(tI) == TRUE
+    IF (tI B_AND gArcSyncList)==tI THEN
+      tArcErrRecoverySignExt = 0
+      tArcErrRecoverySignExt = ArcRemoteGetVarI($COOP_KRC[tI].NAME[],"gArcIErrRecoveryPlcSign",#NONE)
+      IF gArcIErrRecoveryPlcSign <> tArcErrRecoverySignExt THEN
+        tPlcSelection = FALSE
+      ENDIF
+    ENDIF
+    tI = tI + 1
+  ENDWHILE
+ENDIF
+RETURN tPlcSelection
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] check if Sensore is Active
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_ChkIfSensorActive()
+IF ((ATAg_ER_ArcGroupEnabled == TRUE) AND (gArcSensorActive == TRUE)) THEN
+  LOOP
+    ATAg_ER_SensorActive = TRUE
+    ArcMsgWrite(,#QUIT,"ILFSenseUnsuitableOnErrorRecovery","ARC",20012,Opt_NOVLSTOP_LOG)
+    ArcRemoteSetClearMsg(20012)
+  ENDLOOP
+ENDIF
+END
+;*****************************************************************************************
+;[Error recovery] Loop on #P_Ative send to all Robot Stop
+;*****************************************************************************************
+GLOBAL DEF ATA_ER_LoopSensorActive()
+DECL BOOL Result
+DECL INT tI
+IF (ATAg_ER_SensorActive == TRUE) THEN
+  IF (gArcSyncList > 1) THEN
+    tI = 2
+    WHILE ArcRTRobotExist(tI) == TRUE
+      IF (tI B_AND gArcSyncList)== tI THEN
+        ArcRemoteSetVarB($COOP_KRC[tI].NAME[],"ATAg_ER_ExtSensorActive",TRUE,#NOTIFY)
+      ENDIF
+      tI = tI + 1
+    ENDWHILE
+  ENDIF
+  ArcRobotStopFromSUBMIT(TRUE)
+ELSE
+  IF (ATAg_ER_ExtSensorActive==TRUE) THEN
+    ArcMsgWrite(,#NOTIFY ,"ILFSenseRtUnsuitableOnErrorRecovery","ARC",20013,Opt_NOVLSTOP_LOG)
+    ArcRobotStopFromSUBMIT(TRUE)
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Error recovery] Check Seam has to be welded at beginning of seam
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_CheckSeamBegin()
+DECL BOOL tResult
+tResult = FALSE
+IF (gArcTechAdvancedOption == TRUE) AND (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+  ATA_ER_BeginMemPoint(TRUE)
+  IF (ATAg_ER_WeldDone == TRUE) THEN
+    tResult = TRUE
+  ENDIF
+ENDIF
+RETURN tResult
+ENDFCT
+;*****************************************************************************************
+;[Error recovery] Check Seam has to be welded
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ATA_ER_CheckSeam()
+DECL BOOL tResult
+tResult = FALSE
+IF (gArcTechAdvancedOption == TRUE) AND (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+  IF (ATAg_ER_WeldDone == TRUE) THEN
+    tResult = TRUE
+  ENDIF
+ENDIF
+RETURN tResult
+ENDFCT

@@ -1,0 +1,39 @@
+&ACCESS R2
+&REL 2
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEFDAT  ARCMULTILAYER
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mAmlRootInExecution=FALSE
+DECL BOOL mAmlSwiDistance=FALSE
+DECL BOOL mArcTrackActive=FALSE
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL INT mAmlHandleBaseCorr=0
+;*****************************************************************************************
+;POS
+;*****************************************************************************************
+DECL POS mAmlBaseCorr={C 0.0}
+DECL POS mAmlBaseCorrMsg={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+DECL POS mAmlPosArcEnd={C 0.0} ; STT Set position by ArcOff
+DECL E6POS mAmlActPos ;Actuel Position from Robot with pendel
+DECL E6POS mAmlRsiActPos ;Actuel Position from STT without pendel 
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+ENUM stAmlErr None,InternalError,Dist2Point
+DECL stAmlErr mAmlErr=#None
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+DECL CONST stMultiLayer_T stAmlInit={OP #NONE,SPos {C 0.0},SBase {C 0.0},EPos {C 0.0},CPos {C 0.0}}
+DECL stMultiLayer_T mAmlHP
+DECL stMultiLayer_T mAmlDat
+DECL stMultiLayer_T mAmlSwi
+STRUC stVector3D_T REAL X,Y,Z
+STRUC stQuaternion_T REAL Q1,Q2,Q3,Q4
+STRUC stAxisAngle_T REAL I,J,K,THETA
+ENDDAT

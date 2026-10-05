@@ -1,0 +1,15 @@
+&ACCESS R2
+&COMMENT Generated from WOV
+DEF ArcWovW1AdaptiveWelding()
+END
+
+;*****************************************************************************************
+;[Routine] Arc WoV Switch Function Adapting Welding
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcWovW1AwFunction(tInValue :IN, tSource : IN, tSourceNr :IN, tAdaptiveWelding :IN)
+DECL REAL tInValue
+DECL stSource_T tSource
+DECL INT tSourceNr
+DECL stAdaptiveWelding_T tAdaptiveWelding
+RETURN 0.0
+ENDFCT

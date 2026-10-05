@@ -1,0 +1,11 @@
+&ACCESS R1
+&REL 45
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\TP\HmiEasy
+DEFDAT  HMIEASYLIB PUBLIC
+GLOBAL STRUC HmiEasy_T CHAR OpenView[256],CHAR ActView[256],INT OpenTab,INT ActTab,BOOL CloseActView
+
+DECL GLOBAL HmiEasy_T HmiEasy={OpenView[] " ",ActView[] " ",OpenTab 0,ActTab 0,CloseActView FALSE}
+
+ENDDAT

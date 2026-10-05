@@ -1,0 +1,222 @@
+&ACCESS RVO
+&REL 212
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\BUILD FILES
+DEF singlewall( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD PTP home Vel=50 % PDAT1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=home; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=50; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = Fhome
+BAS(#PTP_PARAMS, 50.0)
+SET_CD_PARAMS (0)
+PTP Xhome
+;ENDFOLD
+oLayerNum = 3
+oSideNum = 1
+oLayerType = 10
+oLayerIndex = 1
+WAAM_RSI_ON()
+
+Xweldda = Xstartt
+Xwelddb = Xstartt
+Xweldda.Y = 100.0
+Xwelddb.Y = (-100.0)
+Xweldda.Z = Xweldda.Z + 2.0 * (oLayerNum - 1)
+Xwelddb.Z = Xwelddb.Z + 2.0 * (oLayerNum - 1)
+
+;FOLD LIN hover Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=hover; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fhover
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xhover
+;ENDFOLD
+;FOLD LIN weldda Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=weldda; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fweldda
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xweldda
+;ENDFOLD
+oIsScanning = TRUE
+WAIT SEC 3.0
+;FOLD ARCON WDAT1 LIN weldda Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arconlin; Kuka.IsGlobalPoint=False; Kuka.PointName=weldda; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT1; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fweldda
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, Wweldda) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, Wweldda) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, Wweldda) PRIO = -1 
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, Wweldda)
+LIN Xweldda
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, Wweldda)
+;ENDFOLD
+;FOLD ARCOFF WDAT2 LIN welddb CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arcofflin; Kuka.IsGlobalPoint=False; Kuka.PointName=welddb; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT2; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fwelddb
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS (0)
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT2) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT2, Wwelddb) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT2) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT2, Wwelddb) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT2) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT2, Wwelddb) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT2, Wwelddb)
+LIN Xwelddb
+ArcMainNG(#ArcOffAfterMoveStd, WDAT2, Wwelddb)
+;ENDFOLD
+WAIT SEC 2.0
+oIsScanning = FALSE
+;FOLD LIN hover Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=hover; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fhover
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xhover
+;ENDFOLD
+;FOLD PTP home Vel=50 % PDAT1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=home; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=50; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = Fhome
+BAS(#PTP_PARAMS, 50.0)
+SET_CD_PARAMS (0)
+PTP Xhome
+;ENDFOLD
+WAAM_RSI_OFF()
+
+WAIT SEC 1.0
+oLayerNum = oLayerNum + 1
+oSideNum = 1
+oLayerType = 10
+oLayerIndex = 1
+WAAM_RSI_ON()
+
+Xwelddc = Xstarts
+Xwelddd = Xstarts
+Xwelddc.Y = (-100.0)
+Xwelddd.Y = 100.0
+Xwelddc.Z = Xwelddc.Z + 2.0 * oLayerNum
+Xwelddd.Z = Xwelddd.Z + 2.0 * oLayerNum
+
+;FOLD LIN hoverr Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=hoverr; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fhoverr
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xhoverr
+;ENDFOLD
+;FOLD LIN welddc Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=welddc; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fwelddc
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xwelddc
+;ENDFOLD
+oIsScanning = TRUE
+WAIT SEC 3.0
+;FOLD ARCON WDAT4 LIN welddc Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arconlin; Kuka.IsGlobalPoint=False; Kuka.PointName=welddc; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT4; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fwelddc
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT4) DO ArcMainNG(#PreDefinition, WDAT4, Wwelddc) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#GasPreflow, WDAT4) DO ArcMainNG(#GasPreflow, WDAT4, Wwelddc) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#ArcPreOn, WDAT4) DO ArcMainNG(#ArcOnMoveStd, WDAT4, Wwelddc) PRIO = -1 
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT4, Wwelddc)
+LIN Xwelddc
+ArcMainNG(#ArcOnAfterMoveStd, WDAT4, Wwelddc)
+;ENDFOLD
+;FOLD ARCOFF WDAT5 LIN welddd CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arcofflin; Kuka.IsGlobalPoint=False; Kuka.PointName=welddd; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT5; ArcTech.Basic=3.7.2.112; ArcTech.Advanced=3.7.1.9
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fwelddd
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS (0)
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT5, Wwelddd) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT5, Wwelddd) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT5, Wwelddd) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT5, Wwelddd)
+LIN Xwelddd
+ArcMainNG(#ArcOffAfterMoveStd, WDAT5, Wwelddd)
+;ENDFOLD
+WAIT SEC 2.0
+oIsScanning = FALSE
+;FOLD LIN hoverr Vel=0.05 m/s CPDAT1 Tool[1]:Tool1 Base[3]:fixedbase ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=hoverr; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fhoverr
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN Xhoverr
+;ENDFOLD
+;FOLD PTP home Vel=50 % PDAT1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=home; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=50; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = Fhome
+BAS(#PTP_PARAMS, 50.0)
+SET_CD_PARAMS (0)
+PTP Xhome
+;ENDFOLD
+
+WAAM_RSI_OFF()
+
+END

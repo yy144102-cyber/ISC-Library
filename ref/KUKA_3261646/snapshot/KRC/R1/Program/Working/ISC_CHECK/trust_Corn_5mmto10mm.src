@@ -1,0 +1,406 @@
+&ACCESS RVO
+&REL 235
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF  trust_Corn_5mmto10mm ( )
+DECL INT i,StartLayer,EndLayer
+DECL REAL HightPitch,TiltAngle,Radius,OffsetHight,ShandEx
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+
+StartLayer = 31
+EndLayer = 31
+
+;-------------------------------
+;Shrink and Expand <shrink is -1> <Expand is +1>
+ShandEx = 1.0
+;-------------------------------
+
+Radius = 516.81
+TiltAngle = 50.0
+HightPitch = 1.65
+OffsetHight = 155.68
+
+INIPosition(StartLayer,HightPitch,Radius,TiltAngle,OffsetHight,ShandEx)
+
+MotionPar(#CPmotion,0.1)
+LIN XHOMEX
+LIN XHOVERX
+LIN Point[1]
+
+oLayerNum = 1
+oSideNum = 1
+oLayerType = 10
+oLayerIndex = 1
+WAAM_RSI_ON()
+oIsScanning = TRUE
+WAIT SEC 1.0
+WeldingAct(#_ON,StartLayer)
+
+FOR i = StartLayer TO EndLayer
+   
+
+   I[1] = i
+   ;FOLD Move
+      
+  
+      CIRC Point[2], Point[3] C_Dis C_Dis
+      CIRC Point[4], Point[5] C_Dis C_Dis
+      CIRC Point[6], Point[7] C_Dis C_Dis
+      CIRC Point[8], Point[9] C_Dis C_Dis
+      CIRC Point[10], Point[11] C_Dis C_Dis
+      CIRC Point[12], Point[13] C_Dis C_Dis
+      CIRC Point[14], Point[15] C_Dis C_Dis
+      CIRC Point[16], Point[17] C_Dis C_Dis
+      CIRC Point[18], Point[19] C_Dis C_Dis
+      CIRC Point[20], Point[21] C_Dis C_Dis
+      CIRC Point[22], Point[23] C_Dis C_Dis
+      CIRC Point[24], Point[25] C_Dis C_Dis
+      CIRC Point[26], Point[27] C_Dis C_Dis
+      CIRC Point[28], Point[29] C_Dis C_Dis
+      CIRC Point[30], Point[31] C_Dis C_Dis
+      CIRC Point[32], Point[33] C_Dis C_Dis
+      CIRC Point[34], Point[35] C_Dis C_Dis
+      CIRC Point[36], Point[37] C_Dis C_Dis
+      CIRC Point[38], Point[39] C_Dis C_Dis
+      CIRC Point[40], Point[41] C_Dis C_Dis
+      CIRC Point[42], Point[43] C_Dis C_Dis
+      CIRC Point[44], Point[45] C_Dis C_Dis
+      CIRC Point[46], Point[47] C_Dis C_Dis
+      CIRC Point[48], Point[49] C_Dis C_Dis
+      CIRC Point[50], Point[51] C_Dis C_Dis
+      CIRC Point[52], Point[53] C_Dis C_Dis
+      CIRC Point[54], Point[55] C_Dis C_Dis
+      CIRC Point[56], Point[57] C_Dis C_Dis
+      CIRC Point[58], Point[59] C_Dis C_Dis
+      CIRC Point[60], Point[61] C_Dis C_Dis
+      CIRC Point[62], Point[63] C_Dis C_Dis
+      CIRC Point[64], Point[65] C_Dis C_Dis
+      CIRC Point[66], Point[67] C_Dis C_Dis
+      CIRC Point[68], Point[69] C_Dis C_Dis
+      CIRC Point[70], Point[71] C_Dis C_Dis
+      JobSwitch(i)
+      CIRC Point[72], Point[73] C_Dis C_Dis
+   ;ENDFOLD
+   IF i == 1 THEN
+      BAS(#CP_PARAMS, WDAT2.Weld.Velocity)
+   ENDIF
+   IF i == 2 THEN
+      BAS(#CP_PARAMS, WDAT3.Weld.Velocity)
+   ENDIF
+   IF i == 3 THEN
+      BAS(#CP_PARAMS, WDAT4.Weld.Velocity)
+   ENDIF
+   IF i >= 4 THEN
+      BAS(#CP_PARAMS, WDAT5.Weld.Velocity)
+   ENDIF
+   
+   HightClaculation(TiltAngle,HightPitch,i,OffsetHight,Radius,ShandEx)
+
+  
+ENDFOR
+
+WeldingAct(#_OFF,i - 1)
+WAIT SEC 1.0
+oIsScanning = FALSE
+WAAM_RSI_OFF()
+MotionPar(#PTPmotion,10.0)
+PTP XHOVERX
+PTP XHOMEX
+
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEF INIPosition(Layer:IN,Pitch:IN,Radius:IN,TiltAngle:IN,OffsetH:IN,ShandEx:IN)
+DECL INT i,Layer
+DECL REAL Pitch,Hight,Radius,RotateAngle,TiltAngle,Value,OffsetH,ShandEx
+
+;FOLD Position Calculation
+   FOR i = 1 TO 73
+      Point[i].X = 0.0
+      Point[i].Y = 0.0
+      Point[i].Z = 0.0
+      Point[i].A = 0.0
+      Point[i].B = 0.0
+      Point[i].C = 0.0
+      Point[i].S = 18
+      Point[i].T = 0
+      Point[i].E1 = 0.0
+   ENDFOR
+
+   RotateAngle = 0.0
+   FOR i = 1 TO 73
+      Point[i].X = Radius * SIN(RotateAngle)
+      RotateAngle = RotateAngle + 5.0
+   ENDFOR
+   RotateAngle = 0.0
+   FOR i = 1 TO 73
+      Point[i].Y = Radius * COS(RotateAngle)
+      RotateAngle = RotateAngle - 5.0
+   ENDFOR
+
+   IF Layer == 1 THEN
+      Hight = 0.0
+   ENDIF
+   IF Layer == 2 THEN
+      Hight = 3.0
+   ENDIF
+   IF Layer == 3 THEN
+      Hight = 4.5
+   ENDIF
+   IF Layer == 4 THEN
+      Hight = 6.0
+   ENDIF
+   IF Layer >= 5 THEN
+      Hight = 6.0 + (Pitch * (Layer - 4))
+   ENDIF
+   TiltAngle = 90.0 - TiltAngle 
+   Value = Hight * COS(TiltAngle)
+   RotateAngle = 0.0
+   FOR i = 1 TO 73
+
+      Point[i].X = Point[i].X +( Value * SIN(RotateAngle) * ShandEx)
+      RotateAngle = RotateAngle + 5.0
+   ENDFOR
+   RotateAngle = 0.0
+   
+   FOR i = 1 TO 73
+ 
+      Point[i].Y = Point[i].Y +( Value * COS(RotateAngle) * ShandEx)
+      RotateAngle = RotateAngle - 5.0
+   ENDFOR
+   
+   FOR i = 1 TO 73
+      Point[i].Z = Hight * SIN(TiltAngle) + OffsetH
+   ENDFOR
+   
+   
+   RotateAngle = -180.0
+   
+   FOR i = 1 TO 73
+      Point[i].A = RotateAngle
+      RotateAngle = RotateAngle - 5.0
+   ENDFOR
+   
+   
+   RotateAngle = (90.0) -  TiltAngle
+
+   FOR i = 1 TO 73
+      Point[i].C = RotateAngle
+   ENDFOR
+   
+   RotateAngle = 0.0
+   
+   FOR i = 1 TO 73
+      Point[i].E1 = RotateAngle
+      RotateAngle = RotateAngle + 5.0
+   ENDFOR
+   
+;ENDFOLD
+
+END
+
+DEF HightClaculation(TiltAngle:IN,Pitch:IN,iA:IN,OffsetHi:IN,Radius:IN,ShandEx:IN)
+DECL INT i,iA
+DECL REAL TiltAngle,Pitch,Value,RotateAngle,Hight,OffsetHi,Radius,ShandEx
+
+;FOLD Hight Calculation
+   ;TiltAngle = 90.0 - TiltAngle
+   ;Value = Pitch * COS(TiltAngle)
+   ;RotateAngle = 0.0
+   
+   IF iA == 1 THEN
+      Hight = 3.0
+   ENDIF
+   IF iA == 2 THEN
+      Hight = 4.5
+   ENDIF
+   IF iA == 3 THEN
+      Hight = 6.0
+   ENDIF
+   IF iA >= 4 THEN
+      
+      Hight = 6.0+ (Pitch * (iA - 3))
+   
+   ENDIF
+   
+   TiltAngle = 90.0 - TiltAngle 
+   Value = Hight * COS(TiltAngle)
+   RotateAngle = 0.0
+   
+   FOR i = 1 TO 73
+      ;-------------------------------------------
+      Point[i].X = Radius * SIN(RotateAngle)
+      ;-------------------------------------------
+         Point[i].X = Point[i].X + Value * SIN(RotateAngle) * ShandEx
+         RotateAngle = RotateAngle + 5.0
+   ENDFOR
+   RotateAngle = 0.0
+   FOR i = 1 TO 73
+      ;-------------------------------------------
+      Point[i].Y = Radius * COS(RotateAngle)
+      ;-------------------------------------------
+         Point[i].Y = Point[i].Y + Value * COS(RotateAngle) * ShandEx
+         RotateAngle = RotateAngle - 5.0
+   ENDFOR
+   
+  ; IF iA == 1 THEN
+  ;    Hight = 3.0
+  ; ENDIF
+  ; IF iA == 2 THEN
+  ;    Hight = 4.5
+  ; ENDIF
+  ; IF iA == 3 THEN
+  ;    Hight = 6.0
+  ; ENDIF
+  ; IF iA == 4 THEN
+  ;    Hight = 6.0 + (Pitch * (iA - 3))
+  ; ENDIF
+   
+   
+   FOR i = 1 TO 73
+      Point[i].Z = Hight * SIN(TiltAngle) + OffsetHi
+   ENDFOR
+;ENDFOLD
+
+END
+
+DEF WeldingAct(Type:IN,Layer:IN)
+DECL Action Type
+DECL INT Layer
+
+;FOLD Welding Action
+   $BWDSTART=FALSE
+   LDAT_ACT=LCPDAT1
+   FDAT_ACT=FP1
+   SET_CD_PARAMS (0)
+   SWITCH Type
+      CASE #_ON
+         IF Layer == 1 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+            BAS(#CP_PARAMS, WDAT1.Weld.Velocity)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+         ENDIF
+         IF Layer == 2 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT2) DO ArcMainNG(#PreDefinition, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#GasPreflow, WDAT2) DO ArcMainNG(#GasPreflow, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#ArcPreOn, WDAT2) DO ArcMainNG(#ArcOnMoveStd, WDAT2, WP2) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT2, WP2)
+            BAS(#CP_PARAMS, WDAT2.Weld.Velocity)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT2, WP2)
+         ENDIF
+         IF Layer == 3 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT3) DO ArcMainNG(#PreDefinition, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#GasPreflow, WDAT3) DO ArcMainNG(#GasPreflow, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#ArcPreOn, WDAT3) DO ArcMainNG(#ArcOnMoveStd, WDAT3, WP3) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT3, WP3)
+            BAS(#CP_PARAMS, WDAT3.Weld.Velocity)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT3, WP3)
+         ENDIF
+         IF Layer == 4 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT4) DO ArcMainNG(#PreDefinition, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#GasPreflow, WDAT4) DO ArcMainNG(#GasPreflow, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#ArcPreOn, WDAT4) DO ArcMainNG(#ArcOnMoveStd, WDAT4, WP4) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT4, WP4)
+            BAS(#CP_PARAMS, WDAT4.Weld.Velocity)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT4, WP4)
+         ENDIF
+         IF Layer >= 5 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT5) DO ArcMainNG(#PreDefinition, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#GasPreflow, WDAT5) DO ArcMainNG(#GasPreflow, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#ArcPreOn, WDAT5) DO ArcMainNG(#ArcOnMoveStd, WDAT5, WP5) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT5, WP5)
+            BAS(#CP_PARAMS, WDAT5.Weld.Velocity)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT5, WP5)
+         ENDIF
+      CASE #_OFF
+         IF (Layer >= 1) AND (Layer <= 4) THEN
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+            ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+            ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+         ELSE
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT5, WP5) PRIO = -1
+            ArcMainNG(#ArcOffBeforeMoveStd, WDAT5, WP5)
+            ArcMainNG(#ArcOffAfterMoveStd, WDAT5, WP5)
+         ENDIF
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEF JobSwitch(Layer:IN)
+DECL INT Layer
+
+;FOLD Welding Action
+   IF Layer == 1 THEN
+      TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT2, WP2) PRIO = -1
+      ArcMainNG(#ArcSwiBeforeMoveStd, WDAT2, WP2)
+      ArcMainNG(#ArcSwiAfterMoveStd, WDAT2, WP2)
+   ENDIF
+   IF Layer == 2 THEN
+      TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT3, WP3) PRIO = -1
+      ArcMainNG(#ArcSwiBeforeMoveStd, WDAT3, WP3)
+      ArcMainNG(#ArcSwiAfterMoveStd, WDAT3, WP3)
+   ENDIF
+   IF Layer == 3 THEN
+      TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT4, WP4) PRIO = -1
+      ArcMainNG(#ArcSwiBeforeMoveStd, WDAT4, WP4)
+      ArcMainNG(#ArcSwiAfterMoveStd, WDAT4, WP4)
+   ENDIF
+   IF Layer >= 4 THEN
+      TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT5, WP5) PRIO = -1
+      ArcMainNG(#ArcSwiBeforeMoveStd, WDAT5, WP5)
+      ArcMainNG(#ArcSwiAfterMoveStd, WDAT5, WP5)
+   ENDIF
+;ENDFOLD
+
+END

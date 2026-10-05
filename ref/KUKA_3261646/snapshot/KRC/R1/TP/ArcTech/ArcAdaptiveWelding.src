@@ -1,0 +1,726 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcAdaptiveWelding()
+END
+;*****************************************************************************************
+;[Routine] Arc Submitt Init variable
+;*****************************************************************************************
+GLOBAL DEF AawLoopInit()
+AawW1LoopInit()
+;AawW2LoopInit()
+;AawW3LoopInit()
+;AawW3LoopInit()
+END
+;*****************************************************************************************
+;[Global Routine]On Program Reset Init All Adaptive Welding Variables
+;*****************************************************************************************
+GLOBAL DEF AawProgReset()
+DECL INT tI
+FOR tI =1 TO 32
+  ArcMsgWriteClearHandle(mHandle[tI])
+ENDFOR
+END
+;*****************************************************************************************
+;[Global Routine]On SelectLine Init All Adaptive Welding Variables
+;*****************************************************************************************
+GLOBAL DEF AawProgSelect()
+DECL INT tI
+FOR tI =1 TO 32
+  ArcMsgWriteClearHandle(mHandle[tI])
+ENDFOR
+END
+;*****************************************************************************************
+;[Global Routine]On ArcOff Init All Adaptive Welding Variables
+;*****************************************************************************************
+GLOBAL DEF AawArcOff()
+DECL INT tI
+FOR tI =1 TO 32
+  ArcMsgWriteClearHandle(mHandle[tI])
+ENDFOR
+END
+;*****************************************************************************************
+;[Routine] Arc Strike
+;*****************************************************************************************
+GLOBAL DEFFCT stStrike_T AawStrike(tWelderNr: IN,tArcDat :IN)
+DECL INT tWelderNr
+DECL stArcDat_T tArcDat
+DECL stStrike_T tStrike
+tStrike = tArcDat.Strike
+SWITCH tWelderNr
+  CASE 1
+    RETURN AawW1Strike(tArcDat)
+  CASE 2
+    ;RETURN AawW2Strike(tArcDat)
+  CASE 3
+    ;RETURN AawW3Strike(tArcDat)
+  CASE 4
+    ;RETURN AawW4Strike(tArcDat)
+ENDSWITCH  
+RETURN tStrike
+ENDFCT
+;*****************************************************************************************
+;[Routine] Arc Welding Call from SubMit Loop
+;*****************************************************************************************
+GLOBAL DEF AawWeldingLoop()
+SWITCH gArcActIlfWelder
+  CASE 1
+    AawW1WeldingLoop()
+  CASE 2
+    ;AawW2WeldingLoop()
+  CASE 3
+    ;AawW3WeldingLoop()
+  CASE 4
+    ;AawW4WeldingLoop()
+ENDSWITCH   
+END
+;*****************************************************************************************
+;[Routine] Arc Crater
+;*****************************************************************************************
+GLOBAL DEFFCT stCrater_T AawCrater(tWelderNr: IN,tArcDat :IN)
+DECL INT tWelderNr
+DECL stArcDat_T tArcDat
+DECL stCrater_T tCrater
+tCrater = tArcDat.Crater
+SWITCH tWelderNr
+  CASE 1
+    RETURN AawW1Crater(tArcDat)
+  CASE 2
+    ;RETURN AawW2Crater(tArcDat)
+  CASE 3
+    ;RETURN AawW3Crater(tArcDat)
+  CASE 4
+    ;RETURN AawW4Crater(tArcDat)
+ENDSWITCH 
+RETURN tCrater
+ENDFCT
+;*****************************************************************************************
+;[Routine] Load Weld Default value 
+;*****************************************************************************************
+GLOBAL DEFFCT stAdaptiveWelding_T AawStrikeLoadDefValue(tAdaptiveWelding : IN,tStrike :IN)
+DECL stStrike_T tStrike
+DECL stAdaptiveWelding_T tAdaptiveWelding
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tAdaptiveWelding.IlfValue = tStrike.Channel1
+  CASE #Channel2
+    tAdaptiveWelding.IlfValue = tStrike.Channel2
+  CASE #Channel3
+    tAdaptiveWelding.IlfValue = tStrike.Channel3
+  CASE #Channel4
+    tAdaptiveWelding.IlfValue = tStrike.Channel4
+  CASE #Channel5
+    tAdaptiveWelding.IlfValue = tStrike.Channel5
+  CASE #Channel6
+    tAdaptiveWelding.IlfValue = tStrike.Channel6
+  CASE #Channel7
+    tAdaptiveWelding.IlfValue = tStrike.Channel7
+  CASE #Channel8
+    tAdaptiveWelding.IlfValue = tStrike.Channel8
+  CASE #PurgeTime
+    tAdaptiveWelding.IlfValue = tStrike.PurgeTime
+  CASE #PreFlowTime
+    tAdaptiveWelding.IlfValue = tStrike.PreFlowTime
+  CASE #StartTime
+    tAdaptiveWelding.IlfValue = tStrike.StartTime
+ENDSWITCH
+RETURN tAdaptiveWelding
+ENDFCT
+;*****************************************************************************************
+;[Routine] Load Weld Default value 
+;*****************************************************************************************
+GLOBAL DEFFCT stAdaptiveWelding_T AawWeldLoadDefValue(tAdaptiveWelding : IN,tWeld :IN,tWeave :IN)
+DECL stWeld_T tWeld
+DECL stWeave_T tWeave
+DECL stAdaptiveWelding_T tAdaptiveWelding
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tAdaptiveWelding.IlfValue = tWeld.Channel1
+  CASE #Channel2
+    tAdaptiveWelding.IlfValue = tWeld.Channel2
+  CASE #Channel3
+    tAdaptiveWelding.IlfValue = tWeld.Channel3
+  CASE #Channel4
+    tAdaptiveWelding.IlfValue = tWeld.Channel4
+  CASE #Channel5
+    tAdaptiveWelding.IlfValue = tWeld.Channel5
+  CASE #Channel6
+    tAdaptiveWelding.IlfValue = tWeld.Channel6
+  CASE #Channel7
+    tAdaptiveWelding.IlfValue = tWeld.Channel7
+  CASE #Channel8
+    tAdaptiveWelding.IlfValue = tWeld.Channel8
+  CASE #Velocity
+    tAdaptiveWelding.IlfValue = tWeld.Velocity
+    gAawCFrequencyValue.Velocity.LoadVal = TRUE
+    gAawCFrequencyValue.Velocity.ValueIlf = tWeld.Velocity
+  CASE #Length
+    tAdaptiveWelding.IlfValue = tWeave.Length
+    gAawCFrequencyValue.Length.LoadVal = TRUE
+    gAawCFrequencyValue.Length.ValueIlf = tWeave.Length
+  CASE #Amplitude
+    IF (tWeave.Amplitude > 100) THEN
+      tAdaptiveWelding.IlfValue = tWeave.Amplitude - 100
+    ELSE
+    tAdaptiveWelding.IlfValue = tWeave.Amplitude
+    ENDIF
+  CASE #Angle
+    ;TODO tAdaptiveWelding.IlfValue = tWeave.Angle
+ENDSWITCH
+RETURN tAdaptiveWelding
+ENDFCT
+;*****************************************************************************************
+;[Routine] Load Weld Default value 
+;*****************************************************************************************
+GLOBAL DEFFCT stAdaptiveWelding_T AawCraterLoadDefValue(tAdaptiveWelding : IN,tCrater :IN)
+DECL stCrater_T tCrater
+DECL stAdaptiveWelding_T tAdaptiveWelding
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tAdaptiveWelding.IlfValue = tCrater.Channel1
+  CASE #Channel2
+    tAdaptiveWelding.IlfValue = tCrater.Channel2
+  CASE #Channel3
+    tAdaptiveWelding.IlfValue = tCrater.Channel3
+  CASE #Channel4
+    tAdaptiveWelding.IlfValue = tCrater.Channel4
+  CASE #Channel5
+    tAdaptiveWelding.IlfValue = tCrater.Channel5
+  CASE #Channel6
+    tAdaptiveWelding.IlfValue = tCrater.Channel6
+  CASE #Channel7
+    tAdaptiveWelding.IlfValue = tCrater.Channel7
+  CASE #Channel8
+    tAdaptiveWelding.IlfValue = tCrater.Channel8
+  CASE #CraterTime
+    tAdaptiveWelding.IlfValue = tCrater.CraterTime
+  CASE #PostFlowTime
+    tAdaptiveWelding.IlfValue = tCrater.PostFlowTime
+ENDSWITCH
+RETURN tAdaptiveWelding
+ENDFCT
+;*****************************************************************************************
+;[Routine] Load VAlue to Strike STRUC
+;*****************************************************************************************
+GLOBAL DEFFCT stStrike_T AawSetValueStrike(tStrike :IN,tAdaptiveWelding :IN)
+DECL stStrike_T tStrike
+DECL stAdaptiveWelding_T tAdaptiveWelding
+IF (tAdaptiveWelding.Active == FALSE) THEN
+  RETURN tStrike
+ENDIF
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tStrike.Channel1    = tAdaptiveWelding.OutValue
+  CASE #Channel2        
+    tStrike.Channel2    = tAdaptiveWelding.OutValue
+  CASE #Channel3        
+    tStrike.Channel3    = tAdaptiveWelding.OutValue
+  CASE #Channel4        
+    tStrike.Channel4    = tAdaptiveWelding.OutValue
+  CASE #Channel5        
+    tStrike.Channel5    = tAdaptiveWelding.OutValue
+  CASE #Channel6        
+    tStrike.Channel6    = tAdaptiveWelding.OutValue
+  CASE #Channel7        
+    tStrike.Channel7    = tAdaptiveWelding.OutValue
+  CASE #Channel8        
+    tStrike.Channel8    = tAdaptiveWelding.OutValue
+  CASE #PurgeTime
+    tStrike.PurgeTime   = tAdaptiveWelding.OutValue
+  CASE #PreFlowTime
+    tStrike.PreFlowTime = tAdaptiveWelding.OutValue
+  CASE #StartTime
+    tStrike.StartTime   = tAdaptiveWelding.OutValue
+ENDSWITCH
+RETURN tStrike
+ENDFCT
+;*****************************************************************************************
+;[Routine] Load Value to Crater STRUC
+;*****************************************************************************************
+GLOBAL DEFFCT stCrater_T AawSetValueCrater(tCrater :IN,tAdaptiveWelding :IN)
+DECL stCrater_T tCrater
+DECL stAdaptiveWelding_T tAdaptiveWelding
+IF (tAdaptiveWelding.Active == FALSE) THEN
+  RETURN tCrater
+ENDIF
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tCrater.Channel1       = tAdaptiveWelding.OutValue
+  CASE #Channel2           
+    tCrater.Channel2       = tAdaptiveWelding.OutValue
+  CASE #Channel3           
+    tCrater.Channel3       = tAdaptiveWelding.OutValue
+  CASE #Channel4           
+    tCrater.Channel4       = tAdaptiveWelding.OutValue
+  CASE #Channel5           
+    tCrater.Channel5       = tAdaptiveWelding.OutValue
+  CASE #Channel6           
+    tCrater.Channel6       = tAdaptiveWelding.OutValue
+  CASE #Channel7           
+    tCrater.Channel7       = tAdaptiveWelding.OutValue
+  CASE #Channel8           
+    tCrater.Channel8       = tAdaptiveWelding.OutValue
+  CASE #CraterTime         
+    tCrater.CraterTime     = tAdaptiveWelding.OutValue
+  CASE #PostFlowTime
+    tCrater.PostFlowTime   = tAdaptiveWelding.OutValue
+ENDSWITCH
+RETURN tCrater
+ENDFCT
+;*****************************************************************************************
+;[Routine] Check Min Max Value
+;*****************************************************************************************
+GLOBAL DEFFCT stAdaptiveWelding_T AawCheckMinMaxValue(tAdaptiveWelding : IN,tParam :IN)
+DECL INT tOnRange
+DECL stParam_T tParam
+DECL stAdaptiveWelding_T tAdaptiveWelding
+tAdaptiveWelding.OnRange = -3 ;Disable
+IF (tParam.Active == TRUE) THEN  
+  tAdaptiveWelding.OutValue = ArcSetRangeValue(tAdaptiveWelding.OutValue,tParam.SetMin,tParam.SetMax,tOnRange)
+  tAdaptiveWelding.OnRange = tOnRange
+ENDIF
+RETURN tAdaptiveWelding
+ENDFCT
+;*****************************************************************************************
+;[Routine] Source Value Filter
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL AawSourceFilter(tSource :OUT,tInValue :OUT)
+DECL REAL tInValue
+DECL REAL tAverage
+DECL REAL tMinVal
+DECL REAL tMaxVal
+DECL REAL tPerCentFilter
+DECL stSource_T tSource
+SWITCH gAawFilterType
+  CASE #Disabled
+    RETURN TRUE ;Filter Disable
+  CASE #AverageSource  ;Avarage Source Value (Return Avarage Source value)
+    ;Load reference value
+    tSource.LastValue.Val5 = tSource.LastValue.Val4
+    tSource.LastValue.Val4 = tSource.LastValue.Val3
+    tSource.LastValue.Val3 = tSource.LastValue.Val2
+    tSource.LastValue.Val2 = tSource.LastValue.Val1
+    tSource.LastValue.Val1 = tInValue
+    IF (tSource.LastValue.Val5 == 0) THEN
+      RETURN TRUE ;Missing Avarage Value
+    ENDIF
+    tAverage = ((ABS(tSource.LastValue.Val1) + ABS(tSource.LastValue.Val2) + ABS(tSource.LastValue.Val3) + ABS(tSource.LastValue.Val4) + ABS(tSource.LastValue.Val5)) / 5.0)
+    tInValue = tAverage 
+    RETURN TRUE
+  CASE #CutSourcePeak     ;Wall Source (Return same Value )
+    ;Load reference value
+    IF (tSource.LastValue.Val5 == 0) THEN
+      tSource.LastValue.Val5 = tSource.LastValue.Val4
+      tSource.LastValue.Val4 = tSource.LastValue.Val3
+      tSource.LastValue.Val3 = tSource.LastValue.Val2
+      tSource.LastValue.Val2 = tSource.LastValue.Val1
+      tSource.LastValue.Val1 = tInValue
+      RETURN TRUE ;Missing Avarage Value
+    ENDIF
+    tAverage = ((ABS(tSource.LastValue.Val1) + ABS(tSource.LastValue.Val2) + ABS(tSource.LastValue.Val3) + ABS(tSource.LastValue.Val4) + ABS(tSource.LastValue.Val5)) / 5.0)
+    tPerCentFilter = ArcSetRangeValue(gAawPerCentFilter,cArcFilterPerCentMin,cArcFilterPerCentMax)
+    tMaxVal = (ABS(tAverage) + (ABS(tAverage) * (tPerCentFilter / 100.0)))
+    tMinVal = tMaxVal * (-1)
+    IF (ArcCheckRangeValue(tInValue,tMinVal,tMaxVal) <> 1) THEN
+      RETURN FALSE ;Value from source wrong
+    ENDIF
+    tSource.LastValue.Val5 = tSource.LastValue.Val4
+    tSource.LastValue.Val4 = tSource.LastValue.Val3
+    tSource.LastValue.Val3 = tSource.LastValue.Val2
+    tSource.LastValue.Val2 = tSource.LastValue.Val1
+    tSource.LastValue.Val1 = tInValue
+    RETURN TRUE
+ENDSWITCH
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Set Value To
+;*****************************************************************************************
+GLOBAL DEF AawSetValueWeld(tAdaptiveWelding : IN,tWeave :IN)
+DECL INT tError
+DECL INT tOnRange
+DECL stWeave_T tWeave
+DECL stAdaptiveWelding_T tAdaptiveWelding
+IF (tAdaptiveWelding.Active == FALSE) THEN
+  RETURN
+ENDIF
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Length,#Amplitude
+    IF (tWeave.Pattern == #NONE) THEN
+      RETURN
+    ENDIF
+    IF (ArcCallFromRoutine() <> 3) THEN ;Must been Call from SubMit
+      RETURN
+    ENDIF
+  CASE #Angle
+    IF (tWeave.Pattern == #NONE) THEN
+      RETURN
+    ENDIF
+    IF (ArcCallFromRoutine() <> 4) THEN ;Must been Call from SubMit Trigger
+      RETURN
+    ENDIF
+ENDSWITCH
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Channel1
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,1,tAdaptiveWelding.OutValue)
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[11],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,1,tError)
+    ENDIF
+  CASE #Channel2 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,2,tAdaptiveWelding.OutValue)
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[12],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,2,tError)
+    ENDIF
+  CASE #Channel3 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,3,tAdaptiveWelding.OutValue)  
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[13],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,3,tError)
+    ENDIF
+  CASE #Channel4 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,4,tAdaptiveWelding.OutValue)  
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[14],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,4,tError)
+    ENDIF
+  CASE #Channel5 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,5,tAdaptiveWelding.OutValue)  
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[15],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,5,tError)
+    ENDIF
+  CASE #Channel6 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,6,tAdaptiveWelding.OutValue)    
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[16],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,6,tError)
+    ENDIF
+  CASE #Channel7 
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,7,tAdaptiveWelding.OutValue)    
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[17],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,7,tError)
+    ENDIF
+  CASE #Channel8
+    tError = ArcSetValueToChannel(#None,gArcActIlfWelder,gArcActModeSwi,8,tAdaptiveWelding.OutValue)  
+    IF (tError < 0) THEN
+      ArcMsgWriteR(mHandle[18],#STATE,"WarningOnWriteValueToChannel","AAW",60014,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue,8,tError)
+    ENDIF
+  CASE #Velocity
+    tAdaptiveWelding.OutValue = ArcSetRangeValue(tAdaptiveWelding.OutValue,cArcVelApplMin,cArcVelApplMax,tOnRange)
+     SWITCH tOnRange
+      CASE 1
+        ArcMsgWriteClearHandle(mHandle[19])
+      CASE -1,-2
+        ArcMsgWriteR(mHandle[19],#STATE,"WarningOnWriteValueToVelocity","AAW",60010,OPt_VLSTOP_LOG,cArcVelApplMin,tAdaptiveWelding.OutValue,cArcVelApplMax)
+    ENDSWITCH
+    ArcVelApplSet(3,tAdaptiveWelding.OutValue)
+  CASE #Length
+    SWITCH ArcSwitchActiveTech()
+    CASE #STT
+      tAdaptiveWelding.OutValue = gAawCFrequencyValue.Velocity.ValueIlf * 1000 / tAdaptiveWelding.OutValue
+    ENDSWITCH
+    tAdaptiveWelding.OutValue = ArcSetRangeValue(tAdaptiveWelding.OutValue,cArcWeaveMinLength,cArcWeaveMaxLength)
+    tError                    = ArcSetValue(gArcActIlfWelder,gArcActModeSwi,tAdaptiveWelding.KrlId,tAdaptiveWelding.OutValue) ;TODO Check
+    SWITCH ArcSwitchActiveTech()
+      CASE #ARS,#RSI
+        IF (tError < 0) THEN
+          ArcMsgWriteR(mHandle[21],#STATE,"WarningArcSenseWriteLength","AAW",60002,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue)
+        ENDIF
+      CASE #STT
+        IF (tError < 0) THEN
+          ArcMsgWriteR(mHandle[22],#STATE,"WarningSTTWriteLength","AAW",60003,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue)
+        ENDIF
+    ENDSWITCH
+  CASE #Amplitude
+    tAdaptiveWelding.OutValue = ArcSetRangeValue(tAdaptiveWelding.OutValue,cArcWeaveMinAmplitude,cArcWeaveMaxAmplitude)
+    tError                    = ArcSetValue(gArcActIlfWelder,gArcActModeSwi,tAdaptiveWelding.KrlId,tAdaptiveWelding.OutValue) ;TODO Check
+    SWITCH ArcSwitchActiveTech()
+      CASE #ARS,#RSI
+        IF (tError < 0) THEN
+          ArcMsgWriteR(mHandle[23],#STATE,"WarningArcSenseWriteAmplitude","AAW",60004,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue)
+        ENDIF
+      CASE #STT
+        IF (tError < 0) THEN
+          ArcMsgWriteR(mHandle[24],#STATE,"WarningSTTWriteAmplitude","AAW",60005,OPt_VLSTOP_LOG,tAdaptiveWelding.OutValue)
+        ENDIF
+    ENDSWITCH
+  CASE #Angle
+    tAdaptiveWelding.OutValue = ArcSetRangeValue(tAdaptiveWelding.OutValue,cArcWeaveMinAngle,cArcWeaveMaxAngle)
+    tError                    = ArcSetValue(gArcActIlfWelder,gArcActModeSwi,tAdaptiveWelding.KrlId,tAdaptiveWelding.OutValue) ;TODO Check
+    SWITCH ArcSwitchActiveTech()
+      CASE #FG
+        ;TODO With Trigger Check if it is possible
+      CASE #ARS,#RSI
+        ;TODO Check if it is possible?
+      CASE #STT
+        ;TODO Check if it is possible?
+    ENDSWITCH
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Routine] Load Source Value
+;*****************************************************************************************
+GLOBAL DEFFCT REAL AawLoadSourceValue(tSource : IN)
+DECL INT tError
+DECL stSource_T tSource
+IF (tSource.Active == TRUE) THEN
+  SWITCH tSource.SourceInput
+    CASE #ISenPrea
+      IF (tSource.SourceNr > 0) AND (tSource.SourceNr < 129) THEN
+        RETURN $SEN_PREA[tSource.SourceNr]
+      ELSE
+        ArcMsgWriteI(mHandle[25],#STATE,"WarningSenpreaOutOfRange","AAW",60006,OPt_VLSTOP_LOG,tSource.SourceNr)
+      ENDIF
+    CASE #ISenPint
+      IF (tSource.SourceNr > 0) AND (tSource.SourceNr < 129) THEN
+        RETURN $SEN_PINT[tSource.SourceNr]
+      ELSE
+        ArcMsgWriteI(mHandle[26],#STATE,"WarningSenpintOutOfRange","AAW",60007,OPt_VLSTOP_LOG,tSource.SourceNr)
+      ENDIF
+    CASE #IAnalog
+      IF (tSource.SourceNr > 0) AND (tSource.SourceNr < 33) THEN
+        RETURN ($ANIN[tSource.SourceNr]) * gAawAnalogFactor
+      ELSE
+        ArcMsgWriteI(mHandle[27],#STATE,"WarningAnalogOutOfRange","AAW",60008,OPt_VLSTOP_LOG,tSource.SourceNr)
+      ENDIF
+    CASE #ISoftPlcReal
+      IF (tSource.SourceNr > 0) AND (tSource.SourceNr < $IOSYS_IN_TRUE) THEN
+        RETURN $SOFTPLCREAL[tSource.SourceNr]
+      ELSE
+        ArcMsgWriteI(mHandle[28],#STATE,"WarningSoftplcintOutOfRange","AAW",60009,OPt_VLSTOP_LOG,tSource.SourceNr)
+      ENDIF
+  ENDSWITCH
+ENDIF
+RETURN 0
+ENDFCT
+;*****************************************************************************************
+;[Routine] Check Struc Exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL AawStrucExist(tAdaptiveWelding : OUT,tSelectMode :IN,tSelectParam :IN,tPos :IN)
+DECL INT tSelectMode
+DECL INT tSelectParam
+DECL INT tPos
+DECL stAdaptiveWelding_T tAdaptiveWelding[,,]
+ON_ERROR_PROCEED
+tAdaptiveWelding[tSelectMode,tSelectParam,tPos] = tAdaptiveWelding[tSelectMode,tSelectParam,tPos]
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tAdaptiveWelding[tSelectMode,tSelectParam,tPos].KrlId = tAdaptiveWelding[tSelectMode,tSelectParam,tPos].KrlId
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Check Sourse Exist
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL AawSourceExist(tAdaptiveWelding : OUT,tPos :IN)
+DECL INT tPos
+DECL stAdaptiveWelding_T tAdaptiveWelding[]
+ON_ERROR_PROCEED
+tAdaptiveWelding[tPos].Source1.Active = tAdaptiveWelding[tPos].Source1.Active
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tAdaptiveWelding[tPos].Source2.Active = tAdaptiveWelding[tPos].Source2.Active
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tAdaptiveWelding[tPos].Source3.Active = tAdaptiveWelding[tPos].Source3.Active
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tAdaptiveWelding[tPos].Source4.Active = tAdaptiveWelding[tPos].Source4.Active
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+ON_ERROR_PROCEED
+tAdaptiveWelding[tPos].Source5.Active = tAdaptiveWelding[tPos].Source5.Active
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN FALSE
+ENDIF
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Routine Operator
+;L    = Less & Max
+;LE   = Less or Equal & Max
+;G    = Min & Greater
+;GE   = Min & Greater or Equal
+;LG   = Less & Greater
+;LEG  = Less or Equal & Greater
+;LGE  = Less & Greater or Equal
+;LEGE = Less or Equal & Greater or Equal
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL AawOperator(tInValue :IN,tSource : IN)
+DECL REAL tInValue
+DECL stSource_T tSource
+SWITCH tSource.Operator
+  CASE #L
+    RETURN  (tInValue >  tSource.FromNum)
+  CASE #LE  
+    RETURN  (tInValue >= tSource.FromNum)
+  CASE #G   
+    RETURN  (tInValue <  tSource.ToNum)
+  CASE #GE  
+    RETURN  (tInValue <= tSource.ToNum)
+  CASE #LG
+    RETURN ((tInValue >  tSource.FromNum) AND (tInValue <  tSource.ToNum))
+  CASE #LEG
+    RETURN ((tInValue >= tSource.FromNum) AND (tInValue <  tSource.ToNum))
+  CASE #LGE
+    RETURN ((tInValue >  tSource.FromNum) AND (tInValue <= tSource.ToNum))
+  CASE #LEGE
+    RETURN ((tInValue >= tSource.FromNum) AND (tInValue <= tSource.ToNum))
+ENDSWITCH
+RETURN FALSE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Set weave variable 
+;*****************************************************************************************
+GLOBAL DEF AawDisableIlfWeave(tAdaptiveWelding:IN, tSourceState:IN)
+DECL stAdaptiveWelding_T tAdaptiveWelding
+DECL enAawSourceState_T tSourceState
+SWITCH tSourceState
+  CASE #ILF,#FUNCTION 
+    SWITCH tAdaptiveWelding.KrlId
+      CASE #Amplitude
+        gAawWeaveValue.AmplitudeActive   = TRUE
+        gAawWeaveValue.Amplitude = tAdaptiveWelding.OutValue
+      CASE #Length
+        gAawWeaveValue.LengthActive   = TRUE
+        gAawWeaveValue.Length   = tAdaptiveWelding.OutValue
+    ENDSWITCH
+  CASE #DEACTIVE
+    SWITCH tAdaptiveWelding.KrlId
+      CASE #Amplitude
+        gAawWeaveValue.AmplitudeActive   = FALSE
+        gAawWeaveValue.Amplitude = 0.0
+      CASE #Length
+        gAawWeaveValue.LengthActive   = FALSE
+        gAawWeaveValue.Length   = 0.0
+    ENDSWITCH
+  ENDSWITCH
+END
+;*****************************************************************************************
+;[Routine]Aww Init LastValue
+;*****************************************************************************************
+GLOBAL DEFFCT stAdaptiveWelding_T AawInitLastValue(tAdaptiveWelding :IN)
+DECL stAdaptiveWelding_T tAdaptiveWelding
+  IF (tAdaptiveWelding.Source1.Active == TRUE) THEN
+    tAdaptiveWelding.Source1.LastValue = gLastValueInit
+  ENDIF
+  IF (tAdaptiveWelding.Source2.Active == TRUE) THEN
+    tAdaptiveWelding.Source2.LastValue = gLastValueInit
+  ENDIF
+  IF (tAdaptiveWelding.Source3.Active == TRUE) THEN
+    tAdaptiveWelding.Source3.LastValue = gLastValueInit
+  ENDIF
+  IF (tAdaptiveWelding.Source4.Active == TRUE) THEN
+    tAdaptiveWelding.Source4.LastValue = gLastValueInit
+  ENDIF
+  IF (tAdaptiveWelding.Source5.Active == TRUE) THEN
+    tAdaptiveWelding.Source5.LastValue = gLastValueInit
+  ENDIF
+RETURN tAdaptiveWelding
+ENDFCT
+;*************************************************************************
+;[Routine] AawSetConstant
+;*************************************************************************
+GLOBAL DEFFCT enAawWeaveConst_T AawSetConstant(tAdaptiveWelding :IN,tConstOut :OUT)
+DECL stAdaptiveWelding_T tConstOut
+DECL stAdaptiveWelding_T tAdaptiveWelding
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Velocity
+    gAawCFrequencyValue.Velocity.OutValue = tAdaptiveWelding.OutValue
+  CASE #Length
+    gAawCFrequencyValue.Length.OutValue = tAdaptiveWelding.OutValue
+ENDSWITCH
+IF (tAdaptiveWelding.Active == FALSE) THEN
+  RETURN #None
+ENDIF
+IF (gAawCFrequencyValue.Velocity.LoadVal == FALSE) OR (gAawCFrequencyValue.Length.LoadVal == FALSE) THEN
+  RETURN #None
+ENDIF
+IF ((gAawCFrequencyValue.Velocity.Active == TRUE) AND (gAawCFrequencyValue.Length.Active == TRUE)) THEN
+  RETURN #Overload
+ENDIF
+IF (gAawConstFrequency == FALSE) THEN
+  RETURN #Deactivated
+ENDIF
+SWITCH tAdaptiveWelding.KrlId
+  CASE #Velocity
+    gAawCFrequencyValue.Velocity.Active = TRUE
+    tConstOut = tAdaptiveWelding
+    tConstOut.KrlId = #Length
+    tConstOut.IlfVAlue = gAawCFrequencyValue.Length.ValueIlf
+    tConstOut.OutValue = (gAawCFrequencyValue.Velocity.OutValue * gAawCFrequencyValue.Length.ValueIlf)/gAawCFrequencyValue.Velocity.ValueIlf
+    RETURN #ConstVelocity
+  CASE #Length
+    gAawCFrequencyValue.Length.Active = TRUE
+    tConstOut = tAdaptiveWelding
+    tConstOut.KrlId = #Velocity
+    tConstOut.IlfVAlue = gAawCFrequencyValue.Velocity.ValueIlf
+    tConstOut.OutValue = (gAawCFrequencyValue.Length.OutValue * gAawCFrequencyValue.Velocity.ValueIlf)/gAawCFrequencyValue.Length.ValueIlf
+    RETURN #ConstLength
+ENDSWITCH
+RETURN #None
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Strike Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawGetStrikeParamId(tNumModi :IN)
+DECL INT tNumModi
+  SWITCH gArcActIlfWelder
+    CASE 1
+      RETURN AawW1GetStrikeParamId(tNumModi)
+    CASE 2
+      ;RETURN AawW2GetStrikeParamId(tNumModi)
+    CASE 3
+      ;RETURN AawW3GetStrikeParamId(tNumModi)
+    CASE 4
+      ;RETURN AawW4GetStrikeParamId(tNumModi)
+  ENDSWITCH
+RETURN -1
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Welding Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawGetWeldingParamId(tNumModi :IN)
+DECL INT tNumModi
+  SWITCH gArcActIlfWelder
+    CASE 1
+      RETURN AawW1GetWeldingParamId(tNumModi)
+    CASE 2
+      ;RETURN AawW2GetWeldingParamId(tNumModi)
+    CASE 3
+      ;RETURN AawW3GetWeldingParamId(tNumModi)
+    CASE 4
+      ;RETURN AawW4GetWeldingParamId(tNumModi)
+  ENDSWITCH
+RETURN -1
+ENDFCT
+;*****************************************************************************************
+;[Global Routine]Aww Get Crater Param Id
+;*****************************************************************************************
+GLOBAL DEFFCT INT AawGetCraterParamId(tNumModi :IN)
+DECL INT tNumModi
+  SWITCH gArcActIlfWelder
+    CASE 1
+      RETURN AawW1GetCraterParamId(tNumModi)
+    CASE 2
+      ;RETURN AawW2GetCraterParamId(tNumModi)
+    CASE 3
+      ;RETURN AawW3GetCraterParamId(tNumModi)
+    CASE 4
+      ;RETURN AawW4GetCraterParamId(tNumModi)
+  ENDSWITCH
+RETURN -1
+ENDFCT

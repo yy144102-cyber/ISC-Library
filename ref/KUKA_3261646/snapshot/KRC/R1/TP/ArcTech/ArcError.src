@@ -1,0 +1,1742 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEF ArcError( )
+END
+;#########################################################################################
+;Conditions Errors
+;#########################################################################################
+;*****************************************************************************************
+;All Conditions Init
+;*****************************************************************************************
+GLOBAL DEF ArcAllConditionInit()
+ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcAllConditionInit")
+INTERRUPT OFF irtArcConditionWeld
+INTERRUPT OFF irtArcConditionRestart
+INTERRUPT OFF irtArcConditionStrategy
+INTERRUPT OFF irtArcOnlineOpt
+INTERRUPT OFF irtArcPosSave
+$CYCFLAG[cfArcControlInput] = FALSE
+$CYCFLAG[cfArcControlRemote] = FALSE
+$CYCFLAG[cfArcConditionWeld] = FALSE
+$CYCFLAG[cfArcConditionRestart] = FALSE
+$CYCFLAG[cfArcConditionStrategy] = FALSE
+enArcActiveStrategy       = #None
+gArcErrorStrategyActive   = FALSE
+gArcErrorRestartActive    = FALSE
+END
+;#########################################################################################
+;Conditions Weld
+;#########################################################################################
+GLOBAL DEF ArcConditionWeldSet()
+ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcConditionWeldSet")
+INTERRUPT OFF irtArcConditionWeld
+$CYCFLAG[cfArcConditionWeld] = TRUE
+ArcConditionInputInit()  ;Initialize Input Condition
+ArcConditionRemoteInit() ;Initialize Robot Team Condition
+GLOBAL INTERRUPT DECL irtArcConditionWeld WHEN $CYCFLAG[cfArcConditionWeld] == FALSE DO ArcConditionWeld()
+$CYCFLAG[cfArcConditionWeld] = (($CYCFLAG[cfArcControlInput] == TRUE) AND ($CYCFLAG[cfArcControlRemote] == TRUE) AND (gArcErrorRestartActive == FALSE) AND (gArcLineSelected == FALSE))
+WAIT FOR $CYCFLAG[cfArcConditionWeld] == TRUE
+INTERRUPT ON irtArcConditionWeld
+END
+;*****************************************************************************************
+;Error Routine Call from Interrupt irtArcConditionWeld
+;*****************************************************************************************
+GLOBAL DEF ArcConditionWeld()
+DECL BOOL tB,tExit
+DECL INT tI,tHandle[8]
+DECL CHAR tPara2[26],tPara3[26]
+IF ((gArcLineSelected == TRUE) OR (gArcLineSelState > 0)) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcConditionWeldInit")
+  ArcAllConditionInit()
+  RETURN
+ENDIF
+IF ($CYCFLAG[cfArcConditionWeld] == FALSE) THEN
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Check Input Condition with TimeOut
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  tExit = FALSE
+  IF (gArcInternalInError == TRUE) THEN
+    tExit = TRUE
+    ArcMsg("[TEST] Internal Input Error Executed")
+  ENDIF
+  FOR tI=1 TO mNumberCondSignal
+    IF (mCond[tI].TimeOut > 0.0) THEN
+      mTOut[tI] = ArcCalcTimeoutSec(mCond[tI].TimeOut)
+    ELSE
+      mTOut[tI] = 0.0
+    ENDIF
+  ENDFOR
+  IF (mNumberCondSignal > 0) THEN
+    WHILE ($CYCFLAG[cfArcControlInput] == FALSE) AND (tExit == FALSE)
+      FOR tI=1 TO mNumberCondSignal
+        IF (mCond[tI].TimeOut > 0) THEN
+          IF ($ROB_TIMER > mTOut[tI]) THEN
+            tExit = TRUE
+            EXIT
+          ENDIF
+        ELSE
+          IF ($IN[mCond[tI].Offset.SignNr] <> mCond[tI].State)  THEN
+            tExit = TRUE
+            EXIT
+          ENDIF
+        ENDIF
+        IF ($CYCFLAG[cfArcControlRemote] == FALSE) THEN
+          tExit = TRUE
+          EXIT
+        ENDIF
+      ENDFOR
+    ENDWHILE
+  ENDIF
+  IF ((wArcRestartFromOffset == TRUE) AND (IsAnySpline() ==  TRUE)) THEN
+    SUPPRESS_REPOSITIONING()
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;On RobotTeam Error
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  IF ($CYCFLAG[cfArcControlRemote] == FALSE) THEN
+    INTERRUPT OFF irtArcConditionWeld
+    SWITCH enArcRTError
+      CASE #InputErrorNoStop
+        ;ArcMsg("Diag Team InputErrorNoStop")
+        ArcMsgWriteS(,#NOTIFY,"InputErrorOnRemoteRobotNoStop","ARC",20018,Opt_VLSTOP_LOG,ArcRTErrorOnRobot[],gArcSeamName[])
+        gArcSeamErrorCounter = gArcSeamErrorCounter + 1
+        enArcCurrentState = #Welding
+        ArcSaveDatas(FALSE)
+        ArcErrorSeamLength(#RobotTeamError)
+        enArcRTError = #Nothing
+        INTERRUPT ON irtArcConditionWeld
+        
+      CASE #InputError
+        ;ArcMsg("Diag Team InputError")
+        gArcErrorRestartActive = TRUE
+        ArcMsgWriteS(,#NOTIFY,"InputErrorOnRemoteRobot","ARC",20017,Opt_VLSTOP_LOG,ArcRTErrorOnRobot[],gArcSeamName[])
+        ArcErrorSeamLength(#WeldingError)
+        SetErrorState(#InputError)
+        ;ArcSense Reduce Offset must be done before BRAKE
+        ArsReduceWeaveCorr(TRUE)
+        BRAKE
+        WHILE enArcRTError <> #Nothing
+          WAIT SEC 0.04
+        ENDWHILE
+        ArcRestartAfterError(TRUE)
+    ENDSWITCH
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;On Input Error
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  IF (($CYCFLAG[cfArcControlInput] == FALSE) AND (stArcProcessState.WeldingActive == TRUE)) THEN ;WeldingActive necessary for Slave Robots
+    INTERRUPT OFF irtArcConditionWeld
+    ;ArcMsg("Diag ArcConditionInput Start")
+    tB = STRCLEAR(ArcRTErrorOnRobot[])
+    FOR tI = 1 TO 6
+      tHandle[tI] = 0
+    ENDFOR
+    FOR tI = 1 TO 6
+      IF (wArcIWeldMoving[gArcActIlfWelder,tI].Active == TRUE) THEN 
+        IF ($IN[wArcIWeldMoving[gArcActIlfWelder,tI].Offset.SignNr] <> wArcIWeldMoving[gArcActIlfWelder,tI].State) THEN
+          ArcStrParam(wArcIWeldMoving[gArcActIlfWelder,tI].Description[],tPara2[],tPara3[])
+          IF (gArcNoErrorUntilSeamEnd == TRUE) THEN
+            ArcMsgWriteS(,#NOTIFY,"ArcMissingSignalWhileWelding","ARC",10110,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[])
+          ELSE
+            ArcMsgWriteS(tHandle[tI],stArcWeldErrSet.MsgType,"ArcMissingSignalWhileWelding","ARC",10110,Opt_NOVLSTOP_NOLOG,gArcSeamName[],tPara2[],tPara3[])
+          ENDIF
+        ENDIF
+      ENDIF
+    ENDFOR
+    IF (gArcNoErrorUntilSeamEnd == TRUE) THEN
+      ArcOutputGroupSet(gArcActIlfWelder,wArcOWeldProblem[,])
+      stArcProcessState.ProzessActive     = FALSE
+      stArcProcessState.WeldingActive     = FALSE
+      gArcSeamErrorCounter = gArcSeamErrorCounter + 1
+      enArcCurrentState = #Welding
+      ArcSaveDatas(TRUE)
+      ArcErrorSeamLength(#WeldingError)
+      ArcRemoteErrorSet(#InputErrorNoStop)
+      ArsReduceWeaveCorr(TRUE)
+      INTERRUPT ON irtArcConditionWeld
+      ;ArcMsg("Diag InputErrorNoStop")
+    ELSE
+      ;ArcMsg("Diag InputError")
+      gArcErrorRestartActive = TRUE
+      ArcRemoteErrorSet(#InputError)
+      SetErrorState(#InputError)
+      ;ArcSense Reduce Offset must be done before BRAKE
+      ArsReduceWeaveCorr(TRUE)
+      BRAKE
+      ArcMsgWaitForAbsent(tHandle[1])
+      ArcMsgWaitForAbsent(tHandle[2])
+      ArcMsgWaitForAbsent(tHandle[3])
+      ArcMsgWaitForAbsent(tHandle[4])
+      ArcMsgWaitForAbsent(tHandle[5])
+      ArcMsgWaitForAbsent(tHandle[6])
+      ArcRemoteErrorSet(#Nothing)
+      ArcRestartAfterError(TRUE)
+      ;ArcMsg("Diag ArcConditionInput End")
+    ENDIF
+  ENDIF
+ENDIF
+END
+;#########################################################################################
+;Input Condition
+;#########################################################################################
+;*****************************************************************************************
+;Initialize Input Condition
+;*****************************************************************************************
+DEF ArcConditionInputInit()
+DECL INT tI,tII
+tII=0
+FOR tI=1 TO 6
+  ArcMsgWriteClearHandle(mArcInputErrorHandler[tI])
+  mArcInputErrorHandler[tI] = 0
+  mCond[tI].Offset.SignNr   = $IOSYS_IN_TRUE
+  mCond[tI].State           = TRUE
+  mCond[tI].TimeOut         = 0.0
+  mTOut[tI]                 = 0.0
+  IF (wArcIWeldMoving[gArcActIlfWelder,tI].Active == TRUE) THEN
+    tII = tII + 1
+    mCond[tII].Offset.SignNr = wArcIWeldMoving[gArcActIlfWelder,tI].Offset.SignNr
+    mCond[tII].State       = wArcIWeldMoving[gArcActIlfWelder,tI].State
+    mCond[tII].TimeOut     = wArcIWeldMoving[gArcActIlfWelder,tI].TimeOut
+  ENDIF
+ENDFOR
+mNumberCondSignal=tII
+$TIMER_STOP[ctArcWeldingOnTimeout] = TRUE
+IF (wArcInputGroupTimeout > 0.05) THEN
+  $TIMER[ctArcWeldingOnTimeout] = wArcInputGroupTimeout*(-1000)
+ELSE
+  $TIMER[ctArcWeldingOnTimeout] = (-50)
+ENDIF
+CONTINUE
+$CYCFLAG[cfArcControlInput]=(($IN[mCond[1].Offset.SignNr] == mCond[1].State) AND ($IN[mCond[2].Offset.SignNr] == mCond[2].State) AND ($IN[mCond[3].Offset.SignNr] == mCond[3].State) AND ($IN[mCond[4].Offset.SignNr] == mCond[4].State) AND  ($IN[mCond[5].Offset.SignNr] == mCond[5].State) AND ($IN[mCond[6].Offset.SignNr] == mCond[6].State) AND (gArcInternalInError == FALSE)) OR (stArcProcessState.WeldingActive == FALSE) OR ($TIMER[ctArcWeldingOnTimeout]<0)
+END
+;#########################################################################################
+;RobotTeam Error
+;#########################################################################################
+;*****************************************************************************************
+;Initialize RobotTeam Condition
+;*****************************************************************************************
+DEF ArcConditionRemoteInit()
+  $CYCFLAG[cfArcControlRemote] = (enArcRTError <> #InputError) AND (enArcRTError <> #InputErrorNoStop)
+END
+;*****************************************************************************************
+;This method sets a remote error to all Team Robots, if any robot has an input error
+;*****************************************************************************************
+GLOBAL DEF ArcRemoteErrorSet(tenArcErrorState_T :IN)
+DECL INT tI
+DECL enArcErrorState_T tenArcErrorState_T
+SWITCH tenArcErrorState_T
+  CASE #IRStopMess,#IRStopMess
+  DEFAULT
+ENDSWITCH
+IF (gArcSyncList > 1) THEN
+  tI = 2
+  WHILE ArcRTRobotExist(tI) == TRUE
+    IF (tI B_AND gArcSyncList)== tI THEN
+      IF (tenArcErrorState_T <> #Nothing) THEN
+        ArcRemoteSetChar($COOP_KRC[tI].NAME[],"ArcRTErrorOnRobot[]",$COOP_KRC[1].NAME[],#NOTIFY)
+      ENDIF
+      ArcRemoteSetVarS($COOP_KRC[tI].NAME[],"enArcRTError",ArcEnumErrorStateToStr(tenArcErrorState_T),#NOTIFY)
+    ENDIF
+    tI = tI + 1
+  ENDWHILE
+ENDIF
+enArcRTError = #Nothing
+SWITCH tenArcErrorState_T
+  CASE #IRStopMess,#IRStopMess
+  DEFAULT
+ENDSWITCH
+END
+;#########################################################################################
+;Restart Condition
+;#########################################################################################
+;*****************************************************************************************
+;Initialize Conditions for Restart
+;*****************************************************************************************
+GLOBAL DEF ArcRestartInit()
+DECL INT tI
+;ArcMsg("Diag ArcRestartInit")
+gArcMoveBackStd = FALSE
+INTERRUPT OFF irtArcConditionRestart
+$CYCFLAG[cfArcConditionRestart] = FALSE
+gArcErrorRestartActive = FALSE
+gArcInterruptRestartOn = FALSE
+GLOBAL INTERRUPT DECL irtArcConditionRestart WHEN $CYCFLAG[cfArcConditionRestart] == TRUE DO ArcRestartAfterError(FALSE)
+$CYCFLAG[cfArcConditionRestart] = (gArcErrorRestartActive == FALSE) AND (gArcInterruptRestartOn == TRUE) AND (gArcConditionStrategyOn == FALSE) AND (gArcErrorStrategyActive == FALSE) AND (gArcLineSelected == FALSE)
+WAIT FOR $CYCFLAG[cfArcConditionRestart] == FALSE
+INTERRUPT ON irtArcConditionRestart
+
+stPosSave.DistCount       = 2
+stPosSave.Count           = 0
+stPosSave.Overflow        = FALSE
+FOR tI = 1 TO 20
+  gArcSavePos[tI] = gArcE6PosNull
+  gArcSaveDist[tI] = 0.0
+  gArcSaveTechVal[tI] = 0.0
+ENDFOR
+IF ((gArcEnableStdBwd == TRUE) AND (stArcCallState.MoveType == #Std)) THEN
+  IF (stArcActWeaveSet.Pattern == #Triangle) THEN
+    ;ToDo Weaving
+    ;WAIT FOR $TECH_ANA_FLT_OFF[ctArcMechGenerator1] == TRUE
+    ;ANOUT ON CHANNEL_11 = 1.0 * $TECHVAL[ctArcMechGenerator1] + 0.0 DELAY = 0.0
+    ;GLOBAL INTERRUPT DECL irtArcPosSave WHEN CHANNEL_11 >= 0.0 DO ArcPosSave()
+    ;GLOBAL INTERRUPT DECL irtArcPosSave WHEN $TECHVAL[1] >= 0.0 DO ArcPosSave()
+    GLOBAL INTERRUPT DECL irtArcPosSave WHEN $DISTANCE > stPosSave.DistCount DO ArcPosSave()
+  ELSE
+    GLOBAL INTERRUPT DECL irtArcPosSave WHEN $DISTANCE > stPosSave.DistCount DO ArcPosSave()
+  ENDIF
+  INTERRUPT ON irtArcPosSave
+ENDIF
+END
+;*****************************************************************************************
+;Save Positions
+;*****************************************************************************************
+GLOBAL DEF ArcPosSave()
+INTERRUPT OFF irtArcPosSave
+stPosSave.DistCount = $DISTANCE + gArcPosSaveDistance
+stPosSave.Count = stPosSave.Count + 1
+IF stPosSave.Count > 20 THEN
+  stPosSave.Count = 1
+  stPosSave.Overflow = TRUE
+ENDIF
+gArcSavePos[stPosSave.Count] = ArcGetActPos()
+gArcSaveDist[stPosSave.Count] = $DISTANCE
+gArcSaveTechVal[stPosSave.Count] = $TECHVAL[1]
+INTERRUPT ON irtArcPosSave
+END
+;*****************************************************************************************
+;Restart Event after Error
+;*****************************************************************************************
+GLOBAL DEF ArcRestartAfterError(tRestart :IN)
+DECL INT tI
+DECL INT tNum
+DECL BOOL tRestart
+DECL stArcStrategy_T tErrorStrategy
+IF ((gArcLineSelected == TRUE) OR (gArcLineSelState > 0)) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcRestartAfterErrorInit")
+  ArcAllConditionInit()
+  RETURN
+ENDIF
+ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcRestartAfterError")
+IF (tRestart == FALSE) THEN
+  IF ($CYCFLAG[cfArcConditionRestart] == FALSE) THEN
+    RETURN
+  ENDIF 
+ENDIF
+;Check if all robots on Seam - ArcOff executed or not
+IF (gArcSyncList > 1) THEN
+  FOR tNum = 2 TO 12
+    IF (($COOP_KRC[tNum].NAME[1] == " ") == FALSE) THEN
+      IF (ArcRemoteGetVarB($COOP_KRC[tNum].NAME[],"gArcOnSeam",#NONE) == FALSE) THEN
+        gArcOnSeam = FALSE
+        EXIT
+      ENDIF
+    ENDIF
+  ENDFOR
+ENDIF
+gArcErrorRestartActive = TRUE
+gArcInterruptRestartOn = FALSE
+IF (gArcOnSeam == TRUE) THEN
+  SWITCH enArcActiveStrategy
+  ;SWITCH stErrorDistance.ActIgnStrat
+    CASE #MoveScratch
+      BRAKE
+      gMoveScratchSavePos = ArcGetActPos()
+      gMoveScratchFwdPos = ArcCalcTargetPos(gMoveScratchInitPos,gMoveScratchSavePos,stMoveScratch.DistanceFwd)
+      gMoveScratchBwdPos = ArcCalcTargetPos(gMoveScratchSavePos,gMoveScratchInitPos,stMoveScratch.DistanceBwd)
+      IF (ArcDiffBetween(gMoveScratchFwdPos,gMoveScratchBwdPos) > 25) THEN
+        ;ArcMsg("Diff to Big")
+        BRAKE
+        WAIT FOR FALSE
+      ENDIF
+      ArcMoveScratch()
+      enArcCurrentState = #Nothing ;Because of normal Restart in StartIgntion
+      gArcColdSeam  = FALSE
+  ENDSWITCH
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] Restart")
+  ;ArcMsg("Diag ArcRestartAfterError Start")
+  IF (enArcErrorState <> #InputError) THEN ;ReduceWeaveCorr is already done when InputError
+    IF (enArcSaveState <> #Nothing) THEN ;No ReduceWeaveCorr when IgnitionError and MoveForward
+      ArsReduceWeaveCorr(FALSE)
+    ENDIF
+  ENDIF
+  IF (enArcActiveStrategy <> #MoveLittleForward) THEN
+    ArcProgramSync("ArcRestart",gArcSyncList)
+    BRAKE
+    SWITCH enArcActiveStrategy
+      CASE #MoveForward
+        enArcCurrentState = #Nothing ;Because of normal Restart in StartIgntion
+        gArcColdSeam  = FALSE
+      CASE #BackToSplineStart
+        enArcCurrentState = #Nothing ;Because of normal Restart in StartIgntion
+        gArcColdSeam  = FALSE
+      CASE #AdvancedErrorRecovery
+        enArcCurrentState = #Nothing ;Because of normal Restart in StartIgntion
+        gArcColdSeam  = FALSE
+    ENDSWITCH
+    IF ((ATAg_ER_ArcGroupEnabled == TRUE) AND (ATAg_ER_ErrorOnSeam == TRUE)) THEN
+      ArcCheckIfHot()
+    ENDIF
+    ArcAtaUserCalls(#PreRestart)
+    ArcConditionInputInit()  ;Initialize Input Condition
+    ArcConditionRemoteInit() ;Initialize Robot Team Condition  
+    ;ArcMsg("RestartAfterError")
+    IF ((stArcFeatureState.Act.StepWeld == TRUE) AND (stArcStepWeldInfo.WeldActive == FALSE)) THEN
+      ;No Ignition
+      enArcCurrentState = #Welding
+    ELSE
+      IF (ArcIsSttActive() == TRUE) THEN ;TODO Check
+        tI = SttCmdInterface(52,1)  ;Switch Laser On
+        ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,1) Laser On")
+        tI = SttCmdInterface(53,3)  ;Set TrackMode 3-ON SeamBegin & Track (without BASE_CORR)
+        ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,3) Set TrackMode 3-ON")
+      ENDIF
+      StartIgnition()
+    ENDIF
+    IF (gArcMoveBackStd == TRUE) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[ERROR] Move gArcStdBackPosStart")
+      $VEL.CP = stArcActWeldSet.Velocity
+      ArcMoveTo(gArcStdBackPosStart)
+      ;Workaround for SeamTech Trecking (Sensor On again)
+      IF (gArcSttV3Option == TRUE) THEN
+        RunRequestExtProcess(" ") ;Stt anly for V3.x <
+      ENDIF
+      gArcMotionForwardEnable = TRUE
+      stPosSave.DistCount = $DISTANCE + gArcPosSaveDistance
+      INTERRUPT ON irtArcPosSave
+      gArcMoveBackStd = FALSE
+    ENDIF
+    ArcFeatureSelect(#AfterErrorStrategie,,,)
+    ArcAtaUserCalls(#PostRestart)
+    INTERRUPT ON irtArcConditionWeld
+    ForceRealWeldSpeedIfHot()
+  ELSE
+    IF (enArcActiveStrategy == #MoveLittleForward) THEN
+      ArcFeatureSelect(#BeforeErrorStrategie,,,)
+      tErrorStrategy                  = stArcIgnErrSet
+      tErrorStrategy.IgnitionReaction = #BackToSplineStart
+      tErrorStrategy.FwdDistance      = 0
+      ArcRobErrMovement(#IgnitionError,tErrorStrategy)
+    ENDIF
+  ENDIF
+  WAIT FOR $CYCFLAG[cfArcConditionRestart] == FALSE ;ToDo Check
+  IF (enArcActiveStrategy == #None) THEN
+    ArcInitErrorDistance()
+  ENDIF
+  gArcErrorRestartActive = FALSE
+ELSE
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] NoRestart")
+  gArcColdSeam = TRUE
+  enArcSaveState = #Nothing
+  enArcErrorState = #Nothing
+ENDIF
+;ArcMsg("Diag ArcRestartAfterError END")
+END
+;#########################################################################################
+;Error Strategies
+;#########################################################################################
+;*****************************************************************************************
+;Initialize Conditions Strategy
+;*****************************************************************************************
+GLOBAL DEF ArcInitReduceSpeed(tActive :IN)
+DECL BOOL tActive
+DECL REAL mArcDistanceAtError
+INTERRUPT OFF irtArcConditionStrategy
+$CYCFLAG[cfArcConditionStrategy] = FALSE
+GLOBAL INTERRUPT DECL irtArcConditionStrategy WHEN $CYCFLAG[cfArcConditionStrategy] == TRUE DO ArcReduceSpeed()
+IF (tActive == FALSE) THEN
+  gArcConditionStrategyOn = FALSE
+  gArcErrorStrategyActive = FALSE
+  gArcAllRobotOnDistance = FALSE
+ENDIF
+SWITCH enArcActiveStrategy
+  CASE #AdvancedErrorRecovery
+    IF (gArcWeldErrorCounter > 0) THEN
+      IF (gArcAdvError[gArcWeldErrorCounter].ErrorDistance > 0) THEN
+        ArcSetErrorDistance(#AdvancedErrorRecovery, ABS(gArcAdvError[gArcWeldErrorCounter].ErrorDistance))
+        tActive = TRUE
+      ENDIF
+    ENDIF
+  DEFAULT
+ENDSWITCH
+$CYCFLAG[cfArcConditionStrategy] = ((gArcConditionStrategyOn == TRUE) AND (gArcErrorStrategyActive == FALSE) AND (gArcLineSelected == FALSE)) AND (($DISTANCE > stErrorDistance.ReduceSpeed) OR (gArcAllRobotOnDistance == TRUE))
+WAIT FOR $CYCFLAG[cfArcConditionStrategy] == FALSE
+INTERRUPT ON irtArcConditionStrategy
+IF (tActive == TRUE) THEN
+  WAIT SEC 0.05
+  ;ArcMsg("Diag gArcConditionStrategyOn = TRUE")
+  gArcConditionStrategyOn = TRUE
+ENDIF
+END
+;*****************************************************************************************
+;Routine Error ArcReduceSpeed
+;*****************************************************************************************
+DEF ArcReduceSpeed()
+DECL INT tI,tTimeout
+IF ((gArcLineSelected == TRUE) OR (gArcLineSelState > 0)) THEN
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcReduceSpeedInit")
+  ArcAllConditionInit()
+  RETURN
+ENDIF
+IF ($CYCFLAG[cfArcConditionStrategy] == TRUE) THEN
+  gArcConditionStrategyOn = FALSE
+  gArcErrorStrategyActive = TRUE
+  mDistanceBeforeError = stErrorDistance.ReduceSpeed
+  IF (mDistanceBeforeError <= 0) THEN
+    mDistanceBeforeError = 1
+  ENDIF
+  mDistanceOnError = stErrorDistance.NewIgnition
+  IF (mDistanceOnError <= 0) THEN
+    mDistanceOnError = 1
+  ENDIF
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcReduceSpeed")
+  WHILE ($DISTANCE < mDistanceBeforeError) 
+    IF (gArcExitRestartInterrupt == TRUE) OR ((gArcSyncList > 1) AND (gArcAllRobotOnDistance == TRUE)) THEN
+      EXIT
+    ENDIF
+  ENDWHILE
+  $OV_APPL = mOV_APPLError
+  
+  tTimeout = 1000 ;Timeout - ArcOff problem
+  tI = 0
+  ;Wait for error position reached 
+  WHILE ($DISTANCE < mDistanceOnError)
+    IF (gArcExitRestartInterrupt == TRUE) OR (tI >= tTimeout) OR ((gArcSyncList > 1) AND (gArcAllRobotOnDistance == TRUE)) THEN
+      EXIT
+    ENDIF
+    IF ($VEL_ACT == 0 ) THEN ;ArcOff Problem - Exit on seam end
+      WAIT SEC 0.1
+      tI = tI + 1
+    ENDIF
+  ENDWHILE
+  
+  IF (tI >= tTimeout) THEN
+    ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],gArcActIlfWelderName[],"Timeout ReduceSpeed")
+    ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] Timeout ReduceSpeed")
+    gArcExitRestartInterrupt = TRUE 
+  ENDIF
+  
+  IF ((gArcSyncList > 1) AND (gArcExitRestartInterrupt == TRUE)) THEN
+    WHILE (ArcRTRobotExist(tI) == TRUE)
+      ;All Robots have to go out without start welding
+      ArcRemoteSetVarB($COOP_KRC[tI].NAME[],"gArcExitRestartInterrupt",TRUE,#NONE)
+      tI = tI + 1
+    ENDWHILE
+  ENDIF
+  
+  IF ((gArcSyncList > 1) AND (gArcAllRobotOnDistance == FALSE)) THEN
+    tI = 2
+    WHILE (ArcRTRobotExist(tI) == TRUE)
+      ;First Robot is on Error position. Tell it to all other robots. Restart ignition
+      ArcRemoteSetVarB($COOP_KRC[tI].NAME[],"gArcAllRobotOnDistance",TRUE,#NONE)
+      tI = tI + 1
+    ENDWHILE
+  ENDIF
+  
+  $OV_APPL = cOvApplDefault
+  IF (gArcExitRestartInterrupt == FALSE) THEN
+    ArcRestartAfterError(TRUE)
+    gArcAllRobotOnDistance = FALSE
+    gArcErrorStrategyActive = FALSE
+    IF (enArcActiveStrategy <> #AdvancedErrorRecovery) THEN
+      ;WAIT FOR $CYCFLAG[cfArcConditionStrategy] == FALSE
+      INTERRUPT ON irtArcConditionStrategy
+      IF ((enArcActiveStrategy == #BackToSplineStart) OR (enArcActiveStrategy == #MoveForward)) THEN
+        gArcConditionStrategyOn = TRUE ;Error was on spline seam OR MoveForward was active -> Restart necessary
+      ELSE
+        gArcConditionStrategyOn = FALSE
+      ENDIF
+    ENDIF
+  ELSE
+    gArcExitRestartInterrupt = FALSE
+    gArcAllRobotOnDistance = FALSE
+    gArcErrorStrategyActive = FALSE
+  ENDIF
+  ;ArcMsg("Diag ArcReduceSpeed END")
+ENDIF
+END
+;*****************************************************************************************
+;Routine Error strategy on Ignition
+;*****************************************************************************************
+GLOBAL DEF ArcErrorOnIgnition(tErrorStrategy :IN)
+DECL BOOL tB
+DECL CHAR tStr[24]
+DECL stArcStrategy_T tErrorStrategy
+IF (gArcIgnoreIgnErrStrat == FALSE) THEN
+  ArcFeatureSelect(#BeforeErrorStrategie,,,)
+  tErrorStrategy.IgnitionReaction = ArcDecideErrorStrategy(TRUE,tErrorStrategy)
+  stErrorDistance.ActIgnStrat = tErrorStrategy.IgnitionReaction
+  
+  IF (tErrorStrategy.DoUpAndStop == TRUE) THEN
+    tB = STRCOPY(tStr[]," ")
+    tStr[]= ArcStringCopyChar24(ArcStrAdd(ArcEnumErrorToStrShort(#MoveUpAndStop),ArcStrAdd4("  N:",ArcIntToStr(gArcIgnErrorCounter),"/",ArcIntToStr(stArcIgnErrSet.MaxErrStrategies))))
+    ArcWriteDiag(gArcGeneralDebug,"ArcErrorWeldMove",":",tStr[])
+    ArcMsgWriteS(,#NOTIFY,"IgnitionErrorStrategy","ARC",10059,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[],ArcRealToStr(tErrorStrategy.UpAndStopDistance))
+  ENDIF
+  
+  tB = STRCOPY(tStr[]," ")
+  tStr[]= ArcStringCopyChar24(ArcStrAdd(ArcEnumErrorToStrShort(tErrorStrategy.IgnitionReaction),ArcStrAdd4("  N:",ArcIntToStr(gArcIgnErrorCounter),"/",ArcIntToStr(stArcIgnErrSet.MaxErrStrategies))))
+  ArcWriteDiag(gArcGeneralDebug,"ArcErrorIgnitionMove",":",tStr[])
+  SWITCH tErrorStrategy.IgnitionReaction
+    CASE #MoveScratch
+      ArcMsgWriteS(,#NOTIFY,"IgnitionErrorStrategy","ARC",10059,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[],ArcRealToStr(stMoveScratch.DistanceFwd + stMoveScratch.DistanceBwd))
+    CASE #MoveUpAndStop,#MoveBackward,#MoveForward
+      ArcMsgWriteS(,#NOTIFY,"IgnitionErrorStrategy","ARC",10059,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[],ArcRealToStr(tErrorStrategy.FwdDistance))
+    DEFAULT
+      ArcMsgWriteS(,#NOTIFY,"IgnitionErrorStrategy","ARC",10059,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[]," 0 ")
+  ENDSWITCH  
+  ArcRobErrMovement(#IgnitionError,tErrorStrategy)
+  IF (gArcMoveBackStd == FALSE) THEN
+    ;Switch SeamTechTracking on later when Backward movement is finished
+    IF (gArcSttV3Option == TRUE) THEN
+      RunRequestExtProcess(" ") ;Stt anly for V3.x <
+    ENDIF
+  ENDIF
+ENDIF
+gArcIgnoreIgnErrStrat = FALSE
+END
+;*****************************************************************************************
+;Routine Error strategy on Movement
+;*****************************************************************************************
+GLOBAL DEF ArcErrorOnMovement(tErrorStrategy :IN)
+DECL BOOL tB
+DECL CHAR tStr[24]
+DECL stArcStrategy_T tErrorStrategy
+ArcProgramSync("ArcErrorOnMovementStart",gArcSyncList)
+IF (gArcIgnoreWeldErrStrat == FALSE) THEN
+  ArcFeatureSelect(#BeforeErrorStrategie,,,)
+  tErrorStrategy.WeldErrReaction = ArcDecideErrorStrategy(FALSE,tErrorStrategy)
+  stErrorDistance.ActWeldStrat = tErrorStrategy.WeldErrReaction
+  IF (tErrorStrategy.WeldErrReaction == #MoveBackwardLimit) THEN
+    tErrorStrategy.WeldErrReaction = #MoveBackward
+    tErrorStrategy.MotionOnSeam = 100
+  ENDIF
+  
+  IF (tErrorStrategy.DoUpAndStop == TRUE) THEN
+    tB = STRCOPY(tStr[]," ")
+    tStr[]= ArcStringCopyChar24(ArcStrAdd(ArcEnumErrorToStrShort(#MoveUpAndStop),ArcStrAdd4("  N:",ArcIntToStr(gArcSeamErrorCounter),"/",ArcIntToStr(stArcWeldErrSet.MaxBreaksOnSeam))))
+    ArcWriteDiag(gArcGeneralDebug,"ArcErrorWeldMove",":",tStr[])
+    ArcMsgWriteS(,#NOTIFY ,"WeldErrorStrategy","ARC",10058,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[],ArcRealToStr(tErrorStrategy.UpAndStopDistance))
+  ENDIF
+  
+  tB = STRCOPY(tStr[]," ")
+  tStr[]= ArcStringCopyChar24(ArcStrAdd(ArcEnumErrorToStrShort(tErrorStrategy.WeldErrReaction),ArcStrAdd4("  N:",ArcIntToStr(gArcSeamErrorCounter),"/",ArcIntToStr(stArcWeldErrSet.MaxBreaksOnSeam))))
+  ArcWriteDiag(gArcGeneralDebug,"ArcErrorWeldMove",":",tStr[])
+  SWITCH tErrorStrategy.WeldErrReaction
+    CASE #MoveUpAndStop,#MoveBackward,#MoveForward
+      ArcMsgWriteS(,#NOTIFY ,"WeldErrorStrategy","ARC",10058,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[],ArcRealToStr(tErrorStrategy.MotionOnSeam))
+    DEFAULT
+      ArcMsgWriteS(,#NOTIFY ,"WeldErrorStrategy","ARC",10058,Opt_NOVLSTOP_LOG,tStr[],gArcSeamName[]," 0 ")
+  ENDSWITCH
+  ArcRobErrMovement(#WeldingError,tErrorStrategy)
+  IF (gArcMoveBackStd == FALSE) THEN
+    ;Switch SeamTechTracking on later when Backward movement is finished
+    IF (gArcSttV3Option == TRUE) THEN      
+      RunRequestExtProcess(" ") ;Stt anly for V3.x <
+    ENDIF
+  ENDIF
+ENDIF
+gArcIgnoreWeldErrStrat = FALSE
+ArcProgramSync("ArcErrorOnMovementEnd",gArcSyncList)
+END
+;*****************************************************************************************
+;Routine Check and Set ErrorStrategy
+;*****************************************************************************************
+DEFFCT enArcErrorMotion_T ArcDecideErrorStrategy(tIgnition :IN, tErrorStrategy :IN )
+DECL enArcErrorMotion_T tReturnStrategy, tModifyStrategy
+DECL stArcStrategy_T tErrorStrategy
+DECL BOOL tErrStratExternalAllowed, tIgnition
+DECL CHAR tMsgId[64]
+DECL CHAR tMsgSource[64]
+DECL INT tMsgNr
+IF (tIgnition == TRUE) THEN
+  tReturnStrategy = tErrorStrategy.IgnitionReaction
+ELSE
+  tReturnStrategy = tErrorStrategy.WeldErrReaction
+ENDIF
+SWITCH (tReturnStrategy)
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #KeepOnPosition
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Nothing
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveBackward
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (IsAnySpline()) THEN
+      IF (gArcSenseModErrStrat == TRUE) THEN
+        IF (stArcWeldErrSet.MotionOnSeam > 100) THEN
+          ArcMsgWriteS(,#NOTIFY ,"MoveBackwardDistLimited","ARC",10079,Opt_NOVLSTOP_LOG,gArcSeamName[])
+          tReturnStrategy = #MoveBackwardLimit
+        ELSE
+          tReturnStrategy = #MoveBackward
+        ENDIF
+      ENDIF
+      ;IF (ArcIsSttActive() == TRUE) THEN
+        ;ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"MoveBackwardNotPossible","STT V4.X")
+        ;tReturnStrategy = #KeepOnPosition
+      ;ENDIF
+    ELSE
+      IF ((gArcEnableStdBwd == TRUE) AND (tIgnition == FALSE)) THEN
+        tReturnStrategy = #MoveBackward
+        gArcMoveBackStd = TRUE
+      ELSE
+        ArcMsgWriteS(,#NOTIFY ,"NoSplineNoBackward","ARC",10057,Opt_NOVLSTOP_LOG,gArcSeamName[])
+        tReturnStrategy = #KeepOnPosition
+      ENDIF
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #BackToSplineStart
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (stArcCallState.MoveType == #SplBlock) THEN
+      IF (gArcSenseModErrStrat == TRUE) THEN
+        ArcMsgWriteS(,#NOTIFY ,"NoBackToSplineStartPossible","ARC",10078,Opt_NOVLSTOP_LOG,gArcSeamName[])
+        tReturnStrategy = #KeepOnPosition
+      ENDIF
+      ;IF (ArcIsSttActive() == TRUE) THEN
+      ;  ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"BackToSplineStartNotPossible","STT V4.X")
+      ;  tReturnStrategy = #KeepOnPosition
+      ;ENDIF
+    ELSE
+      ArcMsgWriteS(,#NOTIFY ,"NoSplineNoBackward","ARC",10057,Opt_NOVLSTOP_LOG,gArcSeamName[])
+      tReturnStrategy = #KeepOnPosition
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveUpAndStop
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Nothing
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #ContinueWithoutRetry
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    gArcColdSeam = TRUE
+    IF (gArcSenseModErrStrat == TRUE) THEN
+      ArcMsgWriteS(,#NOTIFY ,"NoContinueWithoutRetryPossible","ARC",10081,Opt_NOVLSTOP_LOG,gArcSeamName[])
+      tReturnStrategy = #KeepOnPosition
+      gArcColdSeam = FALSE
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveForward
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+    ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"MoveForwardNotPossible")
+    tReturnStrategy = #KeepOnPosition
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveScratch
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;Nothing
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  DEFAULT
+    ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"tErrorMovement.WeldErrReaction",ArcEnumErrorMotionToStr(tReturnStrategy))
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ENDSWITCH
+IF ((wArcRestartFromOffset == TRUE) AND (tIgnition == FALSE) AND (IsAnySpline() ==  TRUE) AND ($ON_PATH == FALSE)) THEN
+  tReturnStrategy = #StartFromPos
+ENDIF
+tModifyStrategy = tReturnStrategy
+IF ((tReturnStrategy == #MoveScratch) OR (gArcMoveBackStd == TRUE) OR ((tErrorStrategy.DoUpAndStop == TRUE) AND (tErrorStrategy.UpAndStopDistance > 0.0))) THEN
+  tModifyStrategy = #MoveUpAndStop ;Switch STT Sensor OFF
+ENDIF
+StopRequestExtProcess(ArcEnumErrorMotionToStr(tModifyStrategy), tErrStratExternalAllowed, tMsgId[], tMsgSource[], tMsgNr)
+IF (tErrStratExternalAllowed == FALSE) THEN
+  IF ((STRLEN(tMsgId[]) > 0) AND (STRLEN(tMsgSource[]) > 0) AND (VARSTATE("tMsgNr") == #INITIALIZED)) THEN
+    ArcMsgWrite(,#NOTIFY ,tMsgId[],tMsgSource[],tMsgNr,Opt_NOVLSTOP_LOG)
+  ELSE
+    ArcMsgWriteS(,#NOTIFY ,"ErrorStrategyNotPossible","ARC",10330,Opt_NOVLSTOP_LOG,ArcEnumErrorMotionToStr(tReturnStrategy),gArcSeamName[])
+  ENDIF
+  tReturnStrategy = #KeepOnPosition
+ENDIF
+RETURN tReturnStrategy
+ENDFCT
+;*****************************************************************************************
+;Motions at ignition errors
+;*****************************************************************************************
+DEF ArcRobErrMovement(tErrorType :IN,tErrorStrategy:IN)
+DECL INT tI
+DECL REAL tDistance
+DECL REAL tDistance1
+DECL stArcStrategy_T tErrorStrategy
+DECL enArcErrorMotion_T tStrategyName
+DECL enSeamStateError_T tErrorType
+
+SWITCH tErrorType
+  CASE #IgnitionError
+    tDistance     = tErrorStrategy.FwdDistance
+    tStrategyName = tErrorStrategy.IgnitionReaction
+    ArcWriteDiag(gArcGeneralDebug,"ArcRobErrMovement",": Ignition",ArcEnumErrorMotionToStr(tStrategyName))
+  CASE #WeldingError
+    tDistance     = tErrorStrategy.MotionOnSeam
+    tStrategyName = tErrorStrategy.WeldErrReaction
+    ArcWriteDiag(gArcGeneralDebug,"ArcRobErrMovement",": Welding",ArcEnumErrorMotionToStr(tStrategyName))
+  DEFAULT 
+    LOOP
+      ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"ArcRobErrMovement","tErrorType")
+    ENDLOOP
+ENDSWITCH
+
+IF ((enArcActiveStrategy == #MoveBackward) AND (tStrategyName == #BackToSplineStart)) THEN
+  enArcActiveStrategy        = #MoveLittleForward
+  stErrorDistance.BreakState = TRUE
+ELSE
+  enArcActiveStrategy        = tStrategyName
+ENDIF
+
+ArcRobErrMoveUpAndStop(tErrorType,tErrorStrategy)
+
+IF (ArcIsSttActive() == TRUE) THEN
+  SWITCH tStrategyName ;STT Interface
+    CASE #KeepOnPosition,#BackToSplineStart
+      tI = SttCmdInterface(52,0)  ;Switch Laser Off
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,0) Laser Off")
+      tI = SttCmdInterface(53,4)  ;Set TrackMode 4-OFF with KeepOffset (Const)
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,4) 4-OFF with KeepOffset (Const)")
+    CASE #MoveBackward
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] STT Laser Off Mode=7")
+      tI = SttCmdInterface(52,0)  ;Switch Laser Off
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,0) Laser Off")
+      tI = SttCmdInterface(53,7)  ;Set TrackMode 7-Move Backward
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,7) Set TrackMode 7-Move Backward")
+  ENDSWITCH
+ENDIF
+
+SWITCH tStrategyName
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #KeepOnPosition
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcMoveTo(ArcGetActPos(),10) ;Bug 831291 LIN statt CIRC nach Zündfehler
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;CASE #MoveUpAndStop ;Deprecated move to  routine ArcRobErrMoveUpAndStop()
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveBackward
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+      IF (stArcStepWeldInfo.LastWeldOnDist > 0.0) THEN
+        IF (tDistance > ($DISTANCE - stArcStepWeldInfo.LastWeldOnDist)) THEN
+          tDistance = $DISTANCE - stArcStepWeldInfo.LastWeldOnDist
+        ENDIF
+      ENDIF
+    ENDIF
+    IF (IsAnySpline()) THEN
+      ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+      stBackward.DistToMove = tDistance
+      stBackward.DistAtError = $DISTANCE
+      gArcMoveBackMaxDist = $DISTANCE - stBackward.DistArcOn
+      stBackward.DistLimited = 0
+      IF (tDistance >= gArcMoveBackMaxDist) THEN
+        tDistance = gArcMoveBackMaxDist
+        stBackward.DistLimited = tDistance
+      ENDIF
+      BRAKE
+      LIN $RET.INCL_SENSOR.CART
+      ArcMotionSplineMoveBack(tDistance,gArcSpeedMoveBack,tDistance,0.0)
+      ArcProgramSync("ArcRobErrMovementMoveBackward",gArcSyncList)
+      stBackward.DistRealMoved = stBackward.DistAtError - $DISTANCE
+      IF ((stArcCallState.MoveType == #SplBlock) AND (stBackward.DistLimited > 0)) THEN
+        ArcMsgWriteS(,#NOTIFY,"MoveBackToArcOn","ARC",10175,Opt_NOVLSTOP_LOG,ArcRealToStr(stBackward.DistLimited))
+      ELSE
+        IF ((stArcCallState.MoveType == #SplSingle) AND (stBackward.DistRealMoved < stBackward.DistToMove)) THEN
+          ArcMsgWriteS(,#NOTIFY,"MoveBackToLastCommand","ARC",10176,Opt_NOVLSTOP_LOG,ArcRealToStr(stBackward.DistRealMoved))
+        ENDIF
+      ENDIF
+    ELSE
+      IF (gArcMoveBackStd == TRUE) THEN
+        INTERRUPT OFF irtArcPosSave
+        ArcWriteDiag(gArcGeneralDebug,"[ERROR] Std Backward")
+        gArcStdBackPosStart = ArcGetActPos()
+        ;Limit Distance to 30mm
+        IF (tDistance > 30) THEN
+          ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"MoveBackDistLimited30mm")
+          tDistance = 30
+        ENDIF
+        gArcStdBackPos = gArcSavePos[GetCountId(tDistance)]
+        gMoveScratchSavePos = gArcStdBackPos
+        gMoveScratchBwdPos = gArcSavePos[GetCountId(tDistance + stMoveScratch.DistanceBwd)]
+        gMoveScratchFwdPos = gArcSavePos[GetCountId(tDistance - stMoveScratch.DistanceFwd)]
+        stPosSave.DistDiff = ArcDiffBetween(gArcStdBackPosStart, gArcStdBackPos)
+        ArcMoveTo(gArcStdBackPos)
+      ENDIF
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveForward
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (stArcCallState.MoveType <> #SplBlock) AND (gArcErrorStrategyActive == FALSE) AND (gArcErrorRestartActive == FALSE) THEN
+      ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+      IF (gArcOnSeamBegin == TRUE) THEN
+        SetDistanceToZero()
+      ENDIF
+    ENDIF
+    ArcSetErrorDistance(enArcActiveStrategy, tDistance)
+    ArcProgramSync("ArcRobErrMovementMoveForward",gArcSyncList)
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MoveScratch
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (stArcCallState.MoveType <> #SplBlock) AND (gArcErrorStrategyActive == FALSE) AND (gArcErrorRestartActive == FALSE) THEN
+      ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+      IF (gArcOnSeamBegin == TRUE) THEN
+        SetDistanceToZero()
+      ENDIF
+    ENDIF
+    IF (gArcMoveBackStd == FALSE) THEN
+      IF (gArcErrorStrategyActive == FALSE) THEN
+        $OV_APPL = mOV_APPLError
+        gMoveScratchInitPos = ArcGetActPos()
+        ArcSetErrorDistance(enArcActiveStrategy, 0)
+        IF ((stErrorDistance.ErrorArcOn == TRUE) AND (stMoveScratch.BeforeArcOn == TRUE)) THEN
+          stErrorDistance.BreakState = FALSE
+        ENDIF
+      ELSE
+       ArcMoveScratch()
+       enArcActiveStrategy = #None
+      ENDIF
+    ELSE
+      ArcMoveScratch()
+      enArcActiveStrategy = #None
+    ENDIF
+    ArcProgramSync("ArcRobErrMovementMoveScratch",gArcSyncList)
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #BackToSplineStart
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+    IF (enArcActiveStrategy == #MoveLittleForward) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcRobErrMovement MoveLittleForward")
+      ;First there must be a forward motion
+      ArcSetErrorDistance(enArcActiveStrategy, 1)
+    ELSE
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcRobErrMovement BackToSplineStart")
+      BRAKE
+      LIN $RET.INCL_SENSOR.CART
+      tDistance1 = $DISTANCE
+      ArcMotionSplineMoveBack(tDistance1,gArcSpeedMoveBackStart,tDistance,0.0)
+      ArcSetErrorDistance(enArcActiveStrategy, tDistance1)
+      ArcAtaUserCalls(#PreSplStart)
+      ArcProgramSync("ArcRobErrMovementBackToSplineStart",gArcSyncList)
+      IF (gArcNoQuitOnSplStart == FALSE) THEN
+        ArcMsgWriteS(,#QUIT,"ContinueWithAdditionalStart","ARC",10064,Opt_NOVLSTOP_LOG,gArcSeamName[])
+        ArcRemoteSetClearMsg(10064)
+      ENDIF
+      ArcAtaUserCalls(#PostSplStart)
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #StartFromPos
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ArcProgramSync("ArcRobErrMovementMoveFromPos",gArcSyncList)
+  BRAKE
+  ;MAX_OFFSET_CART = 1000 mm (KRCDonfig.xml - optional Value max Distance)
+  gArcPosDiff = ArcDiffBetween(ArcGetActPos(), $POS_RET)
+  WHILE (gArcPosDiff >= 100)
+    ArcMsgWriteS(,#QUIT,"MaxDistToIntPosToBig","ARC",10178,Opt_NOVLSTOP_LOG,gArcSeamName[])
+    HALT
+    gArcPosDiff = ArcDiffBetween(ArcGetActPos(), $POS_RET)
+  ENDWHILE
+  IF ($ON_PATH == FALSE) THEN
+    tDistance = 0.0
+    ;Reduce Offset To Next Point
+    ArcMotionSplineMoveBack(tDistance,gArcSpeedMoveBack,0.0,- $DIST_NEXT)
+    ;Reduce Offset to ArcOff (Maybe in Future for ArcSplineBlock)
+    ;ArcMotionSplineMoveBack(tDistance,gArcSpeedMoveBack,0.0,10000)
+  ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;DEFAULT
+  ;ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"tStrategyName",ArcEnumErrorMotionToStr(tStrategyName))
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ENDSWITCH
+IF (ArcIsSttActive() == TRUE) THEN
+  SWITCH tStrategyName ;STT Interface
+    CASE #KeepOnPosition,#BackToSplineStart,#MoveBackward
+      tI = SttCmdInterface(52,1)  ;Switch Laser On
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,1) Switch Laser On")
+      tI = SttCmdInterface(53,3)  ;Set TrackMode 3-ON SeamBegin & Track (without BASE_CORR)
+      ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,3)TrackMode 3-ON SeamBegin & Track")
+      WAIT SEC 0.5
+  ENDSWITCH
+ENDIF
+;ArcProgramSync("ArcRobErrMovementEnd",gArcSyncList)
+END
+;*****************************************************************************************
+;Error Motion MoveUpAndStop
+;*****************************************************************************************
+GLOBAL DEF ArcRobErrMoveUpAndStop(tErrorType :IN,tErrorStrategy:IN)
+DECL REAL tDistance
+DECL INT tI
+DECL stArcStrategy_T tErrorStrategy
+DECL enArcErrorMotion_T tStrategyName
+DECL enSeamStateError_T tErrorType
+SWITCH tErrorType
+  CASE #IgnitionError
+    tDistance     = tErrorStrategy.UpAndStopDistance
+    tStrategyName = tErrorStrategy.IgnitionReaction
+    ArcWriteDiag(gArcGeneralDebug,"ArcRobErrMoveUpAndStop",": Ignition",ArcEnumErrorMotionToStr(tStrategyName))
+  CASE #WeldingError
+    tDistance     = tErrorStrategy.UpAndStopDistance
+    tStrategyName = tErrorStrategy.WeldErrReaction
+    ArcWriteDiag(gArcGeneralDebug,"ArcRobErrMoveUpAndStop",": Welding",ArcEnumErrorMotionToStr(tStrategyName))
+  DEFAULT 
+    LOOP
+      ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"ArcRobErrMoveUpAndStop","tErrorType")
+    ENDLOOP
+ENDSWITCH
+
+SWITCH tStrategyName
+  CASE #MoveUpAndStop
+  CASE #KeepOnPosition,#MoveBackward,#MoveForward,#MoveScratch,#BackToSplineStart
+    IF (tErrorStrategy.DoUpAndStop == FALSE) THEN
+      RETURN
+    ENDIF
+    IF (tDistance <= 0.0) THEN
+       ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"DoUpAndStop Active","Distance = 0")
+       RETURN
+    ENDIF
+DEFAULT
+  RETURN
+ENDSWITCH
+
+ArcCheckIfWireIsFree(gArcActIlfWelder,TRUE)
+IF (stArcCallState.MoveType == #SplBlock) THEN
+  BRAKE
+ENDIF
+
+IF (ArcIsSttActive() == TRUE) THEN
+  tI = SttCmdInterface(52,0)  ;Switch Laser Off
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,0) Laser Off")
+  tI = SttCmdInterface(53,4)  ;Set TrackMode 4-OFF with KeepOffset (Const)
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,4) 4-OFF with KeepOffset (Const)")
+ENDIF
+
+mPOS_ACT = ArcGetActPos()
+mMoveDistance = $NULLFRAME
+SWITCH wArcToolDirection
+  CASE #X
+    mMoveDistance.X = -tDistance
+  CASE #Z
+    mMoveDistance.Z = -tDistance
+ENDSWITCH
+mArcVelCp = $VEL.CP
+$VEL.CP = DEF_VEL_CP
+$OV_APPL = mOV_APPLError
+ArcMoveFromTo(mPOS_ACT,mMoveDistance)
+ArcProgramSync("ArcRobErrMovementMoveUpAndStop",gArcSyncList)
+ArcMsgWriteS(,#QUIT,"ContinueWithAdditionalStart","ARC",10064,Opt_VLSTOP_LOG,gArcSeamName[])
+ArcRemoteSetClearMsg(10064)
+ArcMoveTo(mPOS_ACT)
+$OV_APPL = cOvApplDefault
+$VEL.CP = mArcVelCp
+
+IF (ArcIsSttActive() == TRUE) THEN
+  tI = SttCmdInterface(52,1)  ;Switch Laser On
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(52,1) Switch Laser On")
+  tI = SttCmdInterface(53,3)  ;Set TrackMode 3-ON SeamBegin & Track (without BASE_CORR)
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] SttCmdInterface(53,3)TrackMode 3-ON SeamBegin & Track")
+  WAIT SEC 0.5
+ENDIF
+
+END
+;*****************************************************************************************
+;AdvancedErrorDecision
+;*****************************************************************************************
+GLOBAL DEFFCT enArcErrorDecision_T AdvancedErrorDecision()
+DECL enArcErrorDecision_T retValue
+retValue = #None
+SWITCH wArcErrDecisionType
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #Automatic
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcMsgWrite(,#NOTIFY,"ServicePositionReached","ARC",10097,Opt_VLSTOP_LOG)
+    retValue = #Retry
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #DependingModeOp
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF $MODE_OP == #EX THEN
+      retValue = DecisionByInput(#ServicePosReached)
+    ELSE
+      retValue = DecisionByHmi(#ServicePosReached)
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #PLC
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    retValue = DecisionByInput(#ServicePosReached)
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #SmartHMI
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    retValue = DecisionByHmi(#ServicePosReached)
+ENDSWITCH
+RETURN retValue
+ENDFCT
+;*****************************************************************************************
+;[Routine] Maximum Error Decision
+;*****************************************************************************************
+GLOBAL DEFFCT enArcErrorDecision_T MaxErrorDecision()
+DECL enArcErrorDecision_T retValue
+retValue = #None
+IF (enArcCurrentState == #IgnitionFailed) THEN
+  ArcOutputSet(gArcActIlfWelder,wArcOCriticalIgnitError[])
+ELSE
+  ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+ENDIF
+SWITCH wArcStrategySelectMaxErr
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #None
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (enArcCurrentState == #IgnitionFailed) THEN
+      ArcMsgWriteS(,#QUIT,"TooMuchIgnitionsAndReactionsColdContinuing","ARC",10032,Opt_VLSTOP_LOG,gArcSeamName[])
+      ArcRemoteSetClearMsg(10032)
+      gArcNoErrorRestart = TRUE
+    ELSE
+      DoSeamFailureRestart()
+    ENDIF
+    retValue = #Abort
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #DependingModeOp
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF ($MODE_OP == #EX) THEN
+      retValue = DecisionByInput(#MaxErrors)
+    ELSE
+      retValue = DecisionByHmi(#MaxErrors)
+    ENDIF
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #OnlyBySps
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    retValue = DecisionByInput(#MaxErrors)
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #OnlyBySmartPad
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    retValue = DecisionByHmi(#MaxErrors)
+ENDSWITCH
+ArcOutputReset(gArcActIlfWelder,wArcOCriticalIgnitError[])
+ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+RETURN retValue
+ENDFCT
+;*****************************************************************************************
+;[Routine] Decision By Hmi
+;*****************************************************************************************
+DEFFCT enArcErrorDecision_T DecisionByHmi(DecisionRequest : IN)
+DECL enArcDecisionRequest_T DecisionRequest
+DECL enArcErrorDecision_T retValue
+DECL INT tAnswer
+retValue = #Abort
+tAnswer = 0
+gArcDialogAnswer = 0
+SWITCH DecisionRequest
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MaxErrors
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcOutputSet(gArcActIlfWelder,wArcODecisionRequest[])
+    ArcProgramSync("MaxErrorsStep1",gArcSyncList)
+    IF (enArcCurrentState == #IgnitionFailed) THEN
+      tAnswer=ArcMsgWriteDialog(,"TooMuchIgnitionsHowContinueDryOrRetry","ARC",10088,Opt_VLSTOP_LOG,"Retry","Dry")
+      ArcRemoteSetDialogAnswer(10088,tAnswer)
+    ELSE
+      tAnswer=ArcMsgWriteDialog(,"TooMuchSeamBreaksHowContinueDryOrRetry","ARC",10089,Opt_VLSTOP_LOG,"Retry","Dry")
+      ArcRemoteSetDialogAnswer(10089,tAnswer)
+    ENDIF
+    ArcProgramSync("MaxErrorsStep2",gArcSyncList)
+    SWITCH tAnswer
+    CASE 1
+      retValue = #Retry
+    CASE 2
+      gArcNoErrorRestart = TRUE
+      ArcMsgWriteS(,#QUIT,"ColdSeamSelected","ARC",10090,Opt_VLSTOP_LOG,gArcSeamName[])
+      ArcRemoteSetClearMsg(10090)
+      retValue = #Abort
+      ArcProgramSync("MaxErrorsStep3",gArcSyncList)
+    ENDSWITCH
+    ArcOutputReset(gArcActIlfWelder,wArcODecisionRequest[])
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #ServicePosReached
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcProgramSync("ServicePosReachedStep1",gArcSyncList)
+    IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+      tAnswer=ArcMsgWriteDialogS(,"ServicePositionReachedRequestSelection","ARC",20020,Opt_VLSTOP_LOG,"RetrySeam","CancelSeam",,,,,,ATAg_ER_GroupName[],ATAg_ER_SeamName[])
+      ArcRemoteSetDialogAnswer(20020,tAnswer)    
+    ELSE
+      tAnswer=ArcMsgWriteDialog(,"ServicePositionReached","ARC",10097,Opt_VLSTOP_LOG,"Common#Ok")
+      ArcRemoteSetDialogAnswer(10097,tAnswer)
+    ENDIF
+    ArcProgramSync("ServicePosReachedStep2",gArcSyncList)
+    SWITCH tAnswer
+      CASE 1
+        ArcMsgWrite(,#NOTIFY,"RepairSeamAgain","ARC",10098,Opt_VLSTOP_LOG)
+        retValue = #Retry
+      CASE 2
+        ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+        ArcMsgWriteS(,#QUIT,"SeamSkipped","ARC",10099,Opt_VLSTOP_LOG,ATAg_ER_SeamName[])
+        ArcRemoteSetClearMsg(10099)
+        ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+        retValue = #Abort
+    ENDSWITCH
+    ArcProgramSync("ServicePosReachedStep3",gArcSyncList)
+  ENDSWITCH
+RETURN retValue
+ENDFCT
+;*****************************************************************************************
+;[Routine] Decision By Input
+;*****************************************************************************************
+DEFFCT enArcErrorDecision_T DecisionByInput(DecisionRequest : IN)
+DECL enArcDecisionRequest_T DecisionRequest
+DECL enArcErrorDecision_T retValue
+DECL INT tI,tHandle
+DECL CHAR tPara2[26],tPara3[26]
+retValue = #Abort
+SWITCH DecisionRequest
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #MaxErrors
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcOutputSet(gArcActIlfWelder,wArcODecisionRequest[])
+    SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIStrategyDecision[],0)
+      CASE -1
+        REPEAT
+          ArcMsgWrite(,#QUIT,"WrongStrategyDecisionInput","ARC",10085,Opt_VLSTOP_LOG)
+        UNTIL FALSE
+    ENDSWITCH
+    SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIDecisionValid[],0)
+      CASE -1
+        REPEAT
+          ArcMsgWrite(,#QUIT,"WrongStrategyDecisionInput","ARC",10085,Opt_VLSTOP_LOG)
+        UNTIL FALSE
+      CASE 1
+        tHandle = 0
+        IF (ArcInputStatusOn(gArcActIlfWelder,wArcIDecisionValid[],0) == 1) THEN
+          ArcStrParam(wArcIDecisionValid[gArcActIlfWelder].Description[],tPara2[],tPara3[])
+          ArcMsgWriteS(tHandle,#WAITING,"WrongInputState","ARC",10114,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[])
+        ENDIF
+        WHILE (ArcInputStatusOff(gArcActIlfWelder,wArcIDecisionValid[],0) == 0)
+          WAIT SEC 0.2
+        ENDWHILE 
+        ArcMsgWriteClearHandle(tHandle)
+    ENDSWITCH    
+    tHandle = 0
+    ArcStrParam(wArcIDecisionValid[gArcActIlfWelder].Description[],tPara2[],tPara3[])
+    ArcMsgWriteS(tHandle,#WAITING,"WaitForPLCDecisionValid","ARC",10113,Opt_VLSTOP_LOG,gArcSeamName[],tPara2[],tPara3[])
+    WHILE (ArcInputStatusOn(gArcActIlfWelder,wArcIDecisionValid[],0) == 0)
+      WAIT SEC 0.2
+    ENDWHILE
+    ArcMsgWriteClearHandle(tHandle)
+    SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIStrategyDecision[],0)
+      CASE 0
+        retValue = #Retry
+      CASE 1
+        retValue = #Abort
+    ENDSWITCH
+    ArcReceiptWelder()
+    ArcOutputReset(gArcActIlfWelder,wArcODecisionRequest[])
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #ServicePosReached
+  ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ArcOutputReset(gArcActIlfWelder,wArcOPlcCleanPosition[])
+    ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+    WAIT FOR gArcIErrRecoveryPlcSign == 0
+    ArcOutputSet(gArcActIlfWelder,wArcOPlcCleanPosition[])
+    WAIT FOR gArcIErrRecoveryPlcSign > 0
+    WHILE NOT ATA_ER_PLCSignalSync()
+      ArcMsgWrite(,#QUIT,"DifferentInputPlcSelection","ARC",10104,Opt_VLSTOP_LOG)
+      ArcRemoteSetClearMsg(10104)
+      WAIT SEC 0.2
+      WAIT FOR gArcIErrRecoveryPlcSign > 0
+    ENDWHILE
+    SWITCH gArcIErrRecoveryPlcSign
+    CASE 1
+      ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+      ArcMsgWriteS(,#QUIT,"SeamSkipped","ARC",10099,Opt_VLSTOP_LOG,ATAg_ER_SeamName[])
+      ArcRemoteSetClearMsg(10099)
+      ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+      retValue = #Abort
+    CASE 2
+      retValue = #Retry
+    DEFAULT
+      retValue = #Retry
+  ENDSWITCH
+  ArcOutputReset(gArcActIlfWelder,wArcOPlcCleanPosition[])
+ENDSWITCH
+IF (gArcSyncList>1) THEN
+  SyncCmd(#Progsync, "ColdSync", gArcSyncList)
+ENDIF
+RETURN retValue
+ENDFCT
+;*****************************************************************************************
+;Failure on Restart Weld
+;*****************************************************************************************
+DEF DoSeamFailureRestart()
+DECL INT Offset
+DECL CHAR STRDEST[40]
+BRAKE
+IF (gArcNoErrorRestart == FALSE) THEN
+  ArcOutputSet(gArcActIlfWelder,wArcOCriticalSeamError[])
+  ArcMsgWriteS(,#QUIT,"WarningColdSeamOnPath","ARC",10065,Opt_VLSTOP_LOG,ArcIntToStr(gArcSeamErrorCounter), gArcSeamName[])
+  ArcRemoteSetClearMsg(10065)
+  ArcOutputReset(gArcActIlfWelder,wArcOCriticalSeamError[])
+ENDIF
+gArcNoErrorRestart = TRUE
+END
+;*****************************************************************************************
+;[Global Routine] Check Error Ignition Timeout
+;*****************************************************************************************
+GLOBAL DEF ArcSyncIgnitionTimeout()
+gArcSyncIgnitionTimeout = (wArcCurrentTimeout + stArcActStartSet.StartTime + cArcSyncWaitTime)
+IF ((cArcSyncErrorOption == TRUE) AND (gArcSyncIgnitionEnable == TRUE) AND ($PRO_MODE == #GO) AND ($PRO_STATE1 == #P_ACTIVE) AND (enArcErrorState == #Nothing)) THEN
+  IF (mArcSyncIgnitionFlag == FALSE) THEN
+    mArcSyncIgnitionFlag = TRUE
+    gArcSyncIgnitionStamp = ArcCalcTimeoutSec(gArcSyncIgnitionTimeout)
+  ENDIF
+  IF ($ROB_TIMER > gArcSyncIgnitionStamp) THEN
+    ArcRobotStopFromSUBMIT(TRUE)
+    gArcSyncIgnitionError = TRUE
+    mArcSyncIgnitionFlag = FALSE
+    gArcSyncIgnitionEnable = FALSE
+  ENDIF
+ELSE
+  mArcSyncIgnitionFlag = FALSE
+ENDIF
+END
+;*****************************************************************************************
+;[Global Routine] Motion Forward Control
+;*****************************************************************************************
+GLOBAL DEF ArcMotionForwardControl()
+IF ((wArcStillStandOption == TRUE) AND (gArcMotionForwardEnable == TRUE) AND ($TIMER[ctArcWeldingOnTimeout] > 0) AND ($PRO_MODE == #GO) AND ($PRO_STATE1 == #P_ACTIVE)) THEN
+    ;Check Distance
+    IF ($ROB_TIMER > mArcMemDistanceTime) THEN
+      IF (mArcMemDistanceTime == 0 ) THEN
+        mArcMemDistance = $DISTANCE
+      ELSE
+        IF (mArcMemDistance <> $DISTANCE) THEN
+          mArcMemDistance = $DISTANCE
+        ELSE
+          mArcErrorOnDistance = TRUE
+          ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] StillStandControl Distance")
+        ENDIF
+      ENDIF
+      mArcMemDistanceTime = ArcCalcTimeoutSec(wArcStillstandTimeout)
+    ENDIF
+    ;Check Velocity    
+    IF (wArcZeroVelocity >= $VEL_ACT) THEN
+      IF (mArcMemVelTime == 0) THEN
+        mArcMemVelTime = ArcCalcTimeoutSec(wArcStillstandTimeout)
+      ENDIF
+      IF ($ROB_TIMER > mArcMemVelTime) THEN
+        mArcErrorOnVel = TRUE
+        ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] StillStandControl Velocity")
+      ENDIF
+    ELSE
+      mArcMemVelTime = 0
+    ENDIF
+    ;Stop Robot and set errorstate
+    IF ((mArcErrorOnDistance == TRUE) OR (mArcErrorOnVel == TRUE )) THEN
+      ArcRobotStopFromSUBMIT(TRUE)
+      gArcStillstandError = TRUE
+      gArcMotionForwardEnable = FALSE
+    ENDIF
+ELSE
+  mArcErrorOnDistance = FALSE
+  mArcErrorOnVel = FALSE
+  mArcMemDistanceTime = 0
+  mArcMemVelTime = 0
+ENDIF
+END
+;*****************************************************************************************
+;[Watchdog] Init
+;*****************************************************************************************
+GLOBAL DEF ArcPrepareWatchdogCtrl()
+SWITCH wArcWelder[gArcActIlfWelder].Type
+  CASE #ABICORBINZEL
+    mArcWatchdogTimeNext  = ArcCalcRobTimerTimeout(cArcBinzelWatchdogTime)
+    mArcWatchdogTimeLast  = $ROB_TIMER
+    INTERRUPT OFF irtArcToggleWatchdog
+    GLOBAL INTERRUPT DECL irtArcToggleWatchdog WHEN $ROB_TIMER > mArcWatchdogTimeNext DO ArcToggleWatchdog()
+    INTERRUPT ON irtArcToggleWatchdog
+  DEFAULT
+    IF ($ALARM_STOP == TRUE) THEN
+      ArcOutputPulseSet(gArcActIlfWelder,wArcOWatchDogAlive[],wArcWatchDogTime)
+    ENDIF
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Watchdog] Toggle
+;*****************************************************************************************
+GLOBAL DEF ArcToggleWatchdog()
+INTERRUPT OFF irtArcToggleWatchdog
+IF (ArcIsWelderActive(gArcActIlfWelder) == FALSE)THEN
+  RETURN
+ENDIF
+mArcWatchdogTimeDiff = $ROB_TIMER - mArcWatchdogTimeLast
+mArcWatchdogTimeLast = $ROB_TIMER
+mArcWatchdogTimeNext = ArcCalcRobTimerTimeout(cArcBinzelWatchdogTime)
+
+IF ($ALARM_STOP == TRUE) THEN
+  IF ((gArcIgnoreError == FALSE) AND (gArcWatchdogEnabled == TRUE)) THEN
+    IF (mArcWatchdogTimeDiff > cArcBinzelWatchdogMax) THEN
+      gArcWatchdogEnabled = FALSE
+      ArcRobotStopFromSUBMIT(TRUE)
+      gArcWatchdogError = TRUE
+    ENDIF
+  ENDIF
+  IF (enArcCurrentState <> #Error) THEN
+    gArcWatchdogEnabled = TRUE
+  ENDIF
+  SWITCH ArcOutputStatusOn(gArcActIlfWelder,wArcOWatchDogAlive[],0)
+    CASE 0 ;FALSE
+      ArcOutputSet(gArcActIlfWelder,wArcOWatchDogAlive[])
+    CASE 1 ;TRUE
+      ArcOutputReset(gArcActIlfWelder,wArcOWatchDogAlive[])
+    DEFAULT
+      ArcOutputReset(gArcActIlfWelder,wArcOWatchDogAlive[])
+  ENDSWITCH
+ELSE
+  ArcOutputReset(gArcActIlfWelder,wArcOWatchDogAlive[])
+ENDIF
+INTERRUPT ON irtArcToggleWatchdog
+END
+;*****************************************************************************************
+;[Watchdog] Loop
+;*****************************************************************************************
+GLOBAL DEF ArcWatchDogControl()
+IF (ArcIsWelderActive(gArcActIlfWelder) == FALSE)THEN
+  RETURN
+ENDIF
+IF (wArcWelder[gArcActIlfWelder].Type == #ABICORBINZEL) THEN
+  RETURN
+ENDIF
+IF ($ALARM_STOP == TRUE) THEN
+  IF ((gArcIgnoreError == FALSE) AND (gArcWatchdogEnabled == TRUE)) THEN
+    SWITCH ArcOutputStatusOff(gArcActIlfWelder,wArcOWatchDogAlive[],0)
+      CASE 1
+        gArcWatchdogEnabled = FALSE
+        ArcRobotStopFromSUBMIT(TRUE)
+        gArcWatchdogError = TRUE
+    ENDSWITCH
+  ENDIF
+  IF (enArcCurrentState <> #Error) THEN
+    gArcWatchdogEnabled = TRUE
+  ENDIF
+  ArcOutputPulseSet(gArcActIlfWelder,wArcOWatchDogAlive[],wArcWatchDogTime)
+ELSE
+  ArcOutputReset(gArcActIlfWelder,wArcOWatchDogAlive[])
+ENDIF
+END
+;*****************************************************************************************
+;[HeartBeat] Reset Life Bit Variables
+;*****************************************************************************************
+GLOBAL DEF ArcLifeBitInit()
+mHHeartBit=0
+mLHeartBit=0
+ArcMsgWriteClearHandle(mMsgHeartHandle)
+END
+;*****************************************************************************************
+;[HeartBeat] Selection power source
+;*****************************************************************************************
+GLOBAL DEF ArcLifeBitMain()
+SWITCH wArcWelder[gArcActIlfWelder].Type
+  CASE #FRONIUS_TPSI,#FRONIUS_TWIN
+    ArcLifeBit(gArcActIlfWelder,wArcIHeartBeatTPSi[])
+ENDSWITCH
+END
+;*****************************************************************************************
+;[HeartBeat] Set Life Bit
+;*****************************************************************************************
+DEF ArcLifeBit(tWelderNr :IN,tStruc[] :OUT)
+DECL INT tWelderNr
+DECL stArcSignal_T tStruc[]
+DECL BOOL tmpBitLifeError
+tmpBitLifeError=TRUE
+IF ($ROB_TIMER <= 500) THEN
+  ArcLifeBitInit()
+ENDIF
+SWITCH ArcInputStatusOn(tWelderNr,tStruc[],0)
+  CASE 0
+    mHHeartBit = 0
+    IF (mLHeartBit == 0) THEN
+      mLHeartBit = $ROB_TIMER
+    ENDIF
+    IF ArcCheckLifeBit(mLHeartBit,cArcTPSIHeartMaxDelay + cArcTimeHeartDelta) THEN
+      ArcBitLifeError()
+      tmpBitLifeError=FALSE
+    ENDIF
+  CASE 1
+    mLHeartBit = 0
+    IF (mHHeartBit == 0) THEN
+      mHHeartBit = $ROB_TIMER
+    ENDIF
+    IF ArcCheckLifeBit(mHHeartBit,cArcTPSIHeartMaxDelay + cArcTimeHeartDelta) THEN
+      ArcBitLifeError()
+      tmpBitLifeError=FALSE
+    ENDIF    
+ENDSWITCH
+IF (tmpBitLifeError == TRUE) THEN
+  ArcMsgWriteClearHandle(mMsgHeartHandle)
+ENDIF
+END
+;*****************************************************************************************
+;[HeartBeat] Check Bit Life
+;*****************************************************************************************
+DEFFCT BOOL ArcCheckLifeBit(tLifeBit :IN, tLifeBitTOut :IN)
+DECL REAL tLifeBit,tLifeBitTOut
+tLifeBitTOut = ABS(tLifeBitTOut) + ABS(tLifeBit)
+IF ($ROB_TIMER > tLifeBitTOut) THEN
+  RETURN TRUE
+ENDIF
+RETURN FALSE
+ENDFCT
+;*****************************************************************************************
+;[HeartBeat] On Bit Life Error Robot stop and reset outputs
+;*****************************************************************************************
+DEF ArcBitLifeError()
+IF ((stArcProcessState.WeldingActive == TRUE) AND (enArcCurrentState <> #Nothing) AND (gArcIgnoreError == FALSE) AND (enArcErrorState == #Nothing)) THEN
+  ArcRobotStopFromSUBMIT(TRUE)
+  gArcDefaultError = TRUE
+  ArcMsgWrite(mMsgHeartHandle,#STATE,"WatchDogBitLife","ARC",10105,Opt_VLSTOP_LOG)
+ENDIF
+END
+;*****************************************************************************************
+;[PreStart] PreStart on Error
+;*****************************************************************************************
+GLOBAL DEF ArcPreStartError()
+SWITCH enArcCurrentStatePre
+  CASE #PreStartDone
+    IF ($ROB_TIMER > mArcPreStartTimeOut) THEN
+      ArcWriteDiag(gArcGeneralDebug,"[STATE] TimeOut on PreStart")
+      ArcRobotStopFromSUBMIT(TRUE)
+      SetErrorState(#PreStartError)
+      enArcCurrentStatePre = #Nothing
+    ENDIF
+  DEFAULT
+    mArcPreStartTimeOut = ArcCalcTimeoutMilliSec(gArcPreStartTimeOut)
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Error] Scratch Movement Error Strategy
+;*****************************************************************************************
+DEF ArcMoveScratch()
+DECL INT tNum, tI
+DECL BOOL tHotProcess
+IF (stMoveScratch.WireFeedTime > 0) THEN
+  tHotProcess = TRUE
+  SWITCH ArcInputStatusOn(gArcActIlfWelder,wArcIKeySwitchProcess[],0)
+    CASE -1
+      IF (skArcStatusKeyHot == FALSE) THEN
+        tHotProcess = FALSE
+      ENDIF
+    CASE 0
+      tHotProcess = FALSE
+  ENDSWITCH
+  IF (tHotProcess == TRUE) THEN
+    SWITCH ArcInputGroupStatusOn(gArcActIlfWelder,wArcIRdyWeldSource[,],0)
+      CASE 0
+        ArcOutputSet(gArcActIlfWelder,wArcOAcknowledgePowerSrc[])
+        WAIT SEC 0.5
+        ArcOutputReset(gArcActIlfWelder,wArcOAcknowledgePowerSrc[])
+        WAIT SEC 0.25
+    ENDSWITCH
+    ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ScratchWireFeed")
+    ArcOutputSet(gArcActIlfWelder,wArcOWireFeedForward[])
+    WAIT SEC (stMoveScratch.WireFeedTime / 1000)
+    ArcOutputReset(gArcActIlfWelder,wArcOWireFeedForward[])
+  ENDIF
+ENDIF
+
+IF (stMoveScratch.DistanceFwd > gArcMoveScratchMaxDist) THEN
+  ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"Scratch FwdLimited 10mm")
+ENDIF
+IF (stMoveScratch.DistanceBwd > gArcMoveScratchMaxDist) THEN
+  ArcMsgWriteS(,#NOTIFY ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"Scratch BwdLimited 10mm")
+ENDIF
+
+$OV_APPL = cOvApplDefault
+mArcVelCp = $VEL.CP
+ON_ERROR_PROCEED
+$VEL.CP = stMoveScratch.Speed
+IF ($ERR.NUMBER > 0) THEN
+  $VEL.CP = DEF_VEL_CP
+  ERR_CLEAR($ERR)
+ENDIF
+
+FOR tI = 1 TO stMoveScratch.Repetition
+  ArcWriteDiag(gArcGeneralDebug,"[ARCERROR] ArcScratch")
+  ArcMoveTo(gMoveScratchFwdPos)
+  ArcMoveTo(gMoveScratchBwdPos)
+ENDFOR
+ArcMoveTo(gMoveScratchSavePos)
+$VEL.CP = mArcVelCp
+END
+;*****************************************************************************************
+;[Error] Init Error Distance
+;*****************************************************************************************
+GLOBAL DEF ArcInitErrorDistance()
+;stErrorDistance.NewIgnition = 0
+;stErrorDistance.ReduceSpeed = 0
+stErrorDistance.ErrorArcOn  = FALSE
+stErrorDistance.ActIgnStrat = #None
+stErrorDistance.ActWeldStrat = #None
+END
+;*****************************************************************************************
+;[Error] Set Error Distance
+;*****************************************************************************************
+DEF ArcSetErrorDistance(tStrategyName: IN, tDistance: IN)
+DECL enArcErrorMotion_T tStrategyName
+DECL REAL tDistance
+stErrorDistance.Error = 0
+stErrorDistance.NewIgnition = 0
+stErrorDistance.ReduceSpeed = 0
+
+IF (gArcOnSeamBegin == TRUE) THEN
+  IF (stArcCallState.MoveType == #SplBlock) THEN
+    stErrorDistance.Error = $DISTANCE
+    stErrorDistance.NewIgnition = $DISTANCE
+  ELSE
+    stErrorDistance.Error = 0
+    stErrorDistance.NewIgnition = 0
+  ENDIF
+  stErrorDistance.ErrorArcOn = TRUE
+ELSE
+  stErrorDistance.Error = $DISTANCE
+  stErrorDistance.NewIgnition = $DISTANCE
+  stErrorDistance.ErrorArcOn = FALSE
+ENDIF
+
+SWITCH tStrategyName
+  CASE #KeepOnPosition
+    ;Nothing
+  CASE #MoveUpAndStop
+    ;Nothing
+  CASE #MoveBackward
+    ;Nothing
+  CASE #BackToSplineStart
+    stErrorDistance.Error       = tDistance
+    stErrorDistance.NewIgnition = tDistance
+    stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition - mDistanceReduceSpeed
+  CASE #MoveLittleForward
+    stErrorDistance.NewIgnition = stErrorDistance.Error + tDistance
+    stErrorDistance.ReduceSpeed = stErrorDistance.Error
+  CASE #MoveForward
+    IF tDistance < 0.1 THEN
+      tDistance = 0.1
+    ENDIF
+    stErrorDistance.NewIgnition = stErrorDistance.Error + tDistance
+    stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition - mDistanceReduceSpeed
+  CASE #MoveScratch
+    ;stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition + 0.1
+    stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition + 1.0
+  CASE #AdvancedErrorRecovery
+    stErrorDistance.Error       = tDistance
+    stErrorDistance.NewIgnition = tDistance
+    stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition - mDistanceReduceSpeed
+ENDSWITCH
+
+IF (stErrorDistance.ReduceSpeed > 0.0) THEN
+  IF (gArcErrorStrategyActive == FALSE) THEN
+    IF (stErrorDistance.ReduceSpeed < stErrorDistance.NewIgnition) THEN
+      stErrorDistance.ReduceSpeed = stErrorDistance.NewIgnition
+    ENDIF
+    IF (stErrorDistance.NewIgnition < 0.1) THEN
+      stErrorDistance.NewIgnition = 0.1
+    ENDIF
+    IF (stErrorDistance.ReduceSpeed < 0.1) THEN
+      stErrorDistance.ReduceSpeed = 0.1
+    ENDIF
+    IF (tStrategyName <> #AdvancedErrorRecovery) THEN
+      ArcInitReduceSpeed(TRUE)
+      stErrorDistance.BreakState = TRUE
+    ENDIF
+    gArcColdSeam = TRUE
+  ENDIF
+ENDIF
+END
+;*****************************************************************************************
+;[Error] Get Saved Position depending on distance
+;*****************************************************************************************
+DEFFCT INT GetCountId(tDistance:IN)
+DECL INT tId
+DECL INT tCounter
+DECL REAL tDistance
+
+tCounter = tDistance / gArcPosSaveDistance
+
+IF tCounter >= 19 THEN
+  tCounter = 19
+  ArcWriteDiag(gArcGeneralDebug,"[ERROR] CounterId >= 19")
+ENDIF
+
+tId = stPosSave.Count - tCounter
+IF (tId > stPosSave.Count) THEN
+  ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"GetCountId tId wrong")
+  tId = stPosSave.Count
+ENDIF
+IF (tId < 1) THEN
+  IF (stPosSave.Overflow == FALSE) THEN
+    tId = 1
+    ArcWriteDiag(gArcGeneralDebug,"[ERROR] CounterId <= 1")
+  ELSE
+    tId = 20 - ABS(tId)
+  ENDIF
+ENDIF
+RETURN tId
+ENDFCT
+;*****************************************************************************************
+;[Error] Error Recovery Group Call from ILF
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcErrorRecovery(tCmd:IN,tArcRecovery:IN)
+DECL BOOL tB
+DECL INT tI
+DECL enArcRecovery_T tCmd
+DECL stArcRecovery_T tArcRecovery
+SWITCH tCmd
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #GroupStart
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcTechAdvancedOption == FALSE) THEN
+      RETURN TRUE ;Repeat until on start
+    ENDIF
+    ATAg_ER_ArcGroupEnabled = TRUE
+    tB = STRCOPY(ATAg_ER_GroupName[],tArcRecovery.GroupName[])
+    IF (ArcIsSttActive() == TRUE) THEN
+      IF (ATAg_ER_ChkRepeatGroup == TRUE) THEN
+        tI = SttCmdInterface(54,2,0,0) ;Record Mode Start Play  [REAL]Side Offset [REAL]Side Hight
+        ArcWriteDiag(gArcGeneralDebug,"[ArcError] SttCmdInterface(54,2,0,0) STT Set Mode Play")
+      ELSE
+        tI = SttCmdInterface(54,1)     ;Record Mode Start Record
+        ArcWriteDiag(gArcGeneralDebug,"[ArcError] SttCmdInterface(54,1) STT Set Mode Record")
+      ENDIF
+    ENDIF
+    RETURN TRUE
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #GroupEnd
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcTechAdvancedOption == FALSE) THEN
+      RETURN TRUE ;Exit Loop
+    ENDIF
+    IF (ArcIsSttActive() == TRUE) THEN
+      tI = SttCmdInterface(54,3)     ;Record Mode Stop Record Play
+      ArcWriteDiag(gArcGeneralDebug,"[ArcError] SttCmdInterface(54,3) STT Record Stop Record Play")
+    ENDIF
+    IF (ATAg_ER_ArcGroupEnabled == FALSE) Then
+      ATA_ER_ForceExit()
+      RETURN TRUE ;Exit Loop
+    ENDIF
+    ATAg_ER_ArcGroupEnabled = FALSE
+    ATA_ER_Reset()
+    IF (ATAg_ER_ChkRepeatGroup == TRUE)  THEN
+      RETURN FALSE ;Repeat Loop
+    ENDIF
+    RETURN TRUE ;Exit Loop
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  CASE #DoService
+  ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    IF (gArcTechAdvancedOption == FALSE) THEN
+      RETURN FALSE ;If Service
+    ENDIF
+    IF (ATAg_ER_ArcGroupEnabled == TRUE) Then
+      IF (tArcRecovery.RobotSinc.Active == TRUE) THEN
+        ATA_ER_GroupProgSync(tArcRecovery.RobotSinc.Name[],tArcRecovery.RobotSinc.BitSinc)
+      ENDIF
+      IF (ATA_ER_ChkSeamGroup(0) == TRUE) THEN
+        IF (ArcIsSttActive() == TRUE) THEN
+          tI = SttCmdInterface(54,3)     ;Record Mode Stop Record Play
+          ArcWriteDiag(gArcGeneralDebug,"[ArcError] SttCmdInterface(54,3) STT Record Stop Record Play")
+          tI = SttCmdInterface(54,6)     ;Record Mode Disable correction
+          ArcWriteDiag(gArcGeneralDebug,"[ArcError] SttCmdInterface(54,6) STT Disable correction")
+        ENDIF
+        RETURN TRUE
+      ENDIF
+    ENDIF
+    RETURN FALSE
+ENDSWITCH
+ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,gArcActIlfWelderName[],"ErrorRecovery:"," Wrong command")
+RETURN FALSE
+ENDFCT

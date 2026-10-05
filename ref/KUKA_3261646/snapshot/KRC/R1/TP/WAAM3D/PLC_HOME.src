@@ -1,0 +1,85 @@
+&ACCESS RVO
+&REL 54
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\TP\WAAM3D
+DEF PLC_HOME( )
+DECL E6POS LINHOVER
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD PTP $POS_ACT Vel=5 % PDAT11 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=$POS_ACT; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT11; Kuka.VelocityPtp=5; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+;$BWDSTART = FALSE
+;PDAT_ACT = PPDAT11
+;FDAT_ACT = F$POS_ACT
+;BAS(#PTP_PARAMS, 5.0)
+;SET_CD_PARAMS (0)
+;PTP X$POS_ACT
+;ENDFOLD
+;LINHOVER = $POS_ACT
+;IF LINHOVER.Z < 1500 THEN
+    ;LINHOVER.Z = $POS_ACT.Z+50
+;ENDIF
+
+;;FOLD LIN LINHOVER Vel=0.3 m/s CPDAT6 Tool[0] Base[0] ;%{PE}
+;;FOLD Parameters ;%{h}
+;;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=LINHOVER; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT6; Kuka.VelocityPath=0.3; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;;ENDFOLD
+;$BWDSTART = FALSE
+;LDAT_ACT = LCPDAT6
+;FDAT_ACT = FLINHOVER
+;BAS(#CP_PARAMS, 0.3)
+;SET_CD_PARAMS (0)
+;LIN XLINHOVER
+;;ENDFOLD
+
+;FOLD PTP p1 Vel=1 % PDAT12 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=p1; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT12; Kuka.VelocityPtp=1; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+;$BWDSTART = FALSE
+;PDAT_ACT = PPDAT12
+;FDAT_ACT = Fp1
+;BAS(#PTP_PARAMS, 1.0)
+;SET_CD_PARAMS (0)
+;PTP Xp1
+;ENDFOLD
+
+;;FOLD PTP gXWAAM_HOME Vel=10 % PDAT8 Tool[6]:WAAM_PLC Base[7]:WAAM_PLC_BASE ;%{PE}
+;;FOLD Parameters ;%{h}
+;;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=gXWAAM_HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT8; Kuka.VelocityPtp=10; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;;ENDFOLD
+;$BWDSTART = FALSE
+;PDAT_ACT = PPDAT8
+;FDAT_ACT = FgXWAAM_HOME
+;BAS(#PTP_PARAMS, 10.0)
+;SET_CD_PARAMS (0)
+;PTP XgXWAAM_HOME
+;;ENDFOLD
+;FOLD SPTP p3 Vel=1 % PDAT13 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=p3; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT13; Kuka.VelocityPtp=1; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+;SPTP Xp3 WITH $VEL_AXIS[1] = SVEL_JOINT(1.0), $TOOL = STOOL2(Fp3), $BASE = SBASE(Fp3.BASE_NO), $IPO_MODE = SIPO_MODE(Fp3.IPO_FRAME), $LOAD = SLOAD(Fp3.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT13), $APO = SAPO_PTP(PPDAT13), $GEAR_JERK[1] = SGEAR_JERK(PPDAT13), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;PTP gXWAAM_HOME
+
+PTP $POS_ACT
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.out.pulse; Kuka.Logics.Io=50; Kuka.Logics.IoName=Main Gas; Kuka.Logics.State=True; Kuka.Logics.Cont=False; Kuka.Logics.Time=1.0
+;ENDFOLD
+
+END

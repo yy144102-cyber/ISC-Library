@@ -1,0 +1,313 @@
+&ACCESS RVO
+&REL 11
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF  SingleWall_1 ( )
+DECL INT i,StartLayer,EndLayer
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+StartLayer = 5
+EndLayer = 5
+
+BASE_DATA[1].X = 1743.8
+BASE_DATA[1].Y = 1.8
+BASE_DATA[1].Z = -809.8
+BASE_DATA[1].A = 0.0
+BASE_DATA[1].B = -0.44
+BASE_DATA[1].C = -0.1
+
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+PTP XHOMEX
+MotionPar(#CPmotion,0.1)
+LIN XHOVERX
+
+FOR i = StartLayer TO EndLayer
+   I[1] = i
+   oLayerNum = i
+   oSideNum = 1
+   oLayerType = 10
+   oLayerIndex = 1
+   WAAM_RSI_ON()
+   HightClaculation(i)
+   IF i <> (i / 2) * 2 THEN
+      MotionPar(#CPmotion,0.1)
+      LIN XHOVERX
+      LIN XAPLX
+   ELSE
+      MotionPar(#CPmotion,0.1)
+      LIN XHOVERX
+      LIN XAPRX
+   ENDIF
+   IF i <> (i / 2) * 2 THEN
+      MotionPar(#CPmotion,0.1)
+      LIN PointL[1]
+      oIsScanning = TRUE
+      WAIT SEC 1.0
+      ArcAct(#_ON,i)
+      LIN PointL[2]
+      ArcAct(#_OFF,i)
+      WAIT SEC 1.0
+      oIsScanning = FALSE
+   ELSE
+      MotionPar(#CPmotion,0.1)
+      LIN PointR[1]
+      oIsScanning = TRUE
+      WAIT SEC 1.0
+      ArcAct(#_ON,i)
+      LIN PointR[2]
+      ArcAct(#_OFF,i)
+      WAIT SEC 1.0
+      oIsScanning = FALSE
+   ENDIF
+   WAAM_RSI_OFF()
+   IF i <> (i / 2) * 2 THEN
+      MotionPar(#CPmotion,0.1)
+      LIN XAPLX
+      LIN XHOVERX
+   ELSE
+      MotionPar(#CPmotion,0.1)
+      LIN XAPRX
+      LIN XHOVERX
+   ENDIF
+   ;HALT
+   WAIT SEC 5.0
+ENDFOR
+
+MotionPar(#PTPmotion,10.0)
+PTP XHOMEX
+
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEF HightClaculation(Layer:IN)
+DECL INT i,Layer
+DECL REAL Pitch,Value
+
+;FOLD Position calculation
+   IF Layer >= 1 THEN
+      Value = 0.0
+   ENDIF
+   IF Layer >= 2 THEN
+      Value = Value + 3.2
+   ENDIF
+   IF Layer >= 3 THEN
+      Value = Value + 2.9
+   ENDIF
+   IF Layer >= 4 THEN
+      Value = Value + 2.7
+   ENDIF
+   IF Layer >= 5 THEN
+      Value = Value + 2.5
+   ENDIF
+   IF Layer >= 6 THEN
+      Pitch = 1.855
+      Value = Value + (Pitch * (Layer - 5))
+   ENDIF
+
+   FOR i = 1 TO 2
+      PointL[i].Z = Value
+      PointR[i].Z = Value
+   ENDFOR
+;ENDFOLD
+
+END
+
+DEF ArcAct(Type:IN,Layer:IN)
+DECL Action Type
+DECL INT Layer
+
+;FOLD Welding Action
+   SWITCH Type
+      CASE #_ON
+         ;FOLD Job change
+         IF Layer == 1 THEN
+            WDAT1.Strike.StartTime = 0.0
+            WDAT1.Strike.PreFlowTime = 2.0
+            WDAT1.Strike.Channel1 = 1.0
+            WDAT1.Strike.Channel2 = 4494.0   ;Synagicline
+            WDAT1.Strike.Channel3 = 12.0  ;HWFS
+            WDAT1.Strike.Channel4 = 0.0   ;CWFS
+            WDAT1.Strike.Channel5 = 0.0   ;Arc length correction
+            WDAT1.Strike.Channel6 = 0.0   ;Dynamic correction
+      
+            WDAT1.Weld.Velocity = 0.0125
+            WDAT1.Weld.Channel1 = 1.0
+            WDAT1.Weld.Channel2 = 4494.0
+            WDAT1.Weld.Channel3 = 12.0
+            WDAT1.Weld.Channel4 = 0.0
+            WDAT1.Weld.Channel5 = 0.0
+            WDAT1.Weld.Channel6 = 0.0
+      
+            WDAT1.Crater.CraterTime = 1.5
+            WDAT1.Crater.PostflowTime = 2.0
+            WDAT1.Crater.Channel1 = 1.0
+            WDAT1.Crater.Channel2 = 4494.0
+            WDAT1.Crater.Channel3 = 8.0
+            WDAT1.Crater.Channel4 = 0.0
+            WDAT1.Crater.Channel5 = 0.0
+            WDAT1.Crater.Channel6 = 0.0
+         ENDIF
+         IF Layer == 2 THEN
+            WDAT1.Strike.StartTime = 0.0
+            WDAT1.Strike.PreFlowTime = 2.0
+            WDAT1.Strike.Channel1 = 1.0
+            WDAT1.Strike.Channel2 = 4494.0   ;Synagicline
+            WDAT1.Strike.Channel3 = 10.0  ;HWFS
+            WDAT1.Strike.Channel4 = 0.0   ;CWFS
+            WDAT1.Strike.Channel5 = 0.0   ;Arc length correction
+            WDAT1.Strike.Channel6 = 0.0   ;Dynamic correction
+      
+            WDAT1.Weld.Velocity = 0.0125
+            WDAT1.Weld.Channel1 = 1.0
+            WDAT1.Weld.Channel2 = 4494.0
+            WDAT1.Weld.Channel3 = 10.0
+            WDAT1.Weld.Channel4 = 0.0
+            WDAT1.Weld.Channel5 = 0.0
+            WDAT1.Weld.Channel6 = 0.0
+      
+            WDAT1.Crater.CraterTime = 1.5
+            WDAT1.Crater.PostflowTime = 2.0
+            WDAT1.Crater.Channel1 = 1.0
+            WDAT1.Crater.Channel2 = 4494.0
+            WDAT1.Crater.Channel3 = 7.0
+            WDAT1.Crater.Channel4 = 0.0
+            WDAT1.Crater.Channel5 = 0.0
+            WDAT1.Crater.Channel6 = 0.0
+         ENDIF
+         IF Layer == 3 THEN
+            WDAT1.Strike.StartTime = 0.0
+            WDAT1.Strike.PreFlowTime = 2.0
+            WDAT1.Strike.Channel1 = 1.0
+            WDAT1.Strike.Channel2 = 4494.0   ;Synagicline
+            WDAT1.Strike.Channel3 = 9.0  ;HWFS
+            WDAT1.Strike.Channel4 = 0.0   ;CWFS
+            WDAT1.Strike.Channel5 = 0.0   ;Arc length correction
+            WDAT1.Strike.Channel6 = 0.0   ;Dynamic correction
+      
+            WDAT1.Weld.Velocity = 0.0125
+            WDAT1.Weld.Channel1 = 1.0
+            WDAT1.Weld.Channel2 = 4494.0
+            WDAT1.Weld.Channel3 = 9.0
+            WDAT1.Weld.Channel4 = 0.0
+            WDAT1.Weld.Channel5 = 0.0
+            WDAT1.Weld.Channel6 = 0.0
+      
+            WDAT1.Crater.CraterTime = 1.5
+            WDAT1.Crater.PostflowTime = 2.0
+            WDAT1.Crater.Channel1 = 1.0
+            WDAT1.Crater.Channel2 = 4494.0
+            WDAT1.Crater.Channel3 = 6.0
+            WDAT1.Crater.Channel4 = 0.0
+            WDAT1.Crater.Channel5 = 0.0
+            WDAT1.Crater.Channel6 = 0.0
+         ENDIF
+         IF Layer == 4 THEN
+            WDAT1.Strike.StartTime = 0.0
+            WDAT1.Strike.PreFlowTime = 2.0
+            WDAT1.Strike.Channel1 = 1.0
+            WDAT1.Strike.Channel2 = 4494.0   ;Synagicline
+            WDAT1.Strike.Channel3 = 8.0  ;HWFS
+            WDAT1.Strike.Channel4 = 0.0   ;CWFS
+            WDAT1.Strike.Channel5 = 0.0   ;Arc length correction
+            WDAT1.Strike.Channel6 = 0.0   ;Dynamic correction
+      
+            WDAT1.Weld.Velocity = 0.0125
+            WDAT1.Weld.Channel1 = 1.0
+            WDAT1.Weld.Channel2 = 4494.0
+            WDAT1.Weld.Channel3 = 8.0
+            WDAT1.Weld.Channel4 = 4.0
+            WDAT1.Weld.Channel5 = 0.0
+            WDAT1.Weld.Channel6 = 0.0
+      
+            WDAT1.Crater.CraterTime = 1.5
+            WDAT1.Crater.PostflowTime = 2.0
+            WDAT1.Crater.Channel1 = 1.0
+            WDAT1.Crater.Channel2 = 4494.0
+            WDAT1.Crater.Channel3 = 6.0
+            WDAT1.Crater.Channel4 = 0.0
+            WDAT1.Crater.Channel5 = 0.0
+            WDAT1.Crater.Channel6 = 0.0
+         ENDIF
+         IF Layer >= 5 THEN
+            WDAT1.Strike.StartTime = 0.0
+            WDAT1.Strike.PreFlowTime = 2.0
+            WDAT1.Strike.Channel1 = 1.0
+            WDAT1.Strike.Channel2 = 4494.0   ;Synagicline
+            WDAT1.Strike.Channel3 = 8.0  ;HWFS
+            WDAT1.Strike.Channel4 = 0.0   ;CWFS
+            WDAT1.Strike.Channel5 = 0.0   ;Arc length correction
+            WDAT1.Strike.Channel6 = 0.0   ;Dynamic correction
+      
+            WDAT1.Weld.Velocity = 0.0125
+            WDAT1.Weld.Channel1 = 1.0
+            WDAT1.Weld.Channel2 = 4494.0
+            WDAT1.Weld.Channel3 = 8.0
+            WDAT1.Weld.Channel4 = 4.0
+            WDAT1.Weld.Channel5 = 0.0
+            WDAT1.Weld.Channel6 = 0.0
+      
+            WDAT1.Crater.CraterTime = 1.5
+            WDAT1.Crater.PostflowTime = 2.0
+            WDAT1.Crater.Channel1 = 1.0
+            WDAT1.Crater.Channel2 = 4494.0
+            WDAT1.Crater.Channel3 = 6.0
+            WDAT1.Crater.Channel4 = 0.0
+            WDAT1.Crater.Channel5 = 0.0
+            WDAT1.Crater.Channel6 = 0.0
+         ENDIF
+         ;ENDFOLD
+         TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+         ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+         MotionPar(#CPmotion,WDAT1.Weld.Velocity)
+         LIN $POS_ACT
+         ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+      CASE #_OFF
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+         ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+         MotionPar(#CPmotion,WDAT1.Weld.Velocity)
+         LIN $POS_ACT
+         ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END

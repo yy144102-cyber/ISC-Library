@@ -1,0 +1,97 @@
+&ACCESS R1
+&COMMENT ATB Tool Correction Manual program
+DEFDAT  TCM_ToolCorr
+ENUM TCM_CorrModeOP_T T1,T1T2,T1T2AUT,T1T2EXT,T1T2AUTEX
+ENUM TCM_MoveToRef_T Empty, MoveToRefMan, MoveToRefAut
+REAL TCM_MaxDiff=5.0 ;Max diff
+REAL TCM_MinDiff=0.1 ;Min diff
+REAL TCM_MaxPosDiff=7.0 ;Max. possible diff for ConfigPlugIn
+REAL TCM_MinPosDiff=0.1 ;Min possible diff for ConfigPlugin
+REAL TCM_VelToRefPoint=10.0; [mm/s] Move vel from StartPos to RefPos
+DECL TCM_CorrModeOP_T TCM_CorrModeOP=#T1 ;MoveToRefPoint only in T1
+BOOL TCM_MoveToRefWithDial=FALSE; Move to RefPos with/without Dialog
+FRAME TCM_OrgTool={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+FRAME TCM_OrgBase={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+FRAME TCM_StartPos={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+FRAME TCM_StartPosNT={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+E6POS TCM_NewRefPos={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+DECL enArcPlugInAnsw_T TCM_PlugInAnsw=#Empty
+DECL TCM_MoveToRef_T TCM_MoveToRef=#Empty
+BOOL TCM_SaveActPos=FALSE; Flag for PlugIn control
+BOOL TCM_RefDataExists=FALSE  ; Flag for Refdata
+BOOL TCM_ActPosSaved=FALSE ;Flag ActPos is saved through plugIn
+BOOL TCM_RefPosReached=FALSE ;RefPos reached
+BOOL TCM_PosIsCorrect=FALSE ;Pos is correct selected
+BOOL TCM_ShowPlugInAgain=FALSE ;for PlugIn control
+DECL INT iOffsetIntToString=0
+DECL CHAR StringOfInteger[2];max 64
+StringOfInteger[]=" "
+INT TCM_MAX_TOOL=32
+DECL FRAME TCM_MasterToolData[32]
+TCM_MasterToolData[1]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[2]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[3]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[4]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[5]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[6]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[7]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[8]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[9]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[10]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[11]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[12]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[13]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[14]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[15]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[16]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[17]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[18]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[19]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[20]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[21]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[22]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[23]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[24]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[25]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[26]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[27]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[28]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[29]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[30]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[31]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_MasterToolData[32]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+DECL FRAME TCM_RefData[32]
+TCM_RefData[1]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[2]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[3]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[4]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[5]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[6]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[7]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[8]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[9]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[10]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[11]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[12]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[13]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[14]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[15]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[16]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[17]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[18]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[19]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[20]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[21]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[22]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[23]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[24]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[25]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[26]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[27]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[28]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[29]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[30]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[31]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+TCM_RefData[32]={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+DECL REAL ActDeviation=0.0 ;[mm]
+ENDDAT

@@ -1,0 +1,38 @@
+&ACCESS R2
+&COMMENT ArcWeave
+DEFDAT  ARCWEAVE
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mArcWeaveFGActive1=FALSE
+DECL BOOL mArcWeaveFGActive2=FALSE
+DECL BOOL mArcWeaveFGActive3=FALSE
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL REAL mDefault_SCALE_IN=0.0
+DECL REAL mDefault_SCALE_OUT=0.0
+DECL REAL mDefault_SPL_SCALE_IN=0.200000
+DECL REAL mDefault_SPL_SCALE_OUT=0.0
+
+DECL REAL mDefault_C_SCALE_IN=0.0
+DECL REAL mDefault_C_SCALE_OUT=0.0
+DECL REAL mDefault_C_SPL_SCALE_IN=0.200000
+DECL REAL mDefault_C_SPL_SCALE_OUT=0.0
+;*****************************************************************************************
+;POS
+;*****************************************************************************************
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+DECL stWeavePattern_T mArcWeavePatternInit={WeavePatternKey #None,Name[] "None",Tech1 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech2 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech3 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}}}
+DECL stWeavePattern_T mWeavePattern={WeavePatternKey #None,Name[] "None",Tech1 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech2 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}},Tech3 {Active FALSE,LDelay {Active FALSE,TimeDelay 0.0},RDelay {Active FALSE,TimeDelay 0.0}}}
+DECL TECH mArcInitWeavePtp={MODE #OFF,FCTCTRL {SCALE_IN 0.200000,SCALE_OUT 0.200000,OFFSET_IN 0.0,OFFSET_OUT 0.0,GEOREF #NONE},FCT {ORDER 1,CPNUM 2,CPS1 {X1 0.0,Y1 0.0,X2 1.00000,Y2 0.0}}}
+DECL TECHFCTCTRL mArcInitFctCtrlWeavePtp={SCALE_IN 0.200000,SCALE_OUT 0.200000,OFFSET_IN 0.0,OFFSET_OUT 0.0,GEOREF #NONE}
+ENDDAT

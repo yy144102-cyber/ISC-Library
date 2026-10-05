@@ -1,0 +1,59 @@
+{
+  "key": "tsiolkovsky-delta-v",
+  "form": "Δv = g0 · Isp · ln(m0 / mf)",
+  "variables": {
+    "Δv": "その段が生む速度増分 [m/s]",
+    "g0": "標準重力加速度 9.80665 [m/s^2]（定数。rocket.py:18）",
+    "Isp": "代表比推力 [s]。初段は上昇平均値を与える",
+    "m0": "燃焼開始時質量 [kg]",
+    "mf": "燃焼終了時質量 [kg]"
+  },
+  "common_name": "ツィオルコフスキーの式",
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "67-71",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "41",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    },
+    {
+      "id": "gate",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "46",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "validity_gate"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "mass": "m0 > mf > 0（rocket.py:69-70 で強制。外れると ValueError）",
+    "isp": "Isp > 0（rocket.py:34-35 で強制）",
+    "isp_model": "一定Isp。初段の海面〜真空変化は利用者が与える平均Ispで代表する（rocket.py:5, 27）",
+    "units": "SI（m, kg, s, N）。Isp のみ秒 [s]（rocket.py:11）"
+  },
+  "validity_gate": "軌道3DOF積分・質量マージン方針・eps根拠データの3点が揃うまで高忠実度化に進まない（06_adversarial_review_v2.md:46）",
+  "validity_gate_ref": "gate",
+  "limitations": "Isp一定近似の上に立つ。初段の海面→真空でのIsp変化は平均値で代表され、平均Ispを与えるのは利用者の責任である。代表性が悪くても例外は出ず、もっともらしいΔVが出る。相対比較・クロージャループ骨格・アーキテクチャ検証には妥当だが、要求確定や機体コミットに単独使用してはならない。",
+  "limitations_ref": "lim",
+  "limitations_basis": "explicit",
+  "limitations_inference": null,
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "原典コード側の前提記述は rocket.py:3-11（『ツィオルコフスキーの式 + 一定Isp』と式を名指ししている）。導出式はΔV逆算のroundtripで機械検証済（誤差<1e-9）だが、実在機体の公開諸元との突合は未実施（06_adversarial_review_v2.md:52-54）。"
+}

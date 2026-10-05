@@ -1,0 +1,235 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcRsiInterface( )
+END
+;*****************************************************************************************
+; [Global Routine] RSI_SETPUBLICPAR
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArsRSI_SETPUBLICPAR(objID :IN,objName :IN,parName :IN,val :IN)
+DECL INT objID 
+DECL REAL val
+DECL CHAR objName[], parName[], fctName[23], msgObj[26], errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+IF (gArcRSIOption == FALSE) THEN
+  RETURN cArsRSIOK
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlSetPublicPar"
+errMsg[]=" "
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],objID,objName[],parName[],val)
+IF (stat.Msg_No <> cArsRSIOK) THEN
+  ArsAnalyseRsiError(-stat.Msg_No,"ErrorSetParameterAS",parName[],30042)
+  RETURN -stat.Msg_No
+ENDIF
+RETURN cArsRSIOK
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_ON
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArsRSI_ON(integrationMode:IN,sensorMode:IN,techSystem:IN, integrationSystem:IN)
+CHAR fctName[20]
+CHAR errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+DECL INTEGRATION_MODE integrationMode
+DECL TECHSYS techSystem
+DECL ArsRSISENMODE sensorMode
+DECL TECHSYS integrationsystem
+
+IF (gArcRSIOption == FALSE) THEN
+  RETURN cArsRSIOK
+ENDIF
+WAIT SEC 0
+IF (VARSTATE("integrationMode") == #DECLARED) THEN
+  integrationMode=#ABSOLUTE
+ENDIF
+IF (VARSTATE("sensorMode") == #DECLARED) THEN
+  sensorMode=#IPO_FAST
+ENDIF
+; techSys invalid in sensorMode=#IPO_FAST
+IF ((VARSTATE("techSystem") == #INITIALIZED) AND (sensorMode==#IPO_FAST)) THEN
+  RETURN ArsRSITSYS
+ENDIF
+IF (VARSTATE("techSystem") == #DECLARED) THEN
+  techSystem=#BASE
+ENDIF
+
+; integrationSystem invalid in integrationMode=#absolute or sensorMode=#IPO
+IF (VARSTATE("integrationSystem") == #INITIALIZED) THEN
+  IF ((integrationMode == #ABSOLUTE) or (sensorMode==#IPO)) THEN
+    RETURN ArsRSIINTEGRATIONSYS
+  ENDIF
+ENDIF
+IF (VARSTATE("integrationSystem") == #DECLARED) THEN
+  integrationSystem=#WORLD
+ENDIF
+
+errMsg[]=" "
+fctName[]="EFC_rsi_krlOnOff"
+mod=#SYNC
+SWITCH sensorMode
+  CASE #IPO
+    ; (tSDB)
+    CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],2)
+  CASE #IPO_FAST
+    ; (LAG_HP)
+    CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],3)
+  DEFAULT
+   HALT ; sensorMode not supported
+ ENDSWITCH
+IF (stat.Msg_No <> cArsRSIOK) THEN  
+  RETURN -stat.Msg_No;
+ENDIF
+SWITCH sensorMode
+  CASE #IPO 
+    $TECHSYS=techSystem
+    IF integrationMode==#ABSOLUTE THEN
+      $TECHPAR[ArsRSITECHIDX,9]=0
+    ELSE
+      $TECHPAR[ArsRSITECHIDX,9]=1
+    ENDIF
+    $TECH[ArsRSITECHIDX].CLASS=#DATALINK
+    $TECH[ArsRSITECHIDX].FCTCTRL.GEOREF=#Z
+    $TECH[ArsRSITECHIDX].MODE=#CYCLE
+  CASE #IPO_FAST
+    $CORRECTION.INT_SYS=integrationSystem
+    $CORRECTION.INT_MODE=integrationMode
+    $CORRECTION.MODE=#ON
+  DEFAULT
+    HALT ; sensorMode not supported
+ENDSWITCH
+WAIT FOR (sensorMode == ArsRSI_GETSENMODE())
+RETURN cArsRSIOK
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_DELETE
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArsRSI_DELETE(objID:IN)
+DECL INT objID
+DECL CHAR fctName[20], msgObj[26], errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+IF (gArcRSIOption == FALSE) THEN
+  RETURN cArsRSIOK
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlDelete"
+errMsg[]=" "
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],objID)
+IF (stat.Msg_No <> cArsRSIOK) THEN  
+  RETURN -stat.Msg_No;
+ENDIF
+RETURN cArsRSIOK
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_OFF
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArsRSI_OFF()
+DECL CHAR fctName[20], msgObj[26], errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+DECL ArsRSISENMODE mode
+IF (gArcRSIOption == FALSE) THEN
+  RETURN cArsRSIOK
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlOnOff"
+mode = ArsRSI_GETSENMODE()
+SWITCH (mode)
+ CASE #IPO
+  IF (($TECH[ArsRSITECHIDX].MODE<>#OFF) AND ($TECH[ArsRSITECHIDX].CLASS==#DATALINK)) THEN
+   $TECH[ArsRSITECHIDX].MODE=#OFF
+  ENDIF   
+ CASE #IPO_FAST
+  IF $CORRECTION.MODE<>#OFF THEN
+   $CORRECTION.MODE=#OFF
+  ENDIF
+ENDSWITCH
+errMsg[]=" "
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],0)
+IF (stat.Msg_No <> cArsRSIOK) THEN   
+ RETURN -stat.Msg_No;
+ENDIF
+RETURN cArsRSIOK
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_CREATE
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArsRSI_CREATE(file:IN,objID:OUT,enabled:IN)
+BOOL enabled
+INT objID
+CHAR fctName[21], msgObj[26], errMsg[26],file[]
+DECL STATE_T stat
+DECL MODUS_T mod
+IF (gArcRSIOption == FALSE) THEN
+  RETURN cArsRSIOK
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlCreate"
+IF (VARSTATE("enabled")==#DECLARED) THEN
+   enabled=TRUE
+ENDIF
+errMsg[]=" "
+objID=0
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],file[],objID,enabled)
+IF (stat.Msg_No <> cArsRSIOK) THEN 
+  RETURN -stat.Msg_No;
+ENDIF
+RETURN cArsRSIOK
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_CHECKID
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArsRSI_CHECKID(objID:IN)
+DECL BOOL bExists
+DECL INT objID
+DECL CHAR fctName[20], msgObj[26], errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+IF (gArcRSIOption == FALSE) THEN
+  RETURN FALSE
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlTestObj"
+errMsg[]=" "
+bExists = FALSE
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],bExists,objID)
+IF (stat.Msg_No <> cArsRSIOK) THEN 
+  RETURN FALSE
+ENDIF
+RETURN bExists
+ENDFCT
+;*****************************************************************************************
+; [Global Routine] RSI_GETSENMODE
+;*****************************************************************************************
+GLOBAL DEFFCT ArsRSISENMODE ArsRSI_GETSENMODE()
+DECL INT nMode
+DECL CHAR fctName[20], msgObj[26], errMsg[26]
+DECL STATE_T stat
+DECL MODUS_T mod
+IF (gArcRSIOption == FALSE) THEN
+  RETURN #OFF
+ENDIF
+WAIT SEC 0
+fctName[]="EFC_rsi_krlGetSenMod"
+errMsg[]=" "
+nMode = 0
+mod=#SYNC
+CWRITE($FCT_CALL,stat,mod,fctName[],errMsg[],nMode)
+IF (stat.Msg_No <> ArsRSIOK) THEN 
+
+ENDIF
+SWITCH (nMode)
+  CASE 1
+    RETURN #IPO
+  CASE 2
+    RETURN #IPO_FAST
+ENDSWITCH
+RETURN #OFF
+ENDFCT

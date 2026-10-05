@@ -1,0 +1,16 @@
+&ACCESS R2
+&REL 1
+&COMMENT Generated from WOV
+DEFDAT ARCWOVW3DATASETS PUBLIC
+
+DECL GLOBAL stParam_T wArcW3StrikeParams[16,16,25]
+wArcW3StrikeParams[1,1,1]={Active FALSE}
+
+DECL GLOBAL stParam_T wArcW3WeldParams[16,16,25]
+wArcW3WeldParams[1,1,1]={Active FALSE}
+
+DECL GLOBAL stParam_T wArcW3CraterParams[16,16,25]
+wArcW3CraterParams[1,1,1]={Active FALSE}
+
+DECL GLOBAL stArcBurnFree_T wArcW3BurnFree={Option {Active FALSE,Mode 0,TimePulse 0.0,GasFlowTime 0.0,Retries 0.0},Param {JobModeId[] " ",ParamSetId[] " ",CraterTime 0.0,PostFlowTime 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0}}
+ENDDAT

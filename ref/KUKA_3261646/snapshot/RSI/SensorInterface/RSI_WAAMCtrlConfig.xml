@@ -1,0 +1,72 @@
+﻿<ROOT>
+  <CONFIG>
+    <IP_NUMBER>192.168.2.253</IP_NUMBER>
+    <!-- IP-number of the external socket -->
+    <PORT>59152</PORT>
+    <!-- Port-number of the external socket -->
+    <SENTYPE>ImFree</SENTYPE>
+    <!-- The name of your system send in <Sen Type="" > -->
+    <ONLYSEND>TRUE</ONLYSEND>
+    <!-- TRUE means the client don't expect answers. Do not send anything to robot -->
+  </CONFIG>
+  <!-- RSI Data: TYPE=  "BOOL", "STRING", "LONG", "DOUBLE" -->
+  <!-- INDX= "INTERNAL" switch on internal read values. Needed by DEF_... -->
+  <!-- INDX= "nmb" Input/Output index of RSI-Object / Maximum of RSI Channels: 64  -->
+  <!-- HOLDON="1", set this output index of RSI Object to the last value  -->
+  <!-- DEF_Delay count the late packages and send it back to server  -->
+  <!-- DEF_Tech: .T = advance .C = main run / .T1 advance set function generator 1 -->
+  <SEND>
+    <ELEMENTS>
+      <ELEMENT TAG="DEF_RIst" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_RSol" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_Delay" TYPE="LONG" INDX="INTERNAL" />
+      <ELEMENT TAG="DEF_Tech.C1" TYPE="DOUBLE" INDX="INTERNAL" />
+      <ELEMENT TAG="Digin.o01" TYPE="BOOL" INDX="1" />
+      <ELEMENT TAG="Digin.o02" TYPE="BOOL" INDX="2" />
+      <ELEMENT TAG="Digin.o03" TYPE="BOOL" INDX="3" />
+      <ELEMENT TAG="Digin.o04" TYPE="BOOL" INDX="4" />
+      <ELEMENT TAG="Digin.o05" TYPE="BOOL" INDX="5" />
+      <ELEMENT TAG="Digin.o06" TYPE="BOOL" INDX="6" />
+      <ELEMENT TAG="Digin.o07" TYPE="BOOL" INDX="7" />
+      <ELEMENT TAG="Digin.o08" TYPE="BOOL" INDX="8" />
+      <ELEMENT TAG="Digin.o09" TYPE="BOOL" INDX="9" />
+      <ELEMENT TAG="Digin.o10" TYPE="BOOL" INDX="10" />
+      <ELEMENT TAG="Digin.o11" TYPE="BOOL" INDX="11" />
+      <ELEMENT TAG="Digin.o12" TYPE="BOOL" INDX="12" />
+      <ELEMENT TAG="Digin.o13" TYPE="BOOL" INDX="13" />
+      <ELEMENT TAG="Digin.o14" TYPE="BOOL" INDX="14" />
+      <ELEMENT TAG="Digin.o15" TYPE="LONG" INDX="15" />
+      <ELEMENT TAG="Digin.o16" TYPE="BOOL" INDX="16" />
+      <ELEMENT TAG="Digin.o17" TYPE="BOOL" INDX="17" />
+      <ELEMENT TAG="Digin.o18" TYPE="LONG" INDX="18" />
+      <ELEMENT TAG="Digin.o19" TYPE="LONG" INDX="19" />
+      <ELEMENT TAG="Digin.o20" TYPE="BOOL" INDX="20" />
+      <ELEMENT TAG="Digin.o21" TYPE="LONG" INDX="21" />
+      <ELEMENT TAG="Digin.o22" TYPE="LONG" INDX="22" />
+      <ELEMENT TAG="LayerNumber" TYPE="LONG" INDX="23" />
+    </ELEMENTS>
+  </SEND>
+  <RECEIVE>
+    <ELEMENTS>
+      <ELEMENT TAG="DEF_EStr" TYPE="STRING" INDX="INTERNAL" />
+      <ELEMENT TAG="Digout.o01" TYPE="BOOL" INDX="1" HOLDON="1" />
+      <ELEMENT TAG="Digout.o02" TYPE="BOOL" INDX="2" HOLDON="1" />
+      <ELEMENT TAG="Digout.o03" TYPE="BOOL" INDX="3" HOLDON="1" />
+      <ELEMENT TAG="Digout.o04" TYPE="BOOL" INDX="4" HOLDON="1" />
+      <ELEMENT TAG="Digout.o05" TYPE="BOOL" INDX="5" HOLDON="1" />
+      <ELEMENT TAG="Digout.o06" TYPE="BOOL" INDX="6" HOLDON="1" />
+      <ELEMENT TAG="Digout.o07" TYPE="BOOL" INDX="7" HOLDON="1" />
+      <ELEMENT TAG="Digout.o08" TYPE="LONG" INDX="8" HOLDON="1" />
+      <ELEMENT TAG="Digout.o09" TYPE="BOOL" INDX="9" HOLDON="1" />
+      <ELEMENT TAG="Digout.o10" TYPE="BOOL" INDX="10" HOLDON="1" />
+      <ELEMENT TAG="Digout.o11" TYPE="BOOL" INDX="11" HOLDON="1" />
+      <ELEMENT TAG="Digout.o12" TYPE="BOOL" INDX="12" HOLDON="1" />
+      <ELEMENT TAG="Digout.o13" TYPE="BOOL" INDX="13" HOLDON="1" />
+      <ELEMENT TAG="Digout.o14" TYPE="BOOL" INDX="14" HOLDON="1" />
+      <ELEMENT TAG="Digout.o15" TYPE="LONG" INDX="15" HOLDON="1" />
+      <ELEMENT TAG="Digout.o16" TYPE="BOOL" INDX="16" HOLDON="1" />
+      <ELEMENT TAG="Digout.o17" TYPE="LONG" INDX="17" HOLDON="1" />
+    </ELEMENTS>
+  </RECEIVE>
+  
+</ROOT>

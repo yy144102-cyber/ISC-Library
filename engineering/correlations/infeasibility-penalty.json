@@ -1,0 +1,46 @@
+{
+  "key": "infeasibility-penalty",
+  "form": "infeasibility = Σ_i max(0, k_i − 1)（k_i が有限でない段は 10 を加算）。不成立時の目的関数値 = 1e9 · (1 + infeasibility)",
+  "variables": {
+    "infeasibility": "不成立度合い [-]",
+    "k_i": "段 i のクロージャ指標 [-]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "57,109,138",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "49",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "judgment",
+  "validity_range": {
+    "scope": "いずれかの段が不成立（k ≥ 1）のときのみ意味を持つ。成立時は 0（rocket.py:57,109-115）",
+    "nonfinite": "k が有限でない段には 10 を加算する（rocket.py:109）",
+    "scale": "目的関数には 1e9 倍して載せる（rocket.py:138）"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "最適化結果はこのペナルティ形状（1e9×不成立度）に依存する。形状を変えれば探索の落ちどころが変わり得るため、infeasibility の値そのものに物理的意味はない。",
+  "limitations_ref": "lim",
+  "limitations_basis": "explicit",
+  "limitations_inference": null,
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "basis=judgment: ペナルティ形状・1e9 の係数・非有限時に加算する 10 はいずれも実装上の選択（構成判断）であり文献記載ではない。とくに 10 という値の根拠は原典に記載がない。dv-split-optimization とは限界の内容が異なる（あちらは大域最適性、こちらはペナルティ形状依存）ため VR-10 により分けている。"
+}

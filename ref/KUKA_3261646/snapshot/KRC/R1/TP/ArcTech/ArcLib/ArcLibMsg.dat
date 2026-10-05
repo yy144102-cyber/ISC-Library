@@ -1,0 +1,27 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEFDAT  ARCLIBMSG
+DECL INT mHandle=0 ;Return value from on Message enable
+DECL INT mArcMsgInputDialogAnswer=0
+DECL INT mNumberOfDlgSK=0
+DECL INT mArcMsgErrorNr[8]
+mArcMsgErrorNr[1]=0
+mArcMsgErrorNr[2]=0
+mArcMsgErrorNr[3]=0
+mArcMsgErrorNr[4]=0
+mArcMsgErrorNr[5]=0
+mArcMsgErrorNr[6]=0
+mArcMsgErrorNr[7]=0
+mArcMsgErrorNr[8]=0
+DECL INT mHandlMsgErrorNr[8]
+mHandlMsgErrorNr[1]=0
+mHandlMsgErrorNr[2]=0
+mHandlMsgErrorNr[3]=0
+mHandlMsgErrorNr[4]=0
+mHandlMsgErrorNr[5]=0
+mHandlMsgErrorNr[6]=0
+mHandlMsgErrorNr[7]=0
+mHandlMsgErrorNr[8]=0
+STRUC stArcMsg_T MSGBUF_T MsgBuf,BOOL Active
+STRUC stArcMsgWrite_T BOOL BParam1,BParam2,BParam3,INT Nr,IParam1,IParam2,IParam3,REAL RParam1,RParam2,RParam3,EKRLMSGTYPE Type,CHAR Txt[80],Modul[24],SParam[78],SParam1[26],SParam2[26],SParam3[26]
+ENDDAT

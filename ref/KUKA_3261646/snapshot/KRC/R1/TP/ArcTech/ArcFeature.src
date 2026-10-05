@@ -1,0 +1,635 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcFeature( )
+END
+;*****************************************************************************************
+;Method Feature Init
+;*****************************************************************************************
+GLOBAL DEF ArcFeatureInit()
+  IF (stArcFeatureState.Info.InitFeature == FALSE) THEN
+    stArcFeatureState.Act.Weave             = FALSE
+    stArcFeatureState.Act.WeaveRsi          = FALSE
+    stArcFeatureState.Act.WeaveDelay        = FALSE
+    stArcFeatureState.Act.Sense             = FALSE
+    stArcFeatureState.Act.SeamLength        = FALSE
+    stArcFeatureState.Act.ThermalControl    = FALSE
+    stArcFeatureState.Act.Slope             = FALSE
+    stArcFeatureState.Act.SlopeArcOff       = FALSE
+    stArcFeatureState.Act.OnTheFlyOn        = FALSE
+    stArcFeatureState.Act.OnTheFlyOff       = FALSE
+    stArcFeatureState.Act.PreStart          = FALSE
+    stArcFeatureState.Act.RetractArcOff     = FALSE
+    stArcFeatureState.Act.SeamCtrlPlc       = FALSE
+    stArcFeatureState.Act.StepWeld          = FALSE
+    stArcFeatureState.Info.InitArcOn        = FALSE
+    stArcFeatureState.Info.InitArcOff       = FALSE
+    stArcFeatureState.AdvError.Active       = FALSE
+    stArcFeatureState.AdvError.SeamWelded   = FALSE
+    stArcFeatureState.AdvError.ErrorOnSeam  = FALSE
+    stArcFeatureState.Last                  = stArcFeatureState.Act
+    stArcFeatureState.Info.InitFeature      = TRUE
+    ;;@Print ArcFeatureInit
+  ENDIF
+END
+
+;*****************************************************************************************
+;Method Feature Select Init
+;*****************************************************************************************
+GLOBAL DEF ArcFeatureSelectInit(tCommand:IN,tArcDat:IN,tArcDatSeam:IN,tTcDat:IN,tStepDat:IN)
+DECL enArcCommandType_T tCommand
+DECL stArcDat_T tArcDat, tArcDatSeam
+DECL stArcTcSet_T tTcDat
+DECL stArcStepDat_T tStepDat
+DECL INT tI
+DECL CHAR tSimMsg[256]
+IF ((stArcFeatureState.Info.InitArcOn == TRUE) AND (tCommand == #ArcOn)) THEN
+  RETURN
+ENDIF
+
+IF ((stArcFeatureState.Info.InitArcOff == TRUE) AND (tCommand == #ArcOff)) THEN
+  RETURN
+ENDIF
+
+;Debug KUKA.Sim
+;;@Print ArcFeatureSelectInit
+
+IF (tCommand == #ArcSwi) THEN
+    ;Save last Feature State
+    stArcFeatureState.Last            = stArcFeatureState.Act
+ENDIF
+
+SWITCH tCommand
+  CASE #ArcOn
+    stArcFeatureState.Act.Weave             = FALSE
+    stArcFeatureState.Act.WeaveRsi          = FALSE
+    stArcFeatureState.Act.WeaveDelay        = FALSE
+    stArcFeatureState.Act.Sense             = FALSE
+    stArcFeatureState.Act.SeamLength        = FALSE
+    stArcFeatureState.Act.ThermalControl    = FALSE
+    stArcFeatureState.Act.Slope             = FALSE
+    stArcFeatureState.Act.OnTheFlyOn        = FALSE
+    stArcFeatureState.Act.PreStart          = FALSE
+    stArcFeatureState.Act.SeamCtrlPlc       = FALSE
+    stArcFeatureState.Act.StepWeld          = FALSE
+    stArcFeatureState.AdvError.Active       = FALSE
+    stArcFeatureState.AdvError.SeamWelded   = FALSE
+    stArcFeatureState.AdvError.ErrorOnSeam  = FALSE
+  CASE #ArcSwi
+    stArcFeatureState.Act.Weave             = FALSE
+    stArcFeatureState.Act.WeaveRsi          = FALSE
+    stArcFeatureState.Act.WeaveDelay        = FALSE
+    stArcFeatureState.Act.Sense             = FALSE
+    stArcFeatureState.Act.ThermalControl    = FALSE
+    stArcFeatureState.Act.Slope             = FALSE
+  CASE #ArcOff
+    stArcFeatureState.Act.SlopeArcOff       = FALSE
+    stArcFeatureState.Act.OnTheFlyOff       = FALSE
+    stArcFeatureState.Act.RetractArcOff     = FALSE
+ENDSWITCH
+
+;************************************************** Basic **************************************************************************
+IF ((gArcWeaveOption == TRUE) AND (tArcDat.Weave.Pattern <> #NONE) AND (tArcDat.Weave.Amplitude > cArcWeaveMinAmplitude) AND (tArcDat.Weave.Length > cArcWeaveMinLength) AND (skArcDryRun == FALSE))THEN
+  IF ((gArcRsiWeaving == TRUE) AND (gArcRSIOption == TRUE)) THEN
+    stArcFeatureState.Act.WeaveRsi  = TRUE
+  ELSE
+    stArcFeatureState.Act.WeaveRsi  = FALSE
+    stArcFeatureState.Act.Weave     = TRUE
+    IF ((gArcDwellTimeWhenRsi == TRUE) AND (gArcRSIOption == TRUE) AND (stArcActWeaveSet.Pattern == #Trapecoid)) THEN
+      IF ((stArcActWeaveSet.LeftSideDelay > 0) OR (stArcActWeaveSet.RightSideDelay > 0)) THEN
+        stArcFeatureState.Act.WeaveRsi  = TRUE
+        stArcFeatureState.Act.Weave     = FALSE
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+
+;************************************************** Sense **************************************************************************
+IF (gArcSenseOption == TRUE) THEN
+  IF ((tArcDat.Track.IsArcSenseEnabled == TRUE) AND (tArcDat.Track.ControlEnabled == TRUE)) THEN
+    stArcFeatureState.Act.Sense = TRUE
+  ENDIF
+ENDIF
+
+;************************************************** Advanced ************************************************************************
+SWITCH tCommand
+  CASE #ArcOn, #ArcSwi
+    ;Weave Delay
+    IF (ArcAtaWeaveDelayOption(tArcDat) == TRUE) THEN
+      stArcFeatureState.Act.WeaveDelay = TRUE
+    ENDIF
+    ;Thermal Control
+    IF (ArcAtaThermalContOption(tTcDat) == TRUE) THEN
+      stArcFeatureState.Act.ThermalControl = TRUE
+    ENDIF
+    ;Slope
+    IF (ArcAtaSlopeOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.Slope = TRUE
+    ENDIF
+ENDSWITCH
+
+SWITCH tCommand
+  CASE #ArcOn
+    ArcSetActValues(#ArcOn,tArcDat)
+    ;Seam Length Control
+    IF (ArcAtaSeamLengthOption(tArcDatSeam) == TRUE) THEN
+      stArcFeatureState.Act.SeamLength = TRUE
+    ENDIF
+    ;OnTheFly ArcOn
+    IF (ArcAtaOnTheFlyOnOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.OnTheFlyOn = TRUE
+    ENDIF
+    ;PreStart
+    IF (ArcAtaPrestartOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.PreStart = TRUE
+    ENDIF
+    ;Seam Control by PLC
+    IF (ArcAtaSeamControlOption() == TRUE) THEN
+      stArcFeatureState.Act.SeamCtrlPlc = TRUE
+    ENDIF
+    ;StepWeld
+    IF (ArcAtaStepWeldOption(tStepDat) == TRUE) THEN
+      stArcFeatureState.Act.StepWeld = TRUE
+    ENDIF
+    IF (gArcTechAdvancedOption == TRUE) THEN
+      ;Advanced Error Recovery
+      IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+        stArcFeatureState.AdvError.Active = TRUE
+        IF (ATAg_ER_ErrorOnSeam == TRUE) THEN ;Error On this seam
+          stArcFeatureState.AdvError.ErrorOnSeam = TRUE
+        ENDIF
+        IF (ATAg_ER_WeldDone == TRUE) THEN ;Seam is already welded
+          stArcFeatureState.AdvError.SeamWelded = TRUE
+        ENDIF
+      ENDIF
+    ENDIF
+    stArcFeatureState.Info.InitArcOn    = TRUE
+    stArcFeatureState.Info.InitArcOff   = FALSE
+  CASE #ArcSwi
+    ArcSetActValues(#ArcSwi,tArcDat)
+    stArcFeatureState.Info.InitFeature  = FALSE
+  CASE #ArcOff
+    ArcSetActValues(#ArcOff,tArcDat)
+    ;OnTheFly ArcOff
+    IF (ArcAtaOnTheFlyOffOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.OnTheFlyOff = TRUE
+    ENDIF
+    ;MoveBack at ArcOff
+    IF (ArcAtaMoveBackOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.RetractArcOff = TRUE
+    ENDIF
+    ;Slope ArcOff
+    IF (ArcAtaArcOffSlopeOption(tArcDat.Advanced) == TRUE) THEN
+      stArcFeatureState.Act.SlopeArcOff = TRUE
+    ENDIF
+    stArcFeatureState.Info.InitArcOn    = FALSE
+    stArcFeatureState.Info.InitArcOff   = TRUE
+    stArcFeatureState.Info.InitFeature  = FALSE
+ENDSWITCH
+
+;************************************************** Feature Sense ******************************************************************
+IF (stArcFeatureState.Act.Sense == TRUE) THEN
+  stArcFeatureState.Act.Weave             = FALSE
+  stArcFeatureState.Act.WeaveRsi          = FALSE
+  IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+    stArcFeatureState.Act.ThermalControl    = FALSE
+    ArcMsgWrite(,#NOTIFY,"NoTcArcSenseActive","ARC",20023,Opt_VLSTOP_LOG)
+    ArcWriteDiag(gArcGeneralDebug,"[TC] No TC - ArcSense is active")
+  ENDIF
+  stArcFeatureState.Act.Slope             = FALSE
+  stArcFeatureState.Act.SlopeArcOff       = FALSE
+  stArcFeatureState.Act.OnTheFlyOn        = FALSE
+  stArcFeatureState.Act.OnTheFlyOff       = FALSE
+  stArcFeatureState.Act.PreStart          = FALSE
+  stArcFeatureState.Act.RetractArcOff     = FALSE
+  stArcFeatureState.Act.ThermalControl    = FALSE
+  irtArcPosAdjust                         = irtFeature1
+  irtArcThresholdInterNr                  = irtFeature2
+ENDIF
+
+;************************************************** Feature OnTheFly On ************************************************************
+IF (stArcFeatureState.Act.OnTheFlyOn == TRUE) THEN
+  stArcFeatureState.Act.PreStart    = FALSE
+  stArcFeatureState.Act.WeaveRsi    = FALSE
+  stArcFeatureState.Act.Weave       = FALSE
+ENDIF
+
+;************************************************** Feature OnTheFly Off ***********************************************************
+IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+  stArcFeatureState.Act.RetractArcOff     = FALSE
+ENDIF
+
+;************************************************** Feature Advanced Error *********************************************************
+IF ((stArcFeatureState.AdvError.Active == TRUE) AND (stArcFeatureState.AdvError.SeamWelded == TRUE)) THEN
+  stArcFeatureState.Act.PreStart          = FALSE
+ENDIF
+
+;************************************************** Feature Thermal Control ********************************************************
+IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+  stArcFeatureState.Act.Slope             = FALSE
+  stArcFeatureState.Act.WeaveDelay        = FALSE
+  irtArcTcGreater                         = irtFeature1
+  irtArcTcSmaller                         = irtFeature2
+ENDIF
+
+;************************************************** Feature Slope ******************************************************************
+IF (stArcFeatureState.Act.Slope == TRUE) THEN
+  stArcFeatureState.Act.WeaveDelay    = FALSE
+  irtArcSlopeFunction                 = irtFeature1
+ENDIF
+
+;************************************************** Feature Slope Arc Off ***********************************************************
+IF (stArcFeatureState.Act.SlopeArcOff == TRUE) THEN
+  irtArcSlopeFunction = irtFeature1
+ENDIF
+
+;************************************************** Feature WeaveDelay *************************************************************
+IF (stArcFeatureState.Act.WeaveDelay == TRUE) THEN
+  irtArcWeaveDelay = irtFeature1
+ENDIF
+
+;************************************************** Feature StepWeld ***************************************************************
+IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+  stArcFeatureState.Act.WeaveRsi          = FALSE
+  stArcFeatureState.Act.Sense             = FALSE
+  stArcFeatureState.Act.ThermalControl    = FALSE
+  stArcFeatureState.Act.Slope             = FALSE
+  stArcFeatureState.Act.SlopeArcOff       = FALSE
+  stArcFeatureState.Act.RetractArcOff     = FALSE
+  stArcFeatureState.Act.PreStart          = FALSE
+  stArcFeatureState.Act.OnTheFlyOn        = FALSE
+  irtStepWeld = irtFeature2
+ENDIF
+
+;************************************************** Cold Seam **********************************************************************
+IF (gArcColdSeam == TRUE) THEN
+  stArcFeatureState.Act.WeaveRsi          = FALSE
+  stArcFeatureState.Act.Weave             = FALSE
+  stArcFeatureState.Act.PreStart          = FALSE
+  stArcFeatureState.Act.Slope             = FALSE
+  stArcFeatureState.Act.ThermalControl    = FALSE
+  stArcFeatureState.Act.Sense             = FALSE
+  stArcFeatureState.Act.WeaveDelay        = FALSE
+  stArcFeatureState.Act.RetractArcOff     = FALSE
+  stArcFeatureState.Act.SlopeArcOff       = FALSE
+ENDIF
+
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  SWITCH tCommand
+    CASE #ArcOn
+      tI = STRADD(tSimMsg[],"ArcOn ")
+    CASE #ArcSwi
+      tI = STRADD(tSimMsg[],"ArcSwi ")
+    CASE #ArcOff
+      tI = STRADD(tSimMsg[],"ArcOff ")
+  ENDSWITCH
+
+  SWITCH tCommand
+    CASE #ArcOn
+      IF (stArcFeatureState.Act.SeamLength == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[SeamLength] ")
+      ENDIF
+      IF (stArcFeatureState.Act.PreStart == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[PreStart] ")
+      ENDIF
+      IF (stArcFeatureState.Act.OnTheFlyOn == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[OnTheFlyOn] ")
+      ENDIF
+      IF (stArcFeatureState.Act.SeamCtrlPlc == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[SeamCtrlPlc] ")
+      ENDIF
+      IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[StepWeld] ")
+      ENDIF
+  ENDSWITCH
+  
+  SWITCH tCommand
+    CASE #ArcOn, #ArcSwi
+      IF (stArcFeatureState.Act.Weave == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[Weaving] ")
+      ENDIF
+      IF (stArcFeatureState.Act.WeaveRsi == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[Weaving RSI] ")
+      ENDIF
+      IF (stArcFeatureState.Act.WeaveDelay == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[WeaveDelay] ")
+      ENDIF
+      IF (stArcFeatureState.Act.Slope == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[Slope] ")
+      ENDIF
+      IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[ThermalControl] ")
+      ENDIF
+      IF (stArcFeatureState.Act.Sense == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[Sense] ")
+      ENDIF
+
+    CASE #ArcOff
+      IF (stArcFeatureState.Act.OnTheFlyOff == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[OnTheFlyOff] ")
+      ENDIF
+      IF (stArcFeatureState.Act.SlopeArcOff == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[Slope] ")
+      ENDIF
+      IF (stArcFeatureState.Act.RetractArcOff == TRUE) THEN
+        tI = STRADD(tSimMsg[],"[MoveBack] ")
+      ENDIF
+  ENDSWITCH
+  ;@Print {tSimMsg[]}
+ENDIF
+
+;************************************************** Feature Kuka Sim ***************************************************************
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  stArcFeatureState.Act.WeaveRsi          = FALSE
+  stArcFeatureState.Act.Sense             = FALSE
+  stArcFeatureState.Act.ThermalControl    = FALSE
+  stArcFeatureState.Act.Slope             = FALSE
+  stArcFeatureState.Act.SlopeArcOff       = FALSE
+  stArcFeatureState.Act.SeamCtrlPlc       = FALSE
+  ATAg_ER_ArcGroupEnabled                 = FALSE
+  stArcFeatureState.AdvError.Active       = FALSE
+  stArcFeatureState.Act.StepWeld          = FALSE
+ENDIF
+
+IF (tCommand == #ArcOn) THEN
+  stArcFeatureState.Last = stArcFeatureState.Act
+ENDIF
+
+IF ((stArcFeatureState.Act.OnTheFlyOn == TRUE) OR (gArcSyncList > 1)) THEN
+  gArcOnStopConditionOn = FALSE
+ENDIF
+IF ((stArcFeatureState.Act.OnTheFlyOff == TRUE) OR (gArcSyncList > 1)) THEN
+  gArcOffStopConditionOn = FALSE
+ENDIF
+END
+
+;*****************************************************************************************
+;Function Feature Select
+;*****************************************************************************************
+GLOBAL DEF ArcFeatureSelect(tCall:IN,tArcDat:IN,tArcDatSeam:IN,tTcDat:IN,tStepDat:IN)
+DECL stArcDat_T tArcDat, tArcDatSeam
+DECL stArcTcSet_T tTcDat
+DECL enArcCallType_T tCall
+DECL stArcDat_T tArcDatSlope
+DECL stArcStepDat_T tStepDat
+DECL INT tIntBuffer
+
+SWITCH tCall
+  CASE #PreDefinition  ;************************************************************************************************************
+    gArcSeamNumber = tArcDatSeam.Strike.Seamnumber
+    gArcPartNumber = tArcDatSeam.Strike.Partnumber
+    IF (wArcSeamControlByPLC == TRUE) THEN
+    ;IF (stArcFeatureState.Act.SeamCtrlPlc == TRUE) THEN
+      ArcIntToBit($OUT[],wsArcOSeamNumberCode[gArcActIlfWelder],gArcSeamNumber)
+    ELSE
+      ArcIntToBit($OUT[],wsArcOSeamNumberCode[gArcActIlfWelder],0)
+    ENDIF
+    
+    IF (wArcWelder[gArcActIlfWelder].Type == #ARCLINKXT) THEN
+      IF (gArcSeamNumber <= 200) THEN
+        tIntBuffer = gArcSeamNumber
+      ELSE
+        ArcMsgWriteS(,#NOTIFY,"ArcLinkWeldSelectToBig","ARC",10128,Opt_VLSTOP_LOG,gArcSeamName[])
+      ENDIF
+      ArcIntToBit($OUT[],wsArcOWeldSelect[gArcActIlfWelder],tIntBuffer)
+    ENDIF
+  CASE #BeforeArcOn ;***************************************************************************************************************
+    ;Empty
+  CASE #ArcOnTrigger ;**************************************************************************************************************
+  IF (stArcFeatureState.Act.PreStart == TRUE) THEN
+    SetArcStatePreStart()
+  ENDIF
+  stSlopeLast = tArcDat
+  CASE #AfterArcOn ;****************************************************************************************************************
+    IF (stArcFeatureState.Act.Weave == TRUE) THEN
+      ArcOnSetWeaveParameter()
+    ENDIF
+  CASE #BeforeArcSwi ;**************************************************************************************************************
+    ;Empty
+  CASE #ArcSwiTrigger ;*************************************************************************************************************
+    IF (gArcSensorActive == TRUE) THEN
+      ;Change Sense
+      ArsSwiParameterChanged(tArcDat.Track, tArcDat.Weave, tArcDat.Weld)
+    ENDIF
+    IF ((stArcFeatureState.Last.Sense == FALSE) AND (stArcFeatureState.Act.Sense == TRUE) AND (gArcSensorActive == FALSE)) THEN
+      ;Sense On
+      ArcWeaveOff(2) ;Deactivate possible weaving
+      ArsDeployWeaving(#ARSSWI, tArcDat.Track, tArcDat.Weave, tArcDat.Weld)
+      ArsOn(#ARSSWI)
+    ENDIF
+    IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+      IF (ArcTcInit(#ArcSwi,tArcDat,tTcDat)) THEN
+        ;Tc On
+        ArcTcOn(#OnBeginning)
+      ENDIF
+    ENDIF
+    IF ((stArcFeatureState.Last.ThermalControl == TRUE) AND (stArcFeatureState.Act.ThermalControl == FALSE)) THEN
+      ;Tc Off
+      ArcTcOff()
+    ENDIF
+    IF (stArcFeatureState.Act.Slope == TRUE) THEN
+      IF (ArcSlopeEnabled(stSlopeLast) == TRUE) THEN
+        IF ((stSlopeLast.Advanced.SlopeOption == #Distance) OR (stSlopeLast.Advanced.SlopeOption == #ToNextPoint)) THEN
+          ;Slope On
+          ArcSlopeSetValue(#ToEnd)
+        ENDIF
+        IF (tArcDat.Advanced.SlopeOption == #NONE) THEN
+          $OV_APPL = cOvApplDefault
+        ENDIF
+      ENDIF
+      IF (ArcSlopeEnabled(tArcDat) == TRUE) THEN
+        ArcSlopeUpdate(gArcActIlfWelder,gArcActModeSwi,stSlopeLast,tArcDat)
+        ArcSlopeSetActive()
+        tArcDat.Weave = ArcSlopeUpdateWeave(stSlopeLast,tArcDat)
+        stArcActWeaveSet = tArcDat.Weave
+      ENDIF
+    ENDIF
+    IF ((stArcFeatureState.Last.Weave == TRUE) AND (stArcFeatureState.Act.Weave == FALSE)) THEN
+      ;Weave FG Off
+      ArcWeaveOff(2)
+    ENDIF
+    IF (stArcFeatureState.Act.Weave == TRUE) THEN
+      ;Weave FG Change
+      ArcSetWeaveParameter(stArcCallState.ExecType,tArcDat.Weave)
+      ArcWeaveOn(stArcCallState.ExecType,tArcDat.Weave)
+    ENDIF
+    IF (stArcFeatureState.Act.WeaveRsi == TRUE) THEN
+      ;Rsi Weaving On
+      ArcSwiRsiWeaving(tArcDat.Weld, tArcDat.Weave)
+    ENDIF
+    IF ((stArcFeatureState.Last.WeaveRsi == TRUE) AND (stArcFeatureState.Act.WeaveRsi == FALSE)) THEN
+      ;Rsi Weaving Off
+      ArcStopRsiWeaving()
+    ENDIF
+    stSlopeLast            = tArcDat
+    ;stArcFeatureState.Last = stArcFeatureState.Act
+  CASE #AfterArcSwi ;***************************************************************************************************************
+    ;Empty
+  CASE #BeforeArcOff ;**************************************************************************************************************
+    IF (stArcFeatureState.Act.Sense == TRUE) AND (gArcSensorActive == TRUE) THEN
+      ArcOffReduceCorr()
+    ENDIF
+    IF ((stArcFeatureState.Act.Sense == TRUE) OR (stArcFeatureState.Act.WeaveRsi == TRUE)) THEN
+      ArcReduceRsiSigGenOff()
+    ENDIF
+    IF ((stArcFeatureState.Act.SlopeArcOff == TRUE) OR (stArcFeatureState.Act.RetractArcOff == TRUE)) THEN
+      ;Slope Arc Off, MoveBack at ArcOff
+      ArcOffStrategy(#BeforeArcOff,tArcDat)
+    ENDIF
+  CASE #ArcOffTrigger ;*************************************************************************************************************
+    ;Empty
+  CASE #AfterArcOff ;***************************************************************************************************************
+    ;Empty
+  CASE #BeforeIgnition ;************************************************************************************************************
+    gArcOnSeamBegin = TRUE
+    IF (gArcColdSeam == FALSE) THEN
+      ;Build RSI Context before call ArcWeave. NOTE: Not possible to Build RSI Context in ArcPreDefinition. Because of SeamTechTracking
+      gArcRsiWeavingActive = FALSE
+      IF (stArcFeatureState.Act.Sense == TRUE) THEN
+        ;ArcSense On
+        ArsDeployWeaving(#ARSON, tArcDat.Track, tArcDat.Weave, tArcDat.Weld)
+      ENDIF
+    ENDIF
+    ArcStepInit(tStepDat)
+    IF (stArcFeatureState.Act.StepWeld == TRUE) THEN
+      ArcStepOn(tArcDat)
+    ENDIF
+    IF (stArcFeatureState.Act.Slope == TRUE) THEN
+      IF (ArcSlopeEnabled(tArcDat) == TRUE) THEN
+        ;Slope On
+        tArcDatSlope = ArcSlopeOnArcOn(tArcDat)
+        ArcSlopeUpdate(gArcActIlfWelder,gArcActModeOn,tArcDatSlope,tArcDat)
+        ArcSlopeSetValue(#ToStart)
+        ArcSlopeSetActive()
+        stArcActWeaveSet = ArcSlopeUpdateWeave(tArcDatSlope,tArcDat)
+      ENDIF
+    ENDIF
+    IF (stArcFeatureState.Act.Weave == TRUE) THEN
+      ;Set Weave Parameter
+      ArcSetWeaveParameter(stArcCallState.ExecType,stArcActWeaveSet)
+    ENDIF
+    IF (stArcFeatureState.Act.WeaveRsi == TRUE) THEN
+      ArcStartRsiWeaving(tArcDat.Weld,stArcActWeaveSet)
+    ENDIF
+  CASE #AfterIgnition ;*************************************************************************************************************
+    IF (stArcFeatureState.Act.Weave == TRUE) THEN
+      ;Weave FG On
+      ArcWeaveOn(stArcCallState.ExecType,stArcActWeaveSet)
+    ENDIF
+    IF (stArcFeatureState.Act.Sense == TRUE) THEN
+      ;ArcSense On
+      IF ((stArcIgnErrSet.IgnitionReaction == #MoveScratch) AND (stMoveScratch.BeforeArcOn == TRUE)) THEN
+        ;Nothing
+      ELSE
+        ArsOn(#ARSON)
+      ENDIF
+    ENDIF
+    IF (stArcFeatureState.Act.WeaveRsi == TRUE) THEN
+      ;Weave Rsi On
+      ArsOn(#RSIWEAVE)
+    ENDIF
+    IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+      ;Tc On
+      ArcTcOff()
+      IF (ArcTcInit(#ArcOn,tArcDat,tTcDat)) THEN
+        ArcTcOn(#OnBeginning)
+      ENDIF
+    ENDIF
+  CASE #BeforeCraterFill ;**********************************************************************************************************
+    IF (stArcCallState.ExecType == #TriggerCall) THEN
+      ;Weave Off Trigger
+      ArcWeaveOff(2)
+    ELSE
+      ;Weave Off
+      ArcWeaveOff(1)
+    ENDIF
+    ;Step Weld Off
+    ArcStepOff()
+  CASE #AfterCraterFill ;***********************************************************************************************************
+    IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+      ;Tc Off
+      ArcTcOff()
+    ENDIF
+    IF (stArcFeatureState.Act.SlopeArcOff == TRUE) THEN
+      IF (stArcOffSlope.Option == #Combined) THEN
+        WAIT FOR stArcOffSlope.Active == FALSE
+      ENDIF
+    ENDIF
+    IF (stArcFeatureState.Act.SlopeArcOff == TRUE) THEN
+      ArcSlopeOnArcOff(tArcDat)
+    ENDIF
+  CASE #BeforeErrorStrategie ;******************************************************************************************************
+  IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+    ArcTcSleep()
+  ENDIF
+  IF (stArcFeatureState.Act.Weave == TRUE) THEN
+    ArcWeaveOff(2)
+  ENDIF
+  CASE #AfterErrorStrategie ;*******************************************************************************************************
+  IF (gArcColdSeam == FALSE) THEN
+    IF (stArcFeatureState.Act.ThermalControl == TRUE) THEN
+      ;Tc On
+      ArcTcOn(#OnSeam)
+    ENDIF
+    IF (stArcFeatureState.Act.Weave == TRUE) THEN
+        IF (enArcActiveStrategy <> #BackToSplineStart) THEN
+          ;Weave On
+          ArcWeaveOn(#TriggerCall,stArcActWeaveSet)
+        ENDIF
+    ENDIF
+    IF ((stArcFeatureState.Act.WeaveRsi == TRUE) OR (stArcFeatureState.Act.Sense == TRUE)) THEN
+      IF (enArcCurrentState <> #Error) THEN
+        ;ArcSense, RsiWeave On
+        IF ((stArcIgnErrSet.IgnitionReaction == #MoveScratch) AND (stMoveScratch.BeforeArcOn == TRUE)) THEN
+          IF (stErrorDistance.ErrorArcOn == TRUE) THEN
+            ArsOn(#ARSON)
+          ENDIF
+        ENDIF
+        IF (stErrorDistance.ErrorArcOn == FALSE) THEN
+          ArsRequestRestart()
+        ENDIF
+        IF (gArcRsiWeavingActive == FALSE) THEN
+          ArcSwiRsiWeaving(stArcActWeldSet, stArcActWeaveSet)
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDIF
+  DEFAULT
+    ;ToDo Error
+ENDSWITCH
+END
+;********************************************************
+;Set Actual Global Elements
+;********************************************************
+DEF ArcSetActValues(tCommandCall :IN,tArcDat :IN)
+DECL stArcDat_T tArcDat
+DECL enArcCommandType_T tCommandCall
+SWITCH tCommandCall
+  CASE #ArcOn
+    stArcActStartSet      = tArcDat.Strike
+    stArcActWeldSet       = tArcDat.Weld
+    stArcActWeaveSet      = tArcDat.Weave
+    stArcActAdvancedSet   = tArcDat.Advanced
+    stArcActSenseParam    = tArcDat.Track
+    stArcDatAct.Strike    = tArcDat.Strike
+    stArcDatAct.Weld      = tArcDat.Weld
+    stArcDatAct.Weave     = tArcDat.Weave
+    stArcDatAct.Advanced  = tArcDat.Advanced
+    stArcDatAct.Track     = tArcDat.Track
+  CASE #ArcSwi
+    stArcActWeldSet       = tArcDat.Weld
+    stArcActWeaveSet      = tArcDat.Weave
+    stArcActAdvancedSet   = tArcDat.Advanced
+    stArcActSenseParam    = tArcDat.Track
+    stArcDatAct.Weld      = tArcDat.Weld
+    stArcDatAct.Weave     = tArcDat.Weave
+    stArcDatAct.Advanced  = tArcDat.Advanced
+    stArcDatAct.Track     = tArcDat.Track
+  CASE #ArcOff
+    stArcActCraterSet     = tArcDat.Crater
+    stArcActAdvancedSet   = tArcDat.Advanced
+    stArcActSenseParam    = tArcDat.Track
+    stArcDatAct.Crater    = tArcDat.Crater
+    stArcDatAct.Advanced  = tArcDat.Advanced
+    stArcDatAct.Track     = tArcDat.Track
+ENDSWITCH
+END

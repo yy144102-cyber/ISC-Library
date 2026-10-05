@@ -1,0 +1,160 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcSenseError( )
+END
+;********************************************************
+;Programm end - TechStop
+;********************************************************
+GLOBAL DEF ArsTechStopActive()
+ArsStopSignalFlow() ;Techstop und Stoppmess
+mRestartRequested = TRUE
+mErrorMessage = TRUE
+END
+;********************************************************
+;Stop Signal
+;********************************************************
+GLOBAL DEF ArsIRStopActive()
+ArsStopSignalFlow()
+mRestartRequested = TRUE
+mErrorMessage = TRUE
+END
+;********************************************************
+;Program reset
+;********************************************************
+GLOBAL DEF ArsTechFreeOrReset()
+$SEN_PINT[12] = 0
+skArsManualCorrActive = FALSE
+gArcSenseIsReqRestart = FALSE
+ArsStopSignalFlow()
+END
+;********************************************************
+;Check if treshold reached
+;********************************************************
+GLOBAL DEF ArsCheckThreshold()
+IF (wArcErrorMaxDeviation == TRUE) THEN
+  IF (ArsCheckOutput(4) == TRUE) THEN
+    INTERRUPT OFF irtArcThresholdInterNr
+    gArcErrorStrategyActive = TRUE ;Block Restart
+    BRAKE
+    ArsSetIO(6)
+    SetErrorState(#DefaultError)
+    ArcMsgWrite(,#NOTIFY,"MaximumTresholdReached","ARCS",30040,Opt_VLSTOP_LOG)
+    ArsStopSignalFlow()
+    IF(wArcDeviationErrorOutNr>0) THEN
+      $OUT[wArcDeviationErrorOutNr] = TRUE
+    ENDIF
+    ArsMaxDeviationDialog()
+    gArcErrorStrategyActive = FALSE
+  ENDIF
+ENDIF
+END
+;********************************************************
+;Check if signal is acceptable by signal quality check.
+;********************************************************
+GLOBAL DEF ArsCheckSignalQuality()
+IF ((ArsCheckOutput(6) == TRUE) AND (gArcSenseSimSig == FALSE)) THEN
+  IF (wArcSensorError == TRUE) THEN
+    ArsStopSignalFlow()
+    IF (mErrorMessage) THEN
+      ArcMsgWrite(,#NOTIFY,"NoAcceptableSignalFound","ARCS",30008,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+    IF (wArcSensorErrorOutNr > 0) THEN
+      $OUT[wArcSensorErrorOutNr] = FALSE
+    ENDIF
+    SetErrorState(#DefaultError)
+    ArcRobotStopFromSUBMIT(TRUE)
+  ELSE
+    IF (mErrorMessage) THEN
+      ArsStopSigQuality()
+      ArcMsgWrite(,#NOTIFY,"NoAcceptableSignalFoundGoOnWithoutArcsense","ARCS",30009,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+  ENDIF
+ELSE
+  mErrorMessage = TRUE
+ENDIF
+END
+;********************************************************
+;Check if signal is acceptable by control phase
+;********************************************************
+GLOBAL DEF ArsCheckControlSignal()
+IF (ArsCheckOutput(9) == TRUE) THEN
+  IF(wArcSensorError == TRUE) THEN
+    ArsStopSignalFlow()
+    IF (mErrorMessage) THEN
+      ArcMsgWrite(,#NOTIFY,"BadSignalByActiveControl","ARCS",30001,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+    IF (wArcSensorErrorOutNr > 0) THEN
+      $OUT[wArcSensorErrorOutNr] =TRUE
+    ENDIF
+    ArcRobotStopFromSUBMIT(TRUE)
+    SetErrorState(#DefaultError)
+  ELSE
+    IF (mErrorMessage) THEN
+      ArsStopSigQuality()
+      ArcMsgWrite(,#NOTIFY,"BadSignalByActiveControlWithoutArcSense","ARCS",30002,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+  ENDIF
+ELSE
+  mErrorMessage = TRUE
+ENDIF
+END
+;********************************************************
+;Check if signal is acceptable to detect parameter
+;********************************************************
+GLOBAL DEF ArsCheckParDetection()
+IF (ArsCheckOutput(3) == TRUE) THEN
+  IF (wArcSensorError == TRUE) THEN
+    ArsStopSignalFlow()
+    IF (mErrorMessage) THEN
+      ArcMsgWrite(,#NOTIFY,"NoParameterCanBeDetected","ARCS",30010,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+    IF(wArcSensorErrorOutNr >0) THEN
+      $OUT[wArcSensorErrorOutNr] =TRUE
+    ENDIF
+    ArcRobotStopFromSUBMIT(TRUE)
+    SetErrorState(#DefaultError)
+  ELSE
+    IF (mErrorMessage) THEN
+      ArsStopSigQuality()
+      ArcMsgWrite(,#NOTIFY,"ParameterCannotBeDetectedGoOnWithoutArcsense","ARCS",30011,Opt_VLSTOP_LOG)
+      mErrorMessage = FALSE
+    ENDIF
+  ENDIF
+ELSE
+  mErrorMessage = TRUE
+ENDIF
+END
+;********************************************************
+;Method to find error position of robot to activate RSI process,
+;if robot uses the weld error strategy #MoveBackward
+;********************************************************
+GLOBAL DEF ArsCheckMBCondition()
+IF ((stArcWeldErrSet.WeldErrReaction == #MoveBackward) AND (gArcSenseIsReqRestart== TRUE) AND ArcWeldCondition(gArcActIlfWelder) AND (skArcDryRun == FALSE) AND (IsAnySpline())) THEN
+  IF (ArcDiffBetween(stArcSenseFailurePointMB,$POS_ACT) <= 3) THEN
+    gArcSenseBackCondActive = TRUE
+    gArcSenseIsReqRestart = FALSE
+    ArsStartSignalCheck()
+    gArcSenseBackCondActive= FALSE
+  ENDIF
+ENDIF
+END
+;*********************************************************
+;ArsCheckStatusKey
+;*********************************************************
+GLOBAL DEF ArsCheckStatusKey()
+IF ((skArcStatusKeyHot == FALSE) AND (enArcCurrentState == #Welding)) THEN
+  IF(ArsCheckInput(4) == TRUE)THEN
+    ArsSetIO(4)
+  ENDIF
+ENDIF
+IF(ArcWeldCondition(gArcActIlfWelder) == TRUE) THEN
+  ArsSetIO(16)
+ELSE
+  ArsSetIO(16)
+ENDIF
+END

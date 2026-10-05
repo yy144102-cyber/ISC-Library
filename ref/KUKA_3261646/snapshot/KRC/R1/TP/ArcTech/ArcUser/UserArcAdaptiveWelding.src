@@ -1,0 +1,102 @@
+&ACCESS R2
+&COMMENT ArcTech User Adaptive Welding
+DEF UserArcAdaptiveWelding()
+;FOLD AdaptiveWeldingInfo
+;(tInValue :IN)         = [REAL]                                                          [R] - Value from Sensor
+;(tSource :IN)          = [stSource_T]                                                    [R] - Structure Wov generated
+;                                   .[BOOL]                      Active                   [R] - Strucure Groupe Active
+;                                   .[enArcAwSource_T]           SourceInput              [R] - Source Input
+;                                                                        #ISenPrea            - $SEN_PREA[*]
+;                                                                        #ISenPint            - $SEN_PINT[*]
+;                                                                        #IAnalog             - $ANIN[*]
+;                                                                        #ISoftPlcReal        - $SOFTPLCREAL[*]
+;                                   .[INT]                       SourceNr                 [R] - Source Index
+;                                   .[enAWFunction_T]            Function                 [R] - Function 
+;                                                                       #None                 - Standard  ENUM
+;                                                                       #ConstValue           - Standard  ENUM
+;                                                                       #SourceValue          - Standard  ENUM
+;                                                                       #UserFunction1        - Standard  ENUM
+;                                                                       #UserFunction2        - Standard  ENUM
+;                                                                       #UserFunction3        - Standard  ENUM
+;                                                                       #UserFunction4        - Standard ENUM
+;                                                   ...                                       - WorkVisual ENUM
+;                                   .[enArcAWOperator_T]         Operator                 [R] - Operator
+;                                                                       #L                    - Less & Max
+;                                                                       #LE                   - Less or Equal & Max
+;                                                                       #G                    - Min & Greater
+;                                                                       #GE                   - Min & Greater or Equal
+;                                                                       #LG                   - Less & Greater
+;                                                                       #LEG                  - Less or Equal & Greater
+;                                                                       #LGE                  - Less & Greater or Equal
+;                                                                       #LEGE                 - Less or Equal & Greater or Equal
+;                                   .[REAL]                      FromNum                  [R] - Function tree enable from value 
+;                                   .[REAL]                      ToNum                    [R] - Function tree enable to value 
+;                                   .[REAL]                      ConstValue               [R] - Value constant: enabled only Function == #ConstValue
+;                                                                                             
+;(tSourceNr :IN)         = [INT]                                                          [R] - Source Number Active from 1 to 5         
+;                                                                                         
+;(tAdaptiveWelding :IN) = [stAdaptiveWelding_T]                                           
+;                                            .[CHAR]              Name[24]                [R] - SetName
+;                                            .[enKrlId_T]         KrlId                   [R] - SetToSource
+;                                                       #None                                 - Standard  ENUM
+;                                                       #Channel1                             - Standard  ENUM
+;                                                       #Channel2                             - Standard  ENUM
+;                                                       #Channel3                             - Standard  ENUM
+;                                                       #Channel4                             - Standard  ENUM
+;                                                       #Channel5                             - Standard  ENUM
+;                                                       #Channel6                             - Standard  ENUM
+;                                                       #Channel7                             - Standard  ENUM
+;                                                       #Channel8                             - Standard  ENUM
+;                                                       #Velocity                             - Standard  ENUM
+;                                                       #Length                               - Standard  ENUM
+;                                                       #Amplitude                            - Standard  ENUM
+;                                                                                         
+;                                            .[BOOL]              Active                  [R] - Source Active
+;                                            .[REAL]              DefValue                [R] - Value Default
+;                                            .[REAL]              CalcValue               [R] - Value Set last
+;                                            .[REAL]              OutValue                [R] - Value last from Function
+;                                            .[stSource_T] Source1...,Source5             [R] - Source from 1 to 5
+;
+;RETURN                  = [REAL]                                                             - Return Value to specific KrlId( tAdaptiveWelding.KrlId )
+;ENDFOLD
+END
+;*****************************************************************************************
+;[Routine] Arc User Function1 Adapting Welding
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcUserAwFunction1(tInValue :IN,tSource : IN,tSourceNr :IN,tAdaptiveWelding :IN)
+DECL INT tSourceNr
+DECL REAL tInValue
+DECL stSource_T tSource
+DECL stAdaptiveWelding_T tAdaptiveWelding
+RETURN 0.0
+ENDFCT
+;*****************************************************************************************
+;[Routine] Arc User Function2 Adapting Welding
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcUserAwFunction2(tInValue :IN,tSource : IN,tSourceNr :IN,tAdaptiveWelding :IN)
+DECL INT tSourceNr
+DECL REAL tInValue
+DECL stSource_T tSource
+DECL stAdaptiveWelding_T tAdaptiveWelding
+RETURN 0.0
+ENDFCT
+;*****************************************************************************************
+;[Routine] Arc User Function3 Adapting Welding
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcUserAwFunction3(tInValue :IN,tSource : IN,tSourceNr :IN,tAdaptiveWelding :IN)
+DECL INT tSourceNr
+DECL REAL tInValue
+DECL stSource_T tSource
+DECL stAdaptiveWelding_T tAdaptiveWelding
+RETURN 0.0
+ENDFCT
+;*****************************************************************************************
+;[Routine] Arc User Function4 Adapting Welding
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcUserAwFunction4(tInValue :IN,tSource : IN,tSourceNr :IN,tAdaptiveWelding :IN)
+DECL INT tSourceNr
+DECL REAL tInValue
+DECL stSource_T tSource
+DECL stAdaptiveWelding_T tAdaptiveWelding
+RETURN 0.0
+ENDFCT

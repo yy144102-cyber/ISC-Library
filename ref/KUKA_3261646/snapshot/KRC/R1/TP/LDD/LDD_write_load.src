@@ -1,0 +1,39 @@
+&ACCESS RO
+&COMMENT LDD package (KSS 8.6.7 or higher)
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+&PARAM DISKPATH = KRC:\R1\TP\LDD
+DEFFCT INT  LDD_write_load ( TOOLNO :IN )
+   INT TOOLNO
+   IF ( VARSTATE("TOOLNO") == #INITIALIZED ) THEN
+   ELSE
+      TOOLNO = -1
+      MsgNotify("SilentLDDDefaultSettingsToolNo", "LoadDataDetermination",TOOLNO,,5)
+   ENDIF
+   IF ( LDD_OK == FALSE ) THEN
+      MsgNotify("LDD_start not correctly finished!", "LoadDataDetermination")
+      RETURN(-11)
+   ENDIF
+   IF ( LDD_KUKALOAD == FALSE ) THEN
+      MsgNotify("Kuka.Load 5 not correctly finished!", "LoadDataDetermination")
+      RETURN(-12)
+   ENDIF
+   IF ( TOOLNO == -1 ) THEN
+      MsgNotify("SilentLDDConfigDatUnChanged", "LoadDataDetermination",TOOLNO,,5)
+      RETURN(5)
+   ENDIF
+   IF ( ( 0 < TOOLNO ) AND ( TOOLNO <= MAX_LOAD ) ) THEN
+      LDD_TOOL_NO = TOOLNO
+   ELSE
+      MsgNotify("SilentLDDToolNoNotValid", "LoadDataDetermination",TOOLNO,,13)
+      RETURN(-13)
+   ENDIF
+   WAIT SEC 0.5; Timing-Problem an der KSS V8.6.9 HF2
+   LDD_TRIGGER = 20;
+   WAIT FOR ( LDD_TRIGGER == 0 )
+   IF NOT ( LDD_ERROR == 0 ) THEN
+      MsgNotify("SilentLDDErrorInternal", "LoadDataDetermination",LDD_ERROR,,20)
+      RETURN(LDD_ERROR)
+   ENDIF
+   RETURN(LDD_ERROR)
+ENDFCT

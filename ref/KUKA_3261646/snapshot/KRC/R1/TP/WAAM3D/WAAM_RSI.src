@@ -1,0 +1,113 @@
+&ACCESS RVO1
+&REL 1314
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\TP\WAAM3D
+DEF WAAM_RSI( )
+END
+
+
+GLOBAL DEF WAAM_RSI_ON()
+   ;IF ($OUT[9] == TRUE) OR ($OUT[10] == TRUE) THEN
+      RESULT = WAAM_RSI_CREATE()
+      IF (RESULT == RSIOK) THEN
+         RESULT = RSI_ON()
+      ENDIF
+      DISPLAY_MSG (RESULT, "RSI ON")
+   ;ENDIF
+END
+
+GLOBAL DEF WAAM_RSI_OFF()
+   RESULT = RSI_OFF()
+   DISPLAY_MSG (RESULT, "RSI OFF")
+   RESULT = WAAM_DELETE_RSI()
+END
+
+GLOBAL DEF WAAM_RSI_CHECK()
+   DECL RSISENMODE STATE
+
+   STATE = RSI_GETSENMODE()
+   IF (STATE == #OFF) THEN
+      WAAM_RSI_RESET()
+      
+      WAIT SEC 0
+      
+      WAAM_RSI_ON()
+   ENDIF
+
+END
+
+GLOBAL DEF WAAM_RSI_DELETE()
+; Exists only for backward compatibility
+END
+
+;FOLD HELPER METHODS
+DEFFCT INT WAAM_RSI_CREATE()
+   CONTAINER_ID = 1
+   IF (RSI_CHECKID(CONTAINER_ID) == FALSE) THEN
+      RESULT = RSI_CREATE(GET_CONTEXT(), CONTAINER_ID, TRUE)
+   ENDIF
+   DISPLAY_MSG (RESULT, "RSI CREATE")
+   RETURN RESULT
+ENDFCT
+
+DEFFCT INT WAAM_DELETE_RSI()
+   IF (RSI_CHECKID(CONTAINER_ID) == TRUE) THEN
+      RESULT = RSI_DELETE(CONTAINER_ID)
+   ENDIF
+   DISPLAY_MSG (RESULT, "RSI DELETE")
+   RETURN RESULT
+ENDFCT
+
+DEF WAAM_RSI_RESET()
+   RESULT = RSI_RESET()
+   DISPLAY_MSG (RESULT, "RSI RESET")
+   RESULT = WAAM_DELETE_RSI()
+END
+
+DEFFCT CHAR[17] GET_CONTEXT()
+   ;IF(iWAAMProcess == FALSE) THEN
+      ;RETURN "RSI_WAAMCtrl"
+   ;ELSE
+      RETURN "RSI_WAAMCtrlCwMIG"
+   ;ENDIF
+ENDFCT
+
+DEF DISPLAY_MSG (status:IN, prefix:IN)
+   INT status
+   CHAR prefix[]
+   
+   IF (VARSTATE("prefix") == #DECLARED) THEN
+      prefix[]="WAAMCtrl"
+   ENDIF
+    
+   SWITCH (status)
+   CASE RSIOK
+      MsgNotify("Executed successfully",prefix[])
+   CASE RSIBAD
+      MsgNotify("Failed",prefix[])
+   CASE RSIALREADYON
+      MsgNotify("Signal processing is already activated",prefix[])
+   CASE RSINOTRUNNING
+      MsgNotify("No signal processing running",prefix[])
+   CASE RSIFILENOTFOUND
+      MsgNotify("File not found with the signal configuration",prefix[])
+   CASE RSIINVFILE
+      MsgNotify("Invalid file, e.g. invalid file format or error in the configuration",prefix[])
+   CASE RSINOMEMORY
+      MsgNotify("No free RSI memory available",prefix[])
+   CASE RSIINVOBJTYPE
+      MsgNotify("Unknown object in the RSI context",prefix[])
+   CASE RSIEXTLIBNOTFOUND
+      MsgNotify("External RSI object library not found",prefix[])
+   CASE RSINOTLINKED
+      MsgNotify("Rsi object with missing input signal",prefix[])
+   CASE RSILNKCIRCLE
+      MsgNotify("Error in the signal link",prefix[])
+   CASE  RSIINVOBJID
+      MsgNotify("Invalid container ID",prefix[])
+   DEFAULT
+      MsgNotify("Ran into an issue",prefix[])
+   ENDSWITCH
+END
+;ENDFOLD (HELPER METHODS)

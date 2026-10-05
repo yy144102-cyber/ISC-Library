@@ -1,0 +1,1576 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcPart( )
+END
+;*************************************************************************
+;[GLOBAL Routine] Init Seam Call from SubMitLoolInit
+;Load value from csv file
+;*************************************************************************
+GLOBAL DEF ArcPartLoopInit()
+DECL BOOL tB
+DECL INT tI
+DECL INT tII
+DECL INT tFilesSize
+mArcSeamTestPlc = FALSE
+mArcSeamLengthSyncCsv = FALSE
+mArcSeamLengthInitDone  = FALSE
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+mArcLastHandleNr = 0
+tB = ArcPartFileFunc(#CloseAllFiles)
+mPartNr       = 0
+mNrSeams      = 0
+mNrSeamsTemp  = 0
+tFilesSize    = 0
+stArcWeldDist = stArcWeldDistInit
+ArcClearAllMsg()
+FOR tI = STRLEN(mArcArchiveHeader[]) TO mArcArchiveNrLineChar
+  mArcArchiveHeader[tI] = " "
+ENDFOR
+mArcArchiveHeader[mArcArchiveNrLineChar] = "'h0a'"
+FOR tI = 1 TO mMaxParts
+  gArcPart[tI].Mem.RemoveFile  = FALSE
+  gArcPart[tI].Mem.NewSeam     = FALSE
+  gArcPart[tI].Mem.FileMaxLine = 0
+  gArcPart[tI].Mem.NrOfSeam    = 0
+  SWITCH ArcCheckRangeValue(gArcPart[tI].Config.MaxFileSize,mArcArchiveNrLineChar,mArcArchiveMaxSize)
+    CASE -2
+      ArcPrintMessage(gArcPartMsgOpt[29],gArcPart[tI].Config.PartName[],ArcIntToStr(gArcPart[tI].Config.MaxFileSize),ArcIntToStr(mArcArchiveMaxSize)) ;SeamLengthFileSizeTooLarge
+    CASE 1
+      tFilesSize = tFilesSize + gArcPart[tI].Config.MaxFileSize
+      gArcPart[tI].Mem.FileMaxLine = gArcPart[tI].Config.MaxFileSize / mArcArchiveNrLineChar
+      gArcPart[tI].Mem.NewSeam = FALSE
+      tB = ArcPartFileFunc(#SetMainFile, gArcPart[tI])
+      IF (ArcPartFileFunc(#FilePresent, gArcPart[tI]," ") == TRUE) THEN
+        tB = ArcPartFileFunc(#OpenFileRead, gArcPart[tI]," ")
+        FOR tII = 1 TO mMaxSeamIndex
+          mArcPartSeamLength[tI,tII] = {Active FALSE}
+          IF (gArcPart[tI].Temp.FileHandle > 0) THEN
+            mArcPartSeamLength[tI,tII] = ArcPartInit
+            InitDataBase(tI,tII)
+            CWRITE($FCT_CALL, mState, mMode, "krl_fscanf", gArcPart[tI].Temp.FileHandle,"%s ; %s ; %s ; %f ; %f ; %f ; %d ; %d",mArcPartSeamLength[tI,tII].PrgPointName[],mArcPartSeamLength[tI,tII].SeamName[],mArcPartSeamLength[tI,tII].PartName[],mArcPartSeamLength[tI,tII].DesiredLength,mArcPartSeamLength[tI,tII].TolerancePos,mArcPartSeamLength[tI,tII].ToleranceNeg,mArcPartSeamLength[tI,tII].PartNumber,mArcPartSeamLength[tI,tII].SeamNumber)      
+            IF (ArcPartFileMsgError(mState.MSG_NO,"krl_fscanf",mState.MSG_NO == -2) == TRUE) THEN
+              mArcPartSeamLength[tI,tII] = {Active FALSE}
+              tB = ArcPartFileFunc(#CloseFile, gArcPart[tI])
+            ELSE
+              mArcPartSeamLength[tI,tII].Active = TRUE
+              gArcPart[tI].Mem.NrOfSeam = tII        
+            ENDIF          
+          ENDIF
+        ENDFOR
+        tB = ArcPartFileFunc(#CloseFile, gArcPart[tI])
+      ELSE
+        FOR tII = 1 TO mMaxSeamIndex
+          mArcPartSeamLength[tI,tII] = {Active FALSE} 
+        ENDFOR
+      ENDIF
+  ENDSWITCH
+ENDFOR
+IF (tFilesSize > mArcArchiveMaxSize) THEN
+  ArcPrintMessage(gArcPartMsgOpt[30],ArcIntToStr(tFilesSize),ArcIntToStr(mArcArchiveMaxSize)," ") ;SeamLengtFilesSizeTooLarge
+ENDIF
+ArcSeamLengthIoPlcReset()
+mArcSeamLengthInitDone = TRUE
+END
+;*************************************************************************
+;[GLOBAL Routine] Get Part signal configuration
+;*************************************************************************
+GLOBAL DEFFCT stArcSignal_T ArcGetPartSignal(tSignalType :IN, tIndex :IN)
+DECL INT tIndex
+DECL enSignalType tSignalType
+SWITCH tSignalType
+  CASE #SIN
+    RETURN mArcPartInput[tIndex]
+  CASE #SOUT
+    RETURN mArcPartOutput[tIndex]
+ENDSWITCH
+RETURN {Active FALSE}
+ENDFCT
+;*************************************************************************
+;[GLOBAL Routine] Get Part signal configuration
+;*************************************************************************
+GLOBAL DEF ArcSetPartSignal(tSignalType :IN, tIndex :IN,tArcSignal :IN)
+DECL INT tIndex
+DECL enSignalType tSignalType
+DECL stArcSignal_T tArcSignal
+SWITCH tSignalType
+  CASE #SIN
+     mArcPartInput[tIndex] = tArcSignal
+  CASE #SOUT
+     mArcPartOutput[tIndex] = tArcSignal
+ENDSWITCH
+END
+;*************************************************************************
+;[GLOBAL Routine] Loop Seam Call from SubMitLool
+;*************************************************************************
+GLOBAL DEF ArcSeamLengthLoop()
+IF (wArcSeamLengthCtrlOpt == #OnPart) THEN
+  IF (mArcSeamLengthInitDone == FALSE) THEN
+    ArcPartLoopInit()
+  ENDIF
+ENDIF
+IF (mArcSeamLengthSyncCsv == TRUE) THEN
+  ArcSeamLengthSincroCsv()
+ENDIF
+END
+;*************************************************************************
+;[GLOBAL Routine] On Line Select
+;*************************************************************************
+GLOBAL DEF ArcSeamLineSelect()
+SWITCH wArcSeamLengthCtrlOpt
+   CASE #NONE
+      RETURN ;On Seam length option disable
+   CASE #OnSeam
+     IF (stArcWeldDist.State <> #NONE) THEN
+       stArcWeldDist = stArcWeldDistInit
+       ArcClearAllMsg()
+     ENDIF
+   CASE #OnPart
+     IF (mPartNr > 0) THEN
+       IF (gArcPart[mPartNr].Temp.Part == #Master) THEN
+         ArcSeamReset()
+       ENDIF
+     ENDIF
+ENDSWITCH
+stArcWeldDist.LineSelect = TRUE
+END
+;*************************************************************************
+;[GLOBAL Routine] On Program Reset or Free
+;*************************************************************************
+GLOBAL DEF ArcSeamReset()
+DECL BOOL tB
+DECL INT tI
+ArcClearAllMsg()
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+stArcWeldDist = stArcWeldDistInit
+gArcPartChk   = FALSE
+ArcSeamLengthIoPlcReset()
+IF (mPartNr == 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[mPartNr].Temp.Part == #Master) THEN
+  IF (ArcPartFileFunc(#FilePresent, gArcPart[mPartNr]," ") == TRUE) THEN
+    tB = ArcPartFileFunc(#RemoveFile, gArcPart[mPartNr])
+  ENDIF
+ENDIF
+tB = ArcPartFileFunc(#CloseAllFiles)
+mPartNr = 0
+FOR tI = 1 TO mMaxParts
+  gArcPart[tI].Temp = mArcSeamTempInit
+ENDFOR
+mNrSeams     = 1
+mNrSeamsTemp = 1
+END
+;*****************************************************************************************
+;[Global Routine] Arc seam length Call from ArcMain() before selection
+;*****************************************************************************************
+GLOBAL DEF ArcMainSeamLengthStart(tArcFunc :IN)
+DECL enArcCall_T tArcFunc
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+SWITCH tArcFunc
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle,#ArcOnMoveSpl
+    ;ArcMsg("ArcMainSeamLengthStart")
+    ArcSeamLengthIoMsgStart()
+    ArcSeamLengthOn()
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle,#ArcOffMoveSpl
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Global Routine] Arc seam length Call from ArcMain() after selection
+;*****************************************************************************************
+GLOBAL DEF ArcMainSeamLengthEnd(tArcFunc :IN)
+DECL enArcCall_T tArcFunc
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+SWITCH tArcFunc
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle,#ArcOnMoveSpl
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle,#ArcOffMoveSpl
+    IF (ATAg_ER_ArcGroupEnabled == TRUE) THEN
+      IF (ATAg_ER_ErrorOnSeam == TRUE) THEN
+        IF (ATAg_ER_GoToNexSeam == FALSE) THEN
+          stArcWeldDist.Error = FALSE
+          ;ArcMsg("ATAg_ER_GoToNexSeam = FALSE")
+          RETURN
+        ENDIF
+      ENDIF 
+    ENDIF
+    stArcWeldDist.NrRecoveryError = stArcWeldDist.NrRecoveryError + 1
+    ;ArcMsg("ArcMainSeamLengthEnd")
+    ArcSeamLengthCalc()           ;Part/OnSeam
+    ArcSeamLengthResult()         ;Part/OnSeam
+    ArcSeamLengthCheck(mPartNr)   ;Part/OnSeam
+    ArcSeamLengthToStruc(mPartNr) ;Part
+    ArcSeamLengthToCsv(mPartNr)   ;Part
+    ArcMasterPartToStruc(mPartNr) ;Part
+    ArcSeamLengthIoMsgEnd()       ;OnSeam
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Global Routine] Arc seam length Call from ArcMain() in Advance
+;*****************************************************************************************
+GLOBAL DEF ArcMainSeamLengthAdvance(tArcFunc :IN)
+DECL enArcCall_T tArcFunc
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+SWITCH tArcFunc
+  CASE #ArcOnBeforeMoveStd, #ArcOnBeforeSplSingle     ;(CONTINUE) ON  Before Point
+  CASE #ArcSwiBeforeMoveStd, #ArcSwiBeforeSplSingle   ;(CONTINUE) SWI Before Point
+  CASE #ArcSwiAfterMoveStd, #ArcSwiAfterSplSingle     ;(CONTINUE) SWI After Point
+  CASE #ArcOffBeforeMoveStd, #ArcOffBeforeSplSingle   ;(CONTINUE) OFF Before Point
+  CASE #ArcBeforeSpline                               ;(CONTINUE) [START] Spline Block
+  CASE #ArcAfterSpline                                ;(CONTINUE) [END] Spline Block  
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Global Routine] Arc seam length Call from ArcMain() OnError recovery
+;*****************************************************************************************
+GLOBAL DEF ArcMainSeamLengthER(tArcFunc :IN)
+DECL enArcCall_T tArcFunc
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+IF (gArcTechAdvancedOption == FALSE) THEN
+  RETURN
+ENDIF
+IF (ATAg_ER_ArcGroupEnabled == FALSE) THEN
+  RETURN
+ENDIF
+SWITCH tArcFunc
+  CASE #ArcOnAfterMoveStd, #ArcOnAfterSplSingle
+  CASE #ArcOnMoveStd, #ArcOnSplSingle
+  CASE #ArcOnMoveSpl
+  CASE #ArcSwiMoveStd, #ArcSwiSplSingle, #ArcSwiMoveSpl
+  CASE #ArcOffAfterMoveStd, #ArcOffAfterSplSingle,#ArcOffMoveSpl
+    IF (ATAg_ER_SkipSeam == FALSE) THEN
+      RETURN
+    ENDIF
+    ;ArcMsg("ATAg_ER_SkipSeam = TRUE")
+    stArcWeldDist.SkipSeam = TRUE
+    ArcSeamLengthCalc()           ;Part/OnSeam
+    ArcSeamLengthResult()         ;Part/OnSeam
+    ArcSeamLengthCheck(mPartNr)   ;Part/OnSeam
+    ArcSeamLengthToStruc(mPartNr) ;Part
+    ArcSeamLengthToCsv(mPartNr)   ;Part
+    ArcMasterPartToStruc(mPartNr) ;Part
+    ArcSeamLengthIoMsgEnd()       ;Seam
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Global Routine] Arc seam length Call from ArcState()
+;*****************************************************************************************
+GLOBAL DEF ArcStateSeamLength(tActState :IN)
+DECL enArcState_T tActState
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+IF (stArcWeldDist.Active == FALSE) THEN
+  RETURN 
+ENDIF
+SWITCH tActState
+   CASE #IgnitionErrorStrategy ;,#RestartAfterError
+     ;ArcMsg("Seam IgnitionErrorStrategy")
+     ArcErrorSeamLength(#IgnitionError)
+  CASE #Welding
+    IF (stArcWeldDist.Error == TRUE) THEN
+      stArcWeldDist.Error = FALSE
+      ;ArcMsg("Seam Welding")
+      IF (stArcWeldDist.ErrorExecuted > $DISTANCE) THEN
+        stArcWeldDist.Overlap = stArcWeldDist.Overlap + (stArcWeldDist.ErrorExecuted - $DISTANCE)
+      ENDIF
+      IF (stArcWeldDist.ErrorExecuted < $DISTANCE) THEN
+        stArcWeldDist.Divide  = stArcWeldDist.Divide + ($DISTANCE - stArcWeldDist.ErrorExecuted)
+      ENDIF
+    ENDIF
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Routine] ArcSeamLengthOnAfter
+;*****************************************************************************************
+DEF ArcSeamLengthOn()
+DECL INT tI
+DECL INT tOffset
+DECL STATE_T tState
+DECL stStrike_T tArcSeamSet
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+IF (wArcSeamLengthCtrlOpt == #OnSeam) THEN
+  IF (stArcSeamSet.LengthCtrlActive == FALSE) THEN    
+    ArcPrintMessage(gArcPartMsgOpt[25],ArcStrToMaxChar26(gArcPointInfo.ProgName[]),gArcPointInfo.PointName[]," ") ;SeamLengthFromIlfDisabled
+    stArcWeldDist = stArcWeldDistInit
+    RETURN
+  ENDIF
+ENDIF
+stArcWeldDist.Error = FALSE
+IF (stArcWeldDist.Active == TRUE) AND (stArcWeldDist.LineSelect == FALSE) THEN
+  ;ArcMsg("ArcSeamLengthOn RETURN")
+  RETURN
+ENDIF
+;ArcMsg("ArcSeamLengthOn")  
+stArcWeldDist = stArcWeldDistInit
+IF (stArcCallState.MoveType == #SplBlock) THEN ;TODO CHECK 
+  stArcWeldDist.StartWeld = $DISTANCE
+ENDIF
+tOffset = 0
+SWRITE(stArcWeldDist.PrgPointName[],tState,tOffset,"%s/%s",gArcPointInfo.ProgName[],gArcPointInfo.PointName[])
+stArcWeldDist.SNR = gArcPointInfo.SNR
+ArcGetDesiredLengthILF()
+ArcGetDesiredLengthStruc()
+ArcGetValueForMasterPart()
+stArcWeldDist.Active        = TRUE
+END
+;*************************************************************************
+;[Routine] Get Desired Length from ILF
+;*************************************************************************
+DEF ArcGetDesiredLengthILF()
+DECL BOOL tB
+SWITCH wArcSeamLengthCtrlOpt    
+  CASE #OnSeam
+  DEFAULT
+    RETURN ;On Seam length option disable
+ENDSWITCH
+tB = STRCOPY(stArcWeldDist.SeamName[],gArcSeamName[])
+tB = STRCOPY(stArcWeldDist.PartName[],gArcPartName[])
+stArcWeldDist.DesiredLength = stArcSeamSet.DesiredLength
+stArcWeldDist.PartNumber    = stArcSeamSet.PartNumber
+stArcWeldDist.SeamNumber    = stArcSeamSet.SeamNumber
+stArcWeldDist.TolerancePos  = stArcSeamSet.LengthTolPos
+stArcWeldDist.ToleranceNeg  = stArcSeamSet.LengthTolNeg
+
+IF (ABS(stArcWeldDist.TolerancePos) < mArcMinTolerance) THEN
+  stArcWeldDist.TolerancePos = mArcMinTolerance
+ENDIF
+IF (ABS(stArcWeldDist.ToleranceNeg) < mArcMinTolerance) THEN
+  stArcWeldDist.ToleranceNeg = mArcMinTolerance * (-1)
+ENDIF
+IF (stArcWeldDist.TolerancePos < 0) THEN
+  stArcWeldDist.TolerancePos = stArcWeldDist.TolerancePos * (-1)
+ENDIF
+IF (stArcWeldDist.ToleranceNeg > 0) THEN
+  stArcWeldDist.ToleranceNeg = stArcWeldDist.ToleranceNeg * (-1)
+ENDIF
+stArcWeldDist.Min           = stArcWeldDist.DesiredLength + stArcWeldDist.ToleranceNeg
+stArcWeldDist.Max           = stArcWeldDist.DesiredLength + stArcWeldDist.TolerancePos
+END
+;*************************************************************************
+;[Routine] Get Desired Length from CSV
+;*************************************************************************
+DEF ArcGetDesiredLengthStruc()
+DECL BOOL tB
+DECL BOOL tSeamPresent
+DECL INT tI 
+DECL INT tNrOfSeam
+DECL stSeamLenght_T tArcPartSeamLength
+tSeamPresent = FALSE
+SWITCH wArcSeamLengthCtrlOpt    
+  CASE #OnPart
+  DEFAULT
+    RETURN ;On Seam length option disable
+ENDSWITCH
+IF (mPartNr <= 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[mPartNr].Temp.Active == FALSE) THEN
+  RETURN
+ENDIF
+SWITCH gArcPart[mPartNr].Temp.Part
+  CASE #Master,#NewDistance
+    RETURN
+ENDSWITCH
+tArcPartSeamLength = ArcPartInit
+tNrOfSeam = gArcPart[mPartNr].Temp.NrOfSeam + 1
+IF (tNrOfSeam > 0) THEN
+  ON_ERROR_PROCEED
+  tArcPartSeamLength = mArcPartSeamLength[mPartNr,tNrOfSeam]  
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+  ENDIF
+  ON_ERROR_PROCEED
+  tSeamPresent = ArcStrComp(stArcWeldDist.PrgPointName[],tArcPartSeamLength.PrgPointName[])
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+  ENDIF  
+  stArcWeldDist.Index = tNrOfSeam
+ENDIF
+
+IF (tSeamPresent == FALSE) THEN
+  FOR tI = 1 TO mMaxSeamIndex
+    ON_ERROR_PROCEED
+    tArcPartSeamLength = mArcPartSeamLength[mPartNr,tI] 
+    IF ($ERR.NUMBER > 0) THEN
+      stArcWeldDist.NewSeam = TRUE
+      stArcWeldDist.Index   = -1
+      ERR_CLEAR($ERR)
+      RETURN
+    ENDIF
+    ON_ERROR_PROCEED
+    tSeamPresent = ArcStrComp(stArcWeldDist.PrgPointName[],tArcPartSeamLength.PrgPointName[])
+    IF ($ERR.NUMBER > 0) THEN
+      stArcWeldDist.NewSeam = TRUE
+      stArcWeldDist.Index   = -1
+      ERR_CLEAR($ERR)
+      RETURN
+    ENDIF    
+    IF (tSeamPresent == TRUE) THEN
+      stArcWeldDist.ErrorSequence = TRUE
+      stArcWeldDist.Index         = tI
+      EXIT
+    ENDIF
+  ENDFOR
+ENDIF
+IF (tSeamPresent == TRUE) THEN
+  tB = STRCOPY(stArcWeldDist.SeamName[],tArcPartSeamLength.SeamName[])
+  tB = STRCOPY(stArcWeldDist.PartName[],tArcPartSeamLength.PartName[])
+  stArcWeldDist.DesiredLength         = tArcPartSeamLength.DesiredLength
+  stArcWeldDist.TolerancePos          = tArcPartSeamLength.TolerancePos
+  stArcWeldDist.ToleranceNeg          = tArcPartSeamLength.ToleranceNeg   
+  stArcWeldDist.PartNumber            = tArcPartSeamLength.PartNumber
+  stArcWeldDist.SeamNumber            = tArcPartSeamLength.SeamNumber
+  stArcWeldDist.Min                   = stArcWeldDist.DesiredLength + stArcWeldDist.ToleranceNeg
+  stArcWeldDist.Max                   = stArcWeldDist.DesiredLength + stArcWeldDist.TolerancePos
+  stArcWeldDist.CheckDisabled         = tArcPartSeamLength.SeamDisabled
+  stArcWeldDist.OutPartId             = ArcGetSignalGroupValue(wArcISLPartId)
+  RETURN
+ENDIF
+stArcWeldDist.NewSeam = TRUE
+stArcWeldDist.Index   = -1
+END
+;*************************************************************************
+;[Routine] Get Value for Master Part
+;*************************************************************************
+DEF ArcGetValueForMasterPart()
+DECL BOOL tB
+SWITCH wArcSeamLengthCtrlOpt    
+  CASE #OnPart
+  DEFAULT
+    RETURN ;On Seam length option disable
+ENDSWITCH
+IF (mPartNr <= 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[mPartNr].Temp.Active == FALSE) THEN
+  RETURN
+ENDIF
+IF (gArcPart[mPartNr].Temp.Part == #NONE) THEN
+  RETURN
+ENDIF
+tB = STRCOPY(stArcWeldDist.SeamName[],ArcStrRemoveSpace(gArcSeamName[]))
+tB = STRCOPY(stArcWeldDist.PartName[],ArcStrRemoveSpace(gArcPartName[]))
+stArcWeldDist.PartNumber = stArcSeamSet.PartNumber
+stArcWeldDist.SeamNumber = stArcSeamSet.SeamNumber
+stArcWeldDist.TolerancePos = wArcSeamLengthMaxTol
+stArcWeldDist.ToleranceNeg = wArcSeamLengthMinTol
+IF (ABS(stArcWeldDist.TolerancePos) < mArcMinTolerance) THEN
+  stArcWeldDist.TolerancePos = mArcMinTolerance
+ENDIF
+IF (ABS(stArcWeldDist.ToleranceNeg) < mArcMinTolerance) THEN
+  stArcWeldDist.ToleranceNeg = mArcMinTolerance * (-1)
+ENDIF
+IF (stArcWeldDist.TolerancePos < 0) THEN
+  stArcWeldDist.TolerancePos = stArcWeldDist.TolerancePos * (-1)
+ENDIF
+IF (stArcWeldDist.ToleranceNeg > 0) THEN
+  stArcWeldDist.ToleranceNeg = stArcWeldDist.ToleranceNeg * (-1)
+ENDIF
+END
+;*****************************************************************************************
+;[Routine] Calc Seam Length at ArcOff 
+;*****************************************************************************************
+DEF ArcSeamLengthCalc()
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+;ArcMsg("ArcSeamLengthCalc")
+IF (stArcWeldDist.EndWeld == 0) THEN
+  stArcWeldDist.EndWeld    = $DISTANCE
+  stArcWeldDist.SeamLength = stArcWeldDist.EndWeld - stArcWeldDist.StartWeld
+ENDIF
+END 
+;*****************************************************************************************
+;[Routine] Result Seam Length at ArcOff 
+;*****************************************************************************************
+DEF ArcSeamLengthResult()
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+;ArcMsg("ArcSeamLengthResult")
+IF (stArcWeldDist.Error == TRUE) OR (ArcWeldCondition(gArcActIlfWelder) == FALSE) THEN
+  stArcWeldDist.NotWeldedDist = stArcWeldDist.EndWeld - stArcWeldDist.ErrorExecuted
+ENDIF
+stArcWeldDist.WeldedDist      = stArcWeldDist.SeamLength - stArcWeldDist.NotWeldedDist
+END
+;*****************************************************************************************
+;[Routine] Result Seam Length at ArcOff 
+;*****************************************************************************************
+DEF ArcSeamLengthCheck(tPartNr :IN)
+DECL BOOL tB
+DECL INT tOffset
+DECL INT tPartNr
+DECL CHAR tParam1[26]
+DECL CHAR tParam2[26]
+DECL CHAR tParam3[26]
+DECL STATE_T tState
+DECL enArcSeamLengtMsgOpt_T tArcSeamLengtMsgOpt
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+IF (wArcSeamLengthCtrlOpt == #OnPart) THEN
+  IF (tPartNr == 0) THEN
+    RETURN
+  ENDIF
+  IF (gArcPart[tPartNr].Temp.Part <> #NONE) THEN
+    RETURN
+  ENDIF
+ENDIF
+IF (stArcWeldDist.Active == FALSE) THEN
+  RETURN
+ENDIF
+stArcWeldDist.Active     = FALSE
+tArcSeamLengtMsgOpt      = ArcGetSeamState()
+stArcWeldDist.State      = tArcSeamLengtMsgOpt.State
+stArcWeldDist.PlcErrorNr = tArcSeamLengtMsgOpt.PlcErrorNr
+tB = STRCOPY(tParam1[],stArcWeldDist.SeamName[])
+tB = STRCOPY(tParam2[],stArcWeldDist.PartName[])
+tOffset = 0
+IF (stArcWeldDist.Overlap > 0) THEN
+  SWRITE(tParam3[],tState,tOffset,"%#6.2f / %#6.2f / %#6.2f",stArcWeldDist.DesiredLength,stArcWeldDist.SeamLength,(stArcWeldDist.WeldedDist + stArcWeldDist.Overlap))
+ENDIF
+IF (stArcWeldDist.Divide > 0) THEN
+  SWRITE(tParam3[],tState,tOffset,"%#6.2f / %#6.2f / %#6.2f",stArcWeldDist.DesiredLength,stArcWeldDist.SeamLength,(stArcWeldDist.WeldedDist - stArcWeldDist.Divide))
+ENDIF
+IF ((stArcWeldDist.Overlap == 0) AND (stArcWeldDist.Divide == 0)) THEN
+  SWRITE(tParam3[],tState,tOffset,"%#6.2f / %#6.2f / %#6.2f",stArcWeldDist.DesiredLength,stArcWeldDist.SeamLength,(stArcWeldDist.WeldedDist))
+ENDIF
+ArcPrintMessage(tArcSeamLengtMsgOpt,tParam1[],tParam2[],tParam3[])
+END
+;*****************************************************************************************
+;[Routine] Get Seam state
+;*****************************************************************************************
+DEFFCT enArcSeamLengtMsgOpt_T ArcGetSeamState() 
+IF (stArcWeldDist.CheckDisabled == TRUE) THEN
+  RETURN gArcPartMsgOpt[11] ;Disable check
+ENDIF
+IF (stArcWeldDist.SkipSeam == TRUE) THEN 
+  RETURN gArcPartMsgOpt[14] ;ErrorRecovery Skip Seam
+ENDIF
+IF (stArcWeldDist.DesiredLength == 0) THEN
+  IF (wArcSeamLengthCtrlOpt == #OnPart) THEN
+    RETURN gArcPartMsgOpt[13] ;NewSeamFound
+  ENDIF
+  RETURN gArcPartMsgOpt[2] ;MissingLengthValue
+ENDIF
+IF (stArcWeldDist.LineSelect == TRUE) THEN
+  RETURN gArcPartMsgOpt[3] ;LineSelected
+ENDIF
+IF (ArcCheckRangeValue(stArcWeldDist.SeamLength, 0,0) == 1) THEN
+  RETURN gArcPartMsgOpt[4] ;#MissingTeachDistance
+ENDIF
+IF (ArcWeldCondition(gArcActIlfWelder) == FALSE) AND (stArcWeldDist.Error == FALSE) THEN
+  RETURN gArcPartMsgOpt[5] ;SeamCold
+ENDIF
+IF (stArcWeldDist.Overlap > 0)  AND (stArcWeldDist.Error == FALSE) THEN
+  RETURN gArcPartMsgOpt[6] ;SeamOverlap
+ENDIF
+IF (stArcWeldDist.Divide > 0)  AND (stArcWeldDist.Error == FALSE) THEN
+  RETURN gArcPartMsgOpt[7] ;MissingSomeWeldedPart
+ENDIF
+SWITCH ArcCheckRangeValue(stArcWeldDist.WeldedDist, stArcWeldDist.Min,stArcWeldDist.Max)
+  CASE -2 ;Value too long
+    RETURN gArcPartMsgOpt[8] ;ErrorDistanceToLong
+  CASE -1 ;Value too short
+    RETURN gArcPartMsgOpt[9] ;#ErrorDistanceToShort
+  CASE  1 ;In range
+    IF (stArcWeldDist.ErrorSequence == TRUE) THEN
+      RETURN gArcPartMsgOpt[12] ;#WrongSeamSequence
+    ELSE
+      RETURN gArcPartMsgOpt[10] ;#SeamLengthValueOk
+    ENDIF
+ENDSWITCH
+ENDFCT
+;*****************************************************************************************
+;[Routine] Seam Length Plc with MSG I/O On Start
+;*****************************************************************************************
+DEF ArcSeamLengthIoMsgStart()
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnSeam
+  DEFAULT
+    RETURN
+ENDSWITCH
+SWITCH $MODE_OP
+  CASE #AUT,#EX
+    SWITCH stArcWeldDist.State
+      CASE #NONE
+      DEFAULT
+        IF (stArcSeamSet.LengthCtrlActive == TRUE) THEN
+          IF (wArcSeamLengthPlcConf == TRUE) THEN
+            IF (wArcSeamLengthCheckOff == FALSE) THEN
+              ArcWaitAllMsgAbsent()
+              stArcWeldDist = stArcWeldDistInit
+            ENDIF
+          ENDIF
+        ENDIF
+    ENDSWITCH
+ENDSWITCH
+END
+;*****************************************************************************************
+;[Routine] Seam Length Plc with MSG I/O On End
+;*****************************************************************************************
+DEF ArcSeamLengthIoMsgEnd()
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnSeam
+  DEFAULT
+    RETURN
+ENDSWITCH
+SWITCH $MODE_OP
+  CASE #T1,#T2
+    ArcWaitAllMsgAbsent()
+    stArcWeldDist = stArcWeldDistInit
+  CASE #AUT,#EX
+    IF (stArcSeamSet.LengthCtrlActive == TRUE) THEN 
+      IF (wArcSeamLengthPlcConf == TRUE) THEN
+        ArcPrintMessage(gArcPartMsgOpt[21],stArcWeldDist.SeamName[],stArcWeldDist.PartName[]," ") ; SeamLengthPlcConfirm
+        IF (wArcSeamLengthCheckOff == TRUE) THEN
+           ArcWaitAllMsgAbsent()
+           stArcWeldDist = stArcWeldDistInit
+        ENDIF
+      ENDIF
+    ENDIF
+ENDSWITCH
+;ArcClearAllMsg()
+;stArcWeldDist = stArcWeldDistInit
+END
+;*****************************************************************************************
+;[Routine] Seam Length Plc Reset Outputs 
+;*****************************************************************************************
+DEF ArcSeamLengthIoPlcReset()
+ArcOutputReset(1,mArcPartOutput[])
+ArcOutputReset(2,mArcPartOutput[])
+ArcOutputReset(3,mArcPartOutput[])
+ArcOutputReset(4,mArcPartOutput[])
+ArcSetSignalGroupValue(wArcOSLErrorCode,0)
+ArcSetSignalGroupValue(wArcOSLSeamNum,0)
+END
+;*****************************************************************************************
+;[Routine] Seam Length Init Plc with Input/Output 
+;*****************************************************************************************
+DEF ArcStartOfPartIoPlc()
+IF (mArcSeamTestPlc == FALSE) THEN
+  SWITCH $MODE_OP
+    CASE #T1,#T2,#AUT
+      RETURN
+  ENDSWITCH
+ENDIF
+ArcWaitForSignalState(mArcPartInput[1],FALSE)
+ArcWaitForSignalState(mArcPartInput[2],FALSE)
+END
+;*****************************************************************************************
+;[Routine] Seam Length Plc with Input/Output 
+;*****************************************************************************************
+DEF ArcSeamLengthIoPlc(tSeamLenght :IN)
+DECL stSeamLenght_T tSeamLenght
+IF (mArcSeamTestPlc == FALSE) THEN
+  SWITCH $MODE_OP
+    CASE #T1,#T2,#AUT
+      RETURN
+  ENDSWITCH
+ENDIF
+IF (tSeamLenght.PlcErrorNr == 0) THEN                ;If error on Seam
+  RETURN
+ENDIF
+ArcSetSignalGroupValue(wArcOSLErrorCode,tSeamLenght.PlcErrorNr)
+ArcSetSignalGroupValue(wArcOSLSeamNum,tSeamLenght.SeamNumber)
+ArcOutputSet(1,mArcPartOutput[])
+ArcOutputSet(2,mArcPartOutput[])
+ArcOutputSet(4,mArcPartOutput[])
+ArcWaitForSignalState(mArcPartInput[1],TRUE)
+ArcOutputReset(1,mArcPartOutput[])
+ArcSetSignalGroupValue(wArcOSLErrorCode,0)
+ArcSetSignalGroupValue(wArcOSLSeamNum,0)
+ArcWaitForSignalState(mArcPartInput[1],FALSE)
+END
+;*****************************************************************************************
+;[Routine] On part end Plc with Input/Output 
+;*****************************************************************************************
+DEF ArcEndOfPartIoPlc(tErrNrOfSeam :IN)
+DECL BOOL tErrNrOfSeam
+IF (mArcSeamTestPlc == FALSE) THEN
+  SWITCH $MODE_OP
+    CASE #T1,#T2,#AUT
+      RETURN
+  ENDSWITCH
+ENDIF
+IF (tErrNrOfSeam == FALSE) THEN
+   ArcOutputSet(3,mArcPartOutput[])
+ENDIF
+ArcWaitForSignalState(mArcPartInput[2],TRUE)
+ArcSeamLengthIoPlcReset()
+END
+;*****************************************************************************************
+;[Global Routine] Save Error Data
+;*****************************************************************************************
+GLOBAL DEF ArcErrorSeamLength(tSeamStateError :IN)
+DECL enSeamStateError_T tSeamStateError
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+;ArcMsg("ArcErrorSeamLength")
+stArcWeldDist.ErrorExecuted = $DISTANCE
+stArcWeldDist.Error = TRUE
+SWITCH tSeamStateError
+  CASE #IgnitionError
+    stArcWeldDist.NrStrikeError = stArcWeldDist.NrStrikeError + 1
+  CASE #WeldingError 
+    stArcWeldDist.NrWeldError   = stArcWeldDist.NrWeldError   + 1
+  CASE #RobotTeamError
+    stArcWeldDist.NrRtWeldError = stArcWeldDist.NrRtWeldError + 1
+ENDSWITCH
+END
+;*************************************************************************
+;[Global Routine] Call from UserProgram Start Seam Length Condition
+;*************************************************************************
+GLOBAL DEF ArcPartStart(tPartNr :IN)
+DECL BOOL tB
+DECL INT tI
+DECL INT tPartNr
+DECL INT tLastLine
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  RETURN
+ENDIF
+stArcWeldDist = stArcWeldDistInit
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+IF (gArcWelderActive == FALSE) THEN
+  RETURN 
+ENDIF
+IF (wArcSeamLengthCtrlOpt <> #OnPart) THEN
+  ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","WOV function disabled","active #OnSeam")
+  RETURN
+ENDIF
+IF (mPartNr > 0) THEN
+  ArcMsgWriteS(,#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Already part selected: ",ArcIntToStr(mPartNr))
+  RETURN
+ENDIF
+SWITCH ArcCheckRangeValue(tPartNr, 1,mMaxParts)
+  CASE -2,-1
+    mPartNr = 0
+    ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Part out of index 1-",ArcIntToStr(mMaxParts))
+    RETURN
+ENDSWITCH
+SWITCH ArcCheckRangeValue(gArcPart[tPartNr].Config.MaxFileSize,mArcArchiveNrLineChar,mArcArchiveMaxSize)
+  CASE -2
+    mPartNr = 0
+    ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Size file Big:",ArcIntToStr(gArcPart[tPartNr].Config.MaxFileSize))
+    RETURN
+  CASE -1
+    mPartNr = 0
+    ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Size of file to Small:",ArcIntToStr(gArcPart[tPartNr].Config.MaxFileSize))
+    RETURN    
+ENDSWITCH
+WAIT FOR mArcSeamLengthSyncCsv == FALSE
+gArcPart[tPartNr].Temp.Active = FALSE
+mPartNr = tPartNr
+tB = ArcPartFileFunc(#MkDir, gArcPart[mPartNr])
+;Check if Master file is present
+tB = ArcPartFileFunc(#SetMainFile, gArcPart[mPartNr])
+IF (ArcPartFileFunc(#FilePresent, gArcPart[mPartNr]," ") == FALSE) THEN
+  stArcWeldDist.State = #MasterPart
+  ArcPrintMessage(gArcPartMsgOpt[22],gArcPart[mPartNr].Config.PartName[]," "," ") ;SeamLengthMasterPartActive
+  gArcPart[mPartNr].Temp.Part = #Master
+  FOR tI = 1 TO mMaxSeamIndex
+    mArcPartSeamLength[mPartNr,tI] = {Active FALSE}
+  ENDFOR
+  mNrSeams     = 1
+  mNrSeamsTemp = 1
+  gArcPart[mPartNr].Temp.Active = TRUE
+  RETURN
+ENDIF
+FOR tI = 1 TO mMaxSeamIndex  
+  ON_ERROR_PROCEED
+  mArcPartSeamLength[tPartNr,tI].Active = mArcPartSeamLength[tPartNr,tI].Active
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+    EXIT
+  ENDIF   
+  IF (mArcPartSeamLength[tPartNr,tI].Active == TRUE) THEN
+    IF (mArcPartSeamLength[tPartNr,tI].NewLength == TRUE) THEN
+      mNrSeams     = 1
+      mNrSeamsTemp = 1
+      gArcPart[mPartNr].Temp.Active = TRUE 
+      gArcPart[mPartNr].Temp.Part = #NewDistance
+    ENDIF
+  ENDIF
+ENDFOR
+IF (gArcPart[mPartNr].Temp.Part == #NewDistance ) THEN
+  ArcPrintMessage(gArcPartMsgOpt[27],gArcPart[mPartNr].Config.PartName[]," "," ") ;SeamLengthSomeSeamNeedMaster
+  RETURN
+ENDIF
+IF (gArcPart[mPartNr].Mem.NewSeam == TRUE) THEN
+  gArcPart[mPartNr].Mem.NewSeam = FALSE
+  mNrSeams     = 1
+  mNrSeamsTemp = 1
+  gArcPart[mPartNr].Temp.Active = TRUE 
+  gArcPart[mPartNr].Temp.Part = #NewSeam
+  FOR tI = 1 TO mMaxSeamIndex
+    mArcPartSeamLengthTemp[tPartNr,tI] = {Active FALSE}
+  ENDFOR
+  ArcPrintMessage(gArcPartMsgOpt[28],gArcPart[mPartNr].Config.PartName[]," "," ") ;SeamLengthNewSeam
+  RETURN
+ENDIF
+;Check if Archive file is present
+tB = ArcPartFileFunc(#SetArchiveFiles, gArcPart[mPartNr])
+IF (ArcPartFileFunc(#FilePresent, gArcPart[mPartNr]," ") == FALSE) THEN
+  tB = ArcPartFileFunc(#OpenFileWrite, gArcPart[mPartNr]," ")
+  tB = ArcPartFileFunc(#NlStrToBuffer, gArcPart[mPartNr],mArcArchiveHeader[]) 
+  tB = ArcPartFileFunc(#CloseFile, gArcPart[mPartNr]," ")
+  gArcPart[mPartNr].Mem.FileActLine = 1
+ENDIF
+tB = ArcPartFileFunc(#SetArchiveFiles, gArcPart[mPartNr])
+tB = ArcPartFileFunc(#OpenFileReadWrite, gArcPart[mPartNr]," ")
+IF (ArcPartFileFunc(#FileSize, gArcPart[mPartNr]," ") == FALSE) THEN 
+  tLastLine = gArcPart[mPartNr].Temp.FileSize / mArcArchiveNrLineChar
+  IF (gArcPart[mPartNr].Mem.FileMaxLine > tLastLine) THEN
+    gArcPart[mPartNr].Mem.FileActLine = tLastLine
+  ENDIF
+  IF (gArcPart[mPartNr].Mem.FileActLine) > (tLastLine) THEN
+    gArcPart[mPartNr].Mem.FileActLine = tLastLine
+  ENDIF  
+ENDIF
+FOR tI = 1 TO gArcPart[tPartNr].Mem.NrOfSeam
+  InitDataBase(mPartNr,tI)
+ENDFOR
+gArcPart[mPartNr].Temp.Active = TRUE
+gArcPartChk = TRUE
+END
+;*************************************************************************
+;[Global Routine] Call from UserProgram End Seam Length Condition
+;*************************************************************************
+GLOBAL DEF ArcPartEnd()
+DECL BOOL tB
+DECL INT tI
+DECL INT tII
+DECL stSeamLenght_T tArcPartSeamLength
+IF (gArcIsOnSimEnvironment == TRUE) THEN
+  RETURN
+ENDIF
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnPart
+  DEFAULT
+    RETURN
+ENDSWITCH
+IF (gArcWelderActive == FALSE) THEN
+  RETURN 
+ENDIF
+ArcSeamLengthIoPlcReset()
+ArcStartOfPartIoPlc()
+FOR tI = 1 TO mMaxParts
+  IF (gArcPart[tI].Temp.Active == TRUE) THEN
+    SWITCH gArcPart[tI].Temp.Part
+      CASE #Master
+        ArcPrintMessage(gArcPartMsgOpt[23],gArcPart[tI].Config.PartName[],ArcIntToStr(gArcPart[tI].Mem.NrOfSeam)," ");SeamLengthMasterPartEnd
+        ArcClearAllMsg()
+        ArcSaveMasterToCsv(tI)
+      CASE #NewDistance
+        ArcClearAllMsg()
+        ArcSaveMasterToCsv(tI)
+      CASE #NewSeam
+        FOR tII = 1 TO mMaxSeamIndex
+           mArcPartSeamLength[tI,tII] = mArcPartSeamLengthTemp[tI,tII]
+        ENDFOR  
+        ArcClearAllMsg()
+        ArcSaveMasterToCsv(tI)      
+      DEFAULT
+        FOR tII = 1 TO gArcPart[tI].Mem.NrOfSeam
+          tArcPartSeamLength = mArcPartSeamLength[tI,tII]
+          IF (tArcPartSeamLength.PlcErrorNr > 0) THEN
+            gArcPart[tI].Temp.ErrorOnSeam = TRUE
+          ENDIF
+          IF (tArcPartSeamLength.PlcErrorNr == gArcPartMsgOpt[1].PlcErrorNr) THEN            
+            ArcPrintMessage(gArcPartMsgOpt[1],ArcStrToMaxChar26(tArcPartSeamLength.PrgPointName[]),tArcPartSeamLength.SeamName[],tArcPartSeamLength.PartName[])
+            stArcWeldDist = stArcWeldDistInit
+            tB = STRCOPY(stArcWeldDist.SeamName[],    tArcPartSeamLength.SeamName[])
+            tB = STRCOPY(stArcWeldDist.PartName[],    tArcPartSeamLength.PartName[])
+            tB = STRCOPY(stArcWeldDist.PrgPointName[],tArcPartSeamLength.PrgPointName[])
+            stArcWeldDist.DesiredLength              = tArcPartSeamLength.DesiredLength
+            stArcWeldDist.TolerancePos               = tArcPartSeamLength.TolerancePos
+            stArcWeldDist.ToleranceNeg               = tArcPartSeamLength.ToleranceNeg   
+            stArcWeldDist.PartNumber                 = tArcPartSeamLength.PartNumber
+            stArcWeldDist.SeamNumber                 = tArcPartSeamLength.SeamNumber  
+            stArcWeldDist.State                      = tArcPartSeamLength.SeamState  
+          ENDIF
+        ENDFOR
+        IF (gArcPart[tI].Temp.ErrorOnSeam == TRUE) THEN
+          ArcPrintMessage(gArcPartMsgOpt[24],gArcPart[tI].Config.PartName[]," "," ");SeamLengthErrorOnPart
+        ENDIF
+        FOR tII = 1 TO gArcPart[tI].Mem.NrOfSeam
+          ArcSeamLengthIoPlc(mArcPartSeamLength[tI,tII])
+          InitDataBase(tI,tII)
+        ENDFOR         
+        ArcEndOfPartIoPlc(gArcPart[tI].Temp.ErrorOnSeam)
+    ENDSWITCH        
+    tB = ArcPartFileFunc(#CloseFile, gArcPart[tI]) 
+    gArcPart[tI].Temp = mArcSeamTempInit
+  ENDIF
+ENDFOR
+mPartNr      = 0
+mNrSeams     = 0
+mNrSeamsTemp = 0
+ArcClearAllMsg()
+;tB = ArcPartFileFunc(#CloseAllFiles)
+gArcPartChk = FALSE
+END
+;*************************************************************************
+;[Routine] Init Data Base
+;*************************************************************************
+DEF InitDataBase(tPartNr :IN,tIndex :IN)
+DECL INT tIndex
+DECL INT tPartNr
+mArcPartSeamLength[tPartNr,tIndex].SeamState   = gArcPartMsgOpt[1].State
+mArcPartSeamLength[tPartNr,tIndex].PlcErrorNr  = gArcPartMsgOpt[1].PlcErrorNr
+END
+;*************************************************************************
+;[Routine] Master Part Save Master value to csv File
+;*************************************************************************
+DEF ArcMasterPartToStruc(tPartNr :IN)
+DECL BOOL tB
+DECL INT tPartNr
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnPart
+  DEFAULT
+    RETURN
+ENDSWITCH
+IF (tPartNr <= 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Active == FALSE) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Part == #NONE) THEN
+  RETURN
+ENDIF
+IF (mNrSeams > mMaxSeamIndex) THEN
+  ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Max Nr seam reached > ",ArcIntToStr(mMaxSeamIndex))
+  RETURN
+ENDIF
+IF (mNrSeamsTemp > mMaxSeamIndex) THEN
+  ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Max Nr seam reached > ",ArcIntToStr(mMaxSeamIndex))
+  RETURN
+ENDIF
+SWITCH gArcPart[tPartNr].Temp.Part
+  CASE #Master
+    mArcPartSeamLength[tPartNr,mNrSeams]               = ArcPartInit
+    mArcPartSeamLength[tPartNr,mNrSeams].Active        = TRUE
+    tB = STRCOPY(mArcPartSeamLength[tPartNr,mNrSeams].PrgPointName[],  stArcWeldDist.PrgPointName[])
+    tB = STRCOPY(mArcPartSeamLength[tPartNr,mNrSeams].SeamName[],      stArcWeldDist.SeamName[])
+    tB = STRCOPY(mArcPartSeamLength[tPartNr,mNrSeams].PartName[],      stArcWeldDist.PartName[])
+    mArcPartSeamLength[tPartNr,mNrSeams].DesiredLength = stArcWeldDist.SeamLength
+    mArcPartSeamLength[tPartNr,mNrSeams].TolerancePos  = stArcWeldDist.TolerancePos
+    mArcPartSeamLength[tPartNr,mNrSeams].ToleranceNeg  = stArcWeldDist.ToleranceNeg
+    mArcPartSeamLength[tPartNr,mNrSeams].PartNumber    = stArcWeldDist.PartNumber
+    mArcPartSeamLength[tPartNr,mNrSeams].SeamNumber    = stArcWeldDist.SeamNumber
+    mArcPartSeamLength[tPartNr,mNrSeams].SeamState     = stArcWeldDist.State
+    gArcPart[tPartNr].Mem.NrOfSeam                    = mNrSeams
+    mNrSeams                                          = mNrSeams + 1
+    stArcWeldDist.Active                              = FALSE
+    ArcPrintMessage(gArcPartMsgOpt[26],gArcPart[tPartNr].Config.PartName[],ArcStrToMaxChar26(stArcWeldDist.PrgPointName[]),ArcRealToStr(stArcWeldDist.SeamLength)) ;SeamLengthAddDisToMaser      
+  CASE #NewDistance
+    IF (mArcPartSeamLength[tPartNr,mNrSeams].NewLength == TRUE) THEN
+      mArcPartSeamLength[tPartNr,mNrSeams].NewLength     = FALSE
+      mArcPartSeamLength[tPartNr,mNrSeams].DesiredLength = stArcWeldDist.SeamLength
+      ArcPrintMessage(gArcPartMsgOpt[26],gArcPart[tPartNr].Config.PartName[],ArcStrToMaxChar26(stArcWeldDist.PrgPointName[]),ArcRealToStr(stArcWeldDist.SeamLength)) ;SeamLengthAddDisToMaser     
+    ENDIF
+    mNrSeams                                            = mNrSeams + 1
+    stArcWeldDist.Active                                = FALSE
+  CASE #NewSeam  
+    IF (stArcWeldDist.NewSeam == TRUE) THEN
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp]               = ArcPartInit
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].Active        = TRUE
+      tB = STRCOPY(mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].PrgPointName[],  stArcWeldDist.PrgPointName[])
+      tB = STRCOPY(mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].SeamName[],      stArcWeldDist.SeamName[])
+      tB = STRCOPY(mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].PartName[],      stArcWeldDist.PartName[])
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].DesiredLength = stArcWeldDist.SeamLength
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].TolerancePos  = stArcWeldDist.TolerancePos
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].ToleranceNeg  = stArcWeldDist.ToleranceNeg
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].PartNumber    = stArcWeldDist.PartNumber
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].SeamNumber    = stArcWeldDist.SeamNumber
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp].SeamState     = stArcWeldDist.State
+      ArcPrintMessage(gArcPartMsgOpt[26],gArcPart[tPartNr].Config.PartName[],ArcStrToMaxChar26(stArcWeldDist.PrgPointName[]),ArcRealToStr(stArcWeldDist.SeamLength)) ;SeamLengthAddDisToMaser 
+    ELSE
+      mArcPartSeamLengthTemp[tPartNr,mNrSeamsTemp]               = mArcPartSeamLength[tPartNr,mNrSeams]
+      mNrSeams                                                   = mNrSeams + 1
+    ENDIF                                                       
+    gArcPart[tPartNr].Mem.NrOfSeam                               = mNrSeamsTemp
+    mNrSeamsTemp                                                 = mNrSeamsTemp + 1
+    stArcWeldDist.Active                                         = FALSE
+ENDSWITCH
+END
+;*************************************************************************
+;[Routine] Save Seam Length to tem array
+;*************************************************************************
+DEF ArcSeamLengthToStruc(tPartNr :IN)
+DECL INT tNrOfSeam
+DECL INT tPartNr
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnPart
+  DEFAULT
+    RETURN
+ENDSWITCH
+IF (tPartNr <= 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Active == FALSE) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Part <> #NONE) THEN
+  RETURN
+ENDIF
+gArcPart[tPartNr].Temp.NrOfSeam = gArcPart[tPartNr].Temp.NrOfSeam + 1
+SWITCH stArcWeldDist.State
+  CASE #SeamLengthValueOk,#SeamDisabled
+  DEFAULT
+  gArcPart[tPartNr].Temp.ErrorOnSeam = TRUE
+ENDSWITCH
+IF (stArcWeldDist.Index > 0) THEN
+  mArcPartSeamLength[tPartNr,stArcWeldDist.Index].SeamState     = stArcWeldDist.State
+  mArcPartSeamLength[tPartNr,stArcWeldDist.Index].PlcErrorNr    = stArcWeldDist.PlcErrorNr
+ENDIF
+END
+;*************************************************************************
+;[Routine] Save seam Length to csv file
+;*************************************************************************
+DEF ArcSeamLengthToCsv(tPartNr :IN)
+DECL BOOL tB
+DECL INT tI
+DECL INT tOffset
+DECL INT tPartNr
+DECL CHAR tChar[24]
+DECL DATE tDate
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnPart
+  DEFAULT
+    RETURN
+ENDSWITCH
+IF (tPartNr <= 0) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Active == FALSE) THEN
+  RETURN
+ENDIF
+IF (gArcPart[tPartNr].Temp.Part <> #NONE) THEN
+  RETURN
+ENDIF
+;ArcMsg("WriteToCsv")
+tOffset = 0
+tChar[] = ArcGetStateToStr(stArcWeldDist.State)
+tB = STRCLEAR(mArcArchiveStr[])
+FOR tI = 1 TO mArcArchiveNrLineChar - 1 
+  mArcArchiveStr[tI] = " "
+ENDFOR
+tDate = $DATE
+SWRITE(mArcArchiveStr[],mState,tOffset,"%02d/%02d/%04d;%02d:%02d:%02d;",tDate.DAY,tDate.MONTH,tDate.YEAR,tDate.HOUR,tDate.MIN,tDate.SEC)
+SWRITE(mArcArchiveStr[],mState,tOffset,"%d;%s;%s;%s;%s;%d;%s;%s;",$KR_SERIALNO,$ROBNAME[],$TRAFONAME[],tChar[],stArcWeldDist.PrgPointName[],stArcWeldDist.SNR,stArcWeldDist.PartName[],stArcWeldDist.SeamName[])  
+SWRITE(mArcArchiveStr[],mState,tOffset,"%d;%d;%d;%f;%f;%f;%f;%f;",stArcWeldDist.OutPartId,stArcWeldDist.PartNumber,stArcWeldDist.SeamNumber,stArcWeldDist.DesiredLength,stArcWeldDist.ToleranceNeg,stArcWeldDist.TolerancePos,stArcWeldDist.SeamLength,stArcWeldDist.WeldedDist)
+SWRITE(mArcArchiveStr[],mState,tOffset,"%f;%f;%d;%d;%d;%d",stArcWeldDist.NotWeldedDist,stArcWeldDist.Overlap,stArcWeldDist.NrStrikeError,stArcWeldDist.NrWeldError,stArcWeldDist.NrRtWeldError,stArcWeldDist.NrRecoveryError)
+IF (ArcCheckRangeValue(gArcPart[tPartNr].Mem.FileActLine, 1,gArcPart[tPartNr].Mem.FileMaxLine) <> 1) THEN
+  gArcPart[tPartNr].Mem.FileActLine = 1
+ENDIF
+gArcPart[tPartNr].Temp.FilePointer =  (mArcArchiveNrLineChar * gArcPart[tPartNr].Mem.FileActLine)
+tB = ArcPartFileFunc(#FileSelectCursor, gArcPart[tPartNr],mArcArchiveStr[]) 
+tB = ArcPartFileFunc(#NlStrToBuffer, gArcPart[tPartNr],mArcArchiveStr[]) 
+gArcPart[tPartNr].Mem.FileActLine =  gArcPart[tPartNr].Mem.FileActLine + 1
+;stArcWeldDist = stArcWeldDistInit
+END
+;*************************************************************************
+;[Routine] Convert Enum enSeamState_T to String
+;*************************************************************************
+DEFFCT CHAR[24] ArcGetStateToStr(tState :IN)
+DECL enSeamState_T tState
+SWITCH tState
+  CASE #SeamNotDone
+    RETURN "SeamNotDone"
+  CASE #MissingLengthValue
+    RETURN "MissingLengthValue"
+  CASE #LineSelected
+    RETURN "LineSelected"
+  CASE #MissingTeachDistance
+    RETURN "MissingTeachDistance"
+  CASE #SeamCold
+    RETURN "SeamCold"
+  CASE #SeamOverlap
+    RETURN "SeamOverlap"
+  CASE #MissingSomeWeldedPart
+    RETURN "MissingSomeWeldedPart"
+  CASE #ErrorDistanceToLong
+    RETURN "ErrorDistanceToLong"
+  CASE #ErrorDistanceToShort
+    RETURN "ErrorDistanceToShort"
+  CASE #SeamLengthValueOk
+    RETURN "SeamLengthValueOk"
+  CASE #SeamDisabled
+    RETURN "SeamDisabled"  
+  CASE #WrongSeamSequence  
+    RETURN "WrongSeamSequence"
+  CASE #NewSeamFound  
+    RETURN "NewSeamFound"
+  CASE #ErrorRecoverySkipSeam
+    RETURN "ErrorRecoverySkipSeam"
+ENDSWITCH
+RETURN "None"
+ENDFCT
+;*************************************************************************
+;[Routine] File Function
+;Return TRUE on Error
+;*************************************************************************
+GLOBAL  DEFFCT BOOL ArcPartFileFunc(tFileFunc :IN,tSeam :OUT, tStr[] :IN)
+DECL BOOL tB
+DECL INT tOffset
+DECL CHAR tStr[]
+DECL CHAR tDir[50]
+DECL stSeam_T tSeam
+DECL enFileFunc_T tFileFunc
+  mMode   = #SYNC
+  tOffset = 0
+  tB   = FALSE
+  SWITCH tFileFunc
+    CASE #MkDir
+      CWRITE($FCT_CALL, mState, mMode, "krl_mkdir", mArcDir[])
+      tB = ArcPartFileMsgError(mState.MSG_NO,"MkDir")
+      SWRITE(tDir[],mState,tOffset,"%s/%s",mArcDir[],tSeam.Config.DirName[])
+      CWRITE($FCT_CALL, mState, mMode, "krl_mkdir", tDir[])
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"MkDir") AND tB
+    CASE #SetMainFile
+      tSeam.Temp = mArcSeamTempInit
+      SWRITE(tSeam.Temp.PathToFile[],mState,tOffset,"%s/%s/%s_m.csv",mArcDir[],tSeam.Config.DirName[],tSeam.Config.PartName[])
+    CASE #SetArchiveFiles
+      tSeam.Temp = mArcSeamTempInit
+      SWRITE(tSeam.Temp.PathToFile[],mState,tOffset,"%s/%s/%s_a.csv",mArcDir[],tSeam.Config.DirName[],tSeam.Config.PartName[])
+    CASE #OpenFileWrite
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", tSeam.Temp.PathToFile[],"w",tSeam.Temp.FileHandle)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"OpenFile Write")
+    CASE #OpenFileRead
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", tSeam.Temp.PathToFile[],"r",tSeam.Temp.FileHandle)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"OpenFile Read")
+    CASE #OpenFileAdd
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", tSeam.Temp.PathToFile[],"a",tSeam.Temp.FileHandle)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"OpenFile to Add")
+    CASE #OpenFileReadWrite
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", tSeam.Temp.PathToFile[],"r+",tSeam.Temp.FileHandle)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"OpenFileReadWrite")
+    CASE #FilePresent
+      CWRITE($FCT_CALL, mState, mMode, "krl_fopen", tSeam.Temp.PathToFile[],"r",tSeam.Temp.FileHandle)
+      tSeam.Temp.FilePresent = NOT ArcPartFileMsgError(mState.MSG_NO,"StrToBuffer",TRUE)
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose", tSeam.Temp.FileHandle)
+      RETURN tSeam.Temp.FilePresent
+    CASE #FileSelectCursor
+      CWRITE($FCT_CALL, mState, mMode, "krl_fseek", tSeam.Temp.FileHandle, #SEEK_BEGIN, tSeam.Temp.FilePointer)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"FileSelectCursor",(mState.MSG_NO == -7))
+    CASE #EndOfFile
+      CWRITE($FCT_CALL, mState, mMode, "krl_feof", tSeam.Temp.FileHandle, tB)
+       RETURN ArcPartFileMsgError(mState.MSG_NO,"EndOfFile") OR tB
+    CASE #StrToBuffer
+      CWRITE($FCT_CALL, mState, mMode, "krl_fputs", tSeam.Temp.FileHandle, tStr[])
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"StrToBuffer")
+    CASE #NlStrToBuffer
+      CWRITE($FCT_CALL, mState, mMode, "krl_fwriteln", tSeam.Temp.FileHandle, tStr[])      
+      IF (mState.MSG_NO == -5) THEN ;Workaround (try second time to write line)
+        WAIT SEC 0.024
+        ;ArcMsg("Try second time to krl_fwriteln")
+        CWRITE($FCT_CALL, mState, mMode, "krl_fwriteln", tSeam.Temp.FileHandle, tStr[])
+      ENDIF
+     RETURN ArcPartFileMsgError(mState.MSG_NO,"NlStrToBuffer")
+    CASE #BufferToFile
+      CWRITE($FCT_CALL, mState, mMode, "krl_fflush", tSeam.Temp.FileHandle)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"BufferToFile")
+    CASE #CloseAllFiles
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose_all", -99)
+      tSeam.Temp = mArcSeamTempInit
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"CloseAllFiles",(mState.MSG_NO == -2))
+    CASE #CloseFile
+      IF (tSeam.Temp.FileHandle == 0) THEN
+        RETURN FALSE
+      ENDIF
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose", tSeam.Temp.FileHandle)
+      tSeam.Temp = mArcSeamTempInit
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"CloseFile",(mState.MSG_NO == -2))
+    CASE #RemoveFile
+      CWRITE($FCT_CALL, mState, mMode, "krl_fclose", tSeam.Temp.FileHandle)
+      CWRITE($FCT_CALL, mState, mMode, "krl_remove", tSeam.Temp.PathToFile[])
+      tSeam.Temp = mArcSeamTempInit
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"RemoveFile")
+    CASE #FileSize
+      CWRITE($FCT_CALL, mState, mMode, "krl_fsizeget", tSeam.Temp.FileHandle, tSeam.Temp.FileSize)
+      RETURN ArcPartFileMsgError(mState.MSG_NO,"FileSize")
+  ENDSWITCH
+  RETURN FALSE
+ENDFCT
+;*************************************************************************
+;[Routine] Save MasterArray to Csv file
+;*************************************************************************
+DEF ArcSaveMasterToCsv(tPartNr :IN)
+DECL BOOL tB
+DECL INT tI
+DECL INT tPartNr
+DECL stSeamLenght_T tSeamLenght
+SWITCH ArcCheckRangeValue(tPartNr, 1,mMaxParts)
+  CASE -2,-1
+    mPartNr = 0
+    ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],#QUIT ,"AtbInternalError","ARC",10094,Opt_NOVLSTOP_LOG,"0","Part out of index 1-",ArcIntToStr(mMaxParts))
+    RETURN
+ENDSWITCH
+tB = ArcPartFileFunc(#SetMainFile, gArcPart[tPartNr])
+tB = ArcPartFileFunc(#OpenFileWrite, gArcPart[tPartNr]," ")
+FOR tI = 1 TO mMaxSeamIndex
+  ON_ERROR_PROCEED
+  tSeamLenght = mArcPartSeamLength[tPartNr,tI]
+  IF ($ERR.NUMBER == 0) THEN
+    IF (tSeamLenght.Active == TRUE) THEN
+      CWRITE($FCT_CALL, mState, mMode, "krl_fprintf", gArcPart[tPartNr].Temp.FileHandle,"%s ; %s ; %s ; %f ; %f ; %f ; %d ; %d 'h0a'",tSeamLenght.PrgPointName[],tSeamLenght.SeamName[],tSeamLenght.PartName[],tSeamLenght.DesiredLength,tSeamLenght.TolerancePos,tSeamLenght.ToleranceNeg,tSeamLenght.PartNumber,tSeamLenght.SeamNumber)
+      tB = ArcPartFileMsgError(mState.MSG_NO,"krl_fscanf")
+    ENDIF
+  ELSE
+    ERR_CLEAR($ERR)
+  ENDIF
+ENDFOR
+tB = ArcPartFileFunc(#CloseFile, gArcPart[tPartNr]," ")
+END
+;*************************************************************************
+;[Routine] Get free handle array
+;*************************************************************************
+DEFFCT INT ArcGetFreeHandle()
+IF (mArcLastHandleNr > 200) THEN
+  mArcLastHandleNr = 0
+ENDIF
+mArcLastHandleNr = mArcLastHandleNr + 1
+mMsgHandle[mArcLastHandleNr] = 0
+RETURN mArcLastHandleNr
+ENDFCT
+;*************************************************************************
+;[Routine] Cleare msg with handle
+;*************************************************************************
+DEF ArcClearAllMsg()
+DECL INT tI
+FOR tI = 1 TO mArcLastHandleNr
+  ON_ERROR_PROCEED
+  mMsgHandle[tI] = mMsgHandle[tI]
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+    RETURN
+  ENDIF  
+  ArcMsgWriteClearHandle(mMsgHandle[tI])
+ENDFOR
+mArcLastHandleNr = 0
+END
+;*************************************************************************
+;[Routine] Wait for all message absent
+;*************************************************************************
+DEF ArcWaitAllMsgAbsent()
+DECL INT tI
+FOR tI = 1 TO mArcLastHandleNr
+  ON_ERROR_PROCEED
+  mMsgHandle[tI] = mMsgHandle[tI]
+  IF ($ERR.NUMBER > 0) THEN
+    ERR_CLEAR($ERR)
+    RETURN
+  ENDIF
+  ArcMsgWaitForAbsent(mMsgHandle[tI])
+ENDFOR
+END
+;*************************************************************************
+;[Routine] Write error message
+;*************************************************************************
+DEFFCT BOOL ArcPartFileMsgError(tNr :IN,tStr[] :IN,tExlude :IN)
+DECL BOOL tExlude
+DECL INT tInt
+DECL INT tNR
+DECL INT tMsgNR
+DECL CHAR tStr[]
+DECL enArcMessageType_T tMsgType
+IF (tNr >= 0) THEN
+  RETURN FALSE
+ENDIF
+tMsgNR = tNr * (-1)
+tInt = 0
+tMsgType = mArcSeamMsgType
+ON_ERROR_PROCEED
+tExlude = tExlude
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  tExlude = FALSE
+ENDIF
+IF (tExlude == TRUE) THEN
+  tMsgType = #NONE
+ENDIF
+SWITCH tNr
+  CASE -1
+    ArcMsgWriteS(tInt,tMsgType,"Internal error",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -2
+    ArcMsgWriteS(tInt,tMsgType,"Operation failed,because the file was opened outside a KRL or does not exist",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -3
+    ArcMsgWriteS(tInt,tMsgType,"There is no file open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -4
+    ArcMsgWriteS(tInt,tMsgType,"End of file has been reached",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -5
+    ArcMsgWriteS(tInt,tMsgType,"Maximum size of directory C:\KRC\ROBOTER\UserFiles has been reached",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -6
+    ArcMsgWriteS(tInt,tMsgType,"File already open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -7
+    ArcMsgWriteS(tInt,tMsgType,"Positioning of the file pointer outside the limits of the file",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -8
+    ArcMsgWriteS(tInt,tMsgType,"File system not available: error in specification of target directory",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -10
+    ArcMsgWriteS(tInt,tMsgType,"Invalid number of function parameters transferred",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -11
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter has an invalid value",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -12
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter has an incorrect data type",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -13
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter is not a variable although a variable is expected",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -14
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter string is blank",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -15
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter string is too long",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -16
+    ArcMsgWriteS(tInt,tMsgType,"At least one function parameter string contains invalid characters",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -30
+    ArcMsgWriteS(tInt,tMsgType,"Direct access to the ROBOTER directory is not permissible",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -31
+    ArcMsgWriteS(tInt,tMsgType,"Invalid absolute path",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -32
+    ArcMsgWriteS(tInt,tMsgType,"Mount point not found",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -40
+    ArcMsgWriteS(tInt,tMsgType,"File cannot be opened because 11 files are already open",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -41
+    ArcMsgWriteS(tInt,tMsgType,"One value could not be read. The values before this value were read correctly",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -42
+    ArcMsgWriteS(tInt,tMsgType,"The format string contains an invalid format statement",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -43
+    ArcMsgWriteS(tInt,tMsgType,"The number of values does not correspond to the number of transferred parameters",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  CASE -44
+    ArcMsgWriteS(tInt,tMsgType,"An invalid format was specified for one parameter",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+  DEFAULT
+    ArcMsgWriteS(tInt,tMsgType,"No Message",tStr[],tMsgNR,Opt_NOVLSTOP_NOLOG)
+ENDSWITCH
+RETURN TRUE
+ENDFCT
+;*****************************************************************************************
+;[Routine] Print Message
+;*****************************************************************************************
+GLOBAL DEF ArcPrintMessage(tArcSeamLengtMsgOpt :IN,tParam1[] :IN,tParam2[] :IN,tParam3[] :IN)
+DECL BOOL tWaitAck
+DECL CHAR tParam1[]
+DECL CHAR tParam2[]
+DECL CHAR tParam3[]
+DECL enArcMessageType_T tMsgType
+DECL enArcSeamLengtMsgOpt_T tArcSeamLengtMsgOpt
+IF (wArcSeamLengthCtrlOpt == #NONE) THEN
+  RETURN ;On Seam length option disable
+ENDIF
+SWITCH wArcSeamLengthCtrlOpt
+  CASE #OnSeam
+     SWITCH $MODE_OP
+       CASE #T1
+         tMsgType = tArcSeamLengtMsgOpt.OnSeam.T1.MsgTyp
+         tWaitAck = tArcSeamLengtMsgOpt.OnSeam.T1.Ack
+       CASE #T2
+         tMsgType = tArcSeamLengtMsgOpt.OnSeam.T2.MsgTyp
+         tWaitAck = tArcSeamLengtMsgOpt.OnSeam.T2.Ack
+       CASE #AUT
+         tMsgType = tArcSeamLengtMsgOpt.OnSeam.AUT.MsgTyp
+         tWaitAck = tArcSeamLengtMsgOpt.OnSeam.AUT.Ack
+         SWITCH tArcSeamLengtMsgOpt.MsgNr
+            CASE 10135,10139,10134,10143,10137
+              IF (wArcSeamLengthIgnoreMsg ==  TRUE) THEN
+                tMsgType = #NOTIFY
+                tWaitAck = FALSE
+              ELSE
+                tMsgType = #QUIT
+                tWaitAck = TRUE
+              ENDIF
+              IF (wArcSeamLengthPlcConf == TRUE) THEN
+                tMsgType = #STATE
+                tWaitAck = FALSE
+              ENDIF
+         ENDSWITCH
+       CASE #EX
+         tMsgType = tArcSeamLengtMsgOpt.OnSeam.EX.MsgTyp
+         tWaitAck = tArcSeamLengtMsgOpt.OnSeam.EX.Ack
+         SWITCH tArcSeamLengtMsgOpt.MsgNr
+            CASE 10135,10139,10134,10143,10137
+              IF (wArcSeamLengthIgnoreMsg ==  TRUE) THEN
+                tMsgType = #NOTIFY
+                tWaitAck = FALSE
+              ELSE
+                tMsgType = #QUIT
+                tWaitAck = TRUE
+              ENDIF
+              IF (wArcSeamLengthPlcConf == TRUE) THEN
+                tMsgType = #STATE
+                tWaitAck = FALSE
+              ENDIF
+         ENDSWITCH
+     ENDSWITCH
+  CASE #OnPart
+    SWITCH $MODE_OP
+      CASE #T1
+        tMsgType = tArcSeamLengtMsgOpt.OnPart.T1.MsgTyp
+        tWaitAck = tArcSeamLengtMsgOpt.OnPart.T1.Ack
+      CASE #T2
+        tMsgType = tArcSeamLengtMsgOpt.OnPart.T2.MsgTyp
+        tWaitAck = tArcSeamLengtMsgOpt.OnPart.T2.Ack
+      CASE #AUT
+        tMsgType = tArcSeamLengtMsgOpt.OnPart.AUT.MsgTyp
+        tWaitAck = tArcSeamLengtMsgOpt.OnPart.AUT.Ack
+      CASE #EX
+        tMsgType = tArcSeamLengtMsgOpt.OnPart.EX.MsgTyp
+        tWaitAck = tArcSeamLengtMsgOpt.OnPart.EX.Ack
+    ENDSWITCH
+ENDSWITCH
+IF (tWaitAck == TRUE) THEN
+  ArcMsgWriteS(,tMsgType,tArcSeamLengtMsgOpt.MsgKey[],"ARC",tArcSeamLengtMsgOpt.MsgNr,Opt_NOVLSTOP_LOG,tParam1[],tParam2[],tParam3[])
+ELSE
+  ArcMsgWriteS(mMsgHandle[ArcGetFreeHandle()],tMsgType,tArcSeamLengtMsgOpt.MsgKey[],"ARC",tArcSeamLengtMsgOpt.MsgNr,Opt_NOVLSTOP_LOG,tParam1[],tParam2[],tParam3[])
+ENDIF
+END
+;*****************************************************************************************
+;[Global Routine] Seam Length sincro database with csv file
+;*****************************************************************************************
+GLOBAL DEF ArcSeamLengthSincroCsv()
+DECL BOOL tRemove
+DECL INT tPartNr
+DECL INT tPartNrRemove
+DECL INT tSeamNr
+DECL INT tNewSeamNr
+SWITCH wArcSeamLengthCtrlOpt    
+  CASE #OnPart
+  DEFAULT
+    mArcSeamLengthSyncCsv = FALSE
+    RETURN ;On Seam length option disable
+ENDSWITCH
+ArcPrintMessage(gArcPartMsgOpt[31]," "," "," ") ;SeamLengthSynchronizationStart
+ArcSeamRemoveFile()
+ArcSeamSincroWithFile()
+ArcClearAllMsg()
+ArcPrintMessage(gArcPartMsgOpt[32]," "," "," ") ;SeamLengthSynchronizationFinish
+mArcSeamLengthSyncCsv = FALSE
+END
+;*****************************************************************************************
+;[Global Routine] Seam Length sincro database with csv file
+;*****************************************************************************************
+DEF ArcSeamSincroWithFile()
+DECL BOOL tB
+DECL BOOL tRemove
+DECL INT tPartNr
+DECL INT tSeamNr
+DECL INT tNewSeamNr
+FOR tPartNr = 1 TO mMaxParts  
+  IF ((gArcPart[tPartNr].Config.MaxFileSize > 0) AND  (gArcPart[tPartNr].Mem.RemoveFile == FALSE)) THEN
+    tNewSeamNr = 0
+    FOR tSeamNr = 1 TO mMaxSeamIndex
+      mArcPartSeamLengthTemp[tPartNr,tSeamNr] = {Active FALSE}
+      IF (mArcPartSeamLength[tPartNr,tSeamNr].Active == TRUE) THEN
+         tNewSeamNr = tNewSeamNr + 1
+         IF (mArcPartSeamLength[tPartNr,tSeamNr].RemoveSeam == TRUE) THEN
+            tNewSeamNr = tNewSeamNr - 1
+            ArcPrintMessage(gArcPartMsgOpt[33],ArcIntToStr(tPartNr),ArcIntToStr(tSeamNr)," ") ;SeamLengthRemoveSeam
+         ELSE
+           mArcPartSeamLengthTemp[tPartNr,tNewSeamNr] = mArcPartSeamLength[tPartNr,tSeamNr]
+         ENDIF
+      ENDIF
+    ENDFOR
+    FOR tSeamNr = 1 TO mMaxSeamIndex
+      mArcPartSeamLength[tPartNr,tSeamNr] = {Active FALSE}
+      IF (mArcPartSeamLengthTemp[tPartNr,tSeamNr].Active == TRUE) THEN
+         mArcPartSeamLength[tPartNr,tSeamNr] = mArcPartSeamLengthTemp[tPartNr,tSeamNr]
+      ENDIF
+    ENDFOR
+    gArcPart[tPartNr].Mem.NrOfSeam = tNewSeamNr
+    tB = ArcPartFileFunc(#SetMainFile, gArcPart[tPartNr])
+    IF (ArcPartFileFunc(#FilePresent, gArcPart[tPartNr]," ") == TRUE) THEN
+      ArcSaveMasterToCsv(tPartNr)
+    ENDIF
+  ENDIF
+ENDFOR
+END
+;*****************************************************************************************
+;[Global Routine] Remove csv file
+;*****************************************************************************************
+GLOBAL DEF ArcSeamRemoveFile()
+DECL BOOL tB
+DECL INT tPartNr
+DECL INT tSeamNr
+FOR tPartNr = 1 TO mMaxParts  
+  IF ((gArcPart[tPartNr].Config.MaxFileSize > 0) AND  (gArcPart[tPartNr].Mem.RemoveFile == TRUE)) THEN
+    gArcPart[tPartNr].Mem.RemoveFile = FALSE   
+    tB = ArcPartFileFunc(#SetMainFile, gArcPart[tPartNr])
+    IF (ArcPartFileFunc(#FilePresent, gArcPart[tPartNr]," ") == TRUE) THEN
+      ArcPrintMessage(gArcPartMsgOpt[27],ArcIntToStr(tPartNr),ArcStrToMaxChar26(gArcPart[tPartNr].Temp.PathToFile[])," ")  ;SeamLengthSomeSeamNeedMaster
+      tB = ArcPartFileFunc(#RemoveFile, gArcPart[tPartNr])       
+      FOR tSeamNr = 1 TO mMaxSeamIndex
+        mArcPartSeamLength[tPartNr,tSeamNr] = {Active FALSE}
+      ENDFOR
+    ENDIF
+  ENDIF
+ENDFOR
+END
+;*****************************************************************************************
+;[Global Routine] Arc Seam global routine Anly for Test
+;*****************************************************************************************
+GLOBAL DEF ArcSeamTest(tSwitch:IN,tPart:IN,tSeam:IN)
+DECL INT tSwitch
+DECL INT tPart
+DECL INT tSeam
+SWITCH tSwitch
+   CASE 10 ;Test10 Start
+      mArcPartSeamLength[tPart,tSeam].NewLength = TRUE
+   CASE 13 ;Test13 Start
+      mArcSeamLengthSyncCsv = TRUE      
+      WAIT FOR mArcSeamLengthSyncCsv == FALSE 
+   CASE 15 ;Test15 Start
+      mArcPartSeamLength[tPart,tSeam].Active = TRUE
+   CASE 110 ;Test10 End
+      mArcPartSeamLength[tPart,tSeam].NewLength = FALSE
+   CASE 115 ;Test15 End
+      mArcPartSeamLength[tPart,tSeam].Active = FALSE      
+      ENDSWITCH   
+END
+;*****************************************************************************************
+;[Routine] Seam Length Wait for signal state
+;*****************************************************************************************
+DEF ArcWaitForSignalState(tStruc:IN,tState:IN)
+DECL BOOL tState
+DECL stArcSignal_T tStruc
+IF (tStruc.Active == FALSE) THEN
+  RETURN
+ENDIF
+ON_ERROR_PROCEED
+tStruc.Offset.SignNr = tStruc.Offset.SignNr
+IF ($ERR.NUMBER > 0) THEN
+  ERR_CLEAR($ERR)
+  RETURN
+ENDIF
+IF (tStruc.Offset.SignNr == 0) THEN
+  RETURN
+ENDIF
+IF (tState == TRUE) THEN ;Workaround for hmi message odervise show variable name 
+  SWITCH tStruc.SigType
+    CASE #SIN
+      WAIT FOR $IN[tStruc.Offset.SignNr] == TRUE
+    CASE #SOUT
+      WAIT FOR $OUT[tStruc.Offset.SignNr] == TRUE
+  ENDSWITCH
+ELSE
+  SWITCH tStruc.SigType
+    CASE #SIN
+      WAIT FOR $IN[tStruc.Offset.SignNr] == FALSE
+    CASE #SOUT
+      WAIT FOR $OUT[tStruc.Offset.SignNr] == FALSE
+  ENDSWITCH
+ENDIF
+END

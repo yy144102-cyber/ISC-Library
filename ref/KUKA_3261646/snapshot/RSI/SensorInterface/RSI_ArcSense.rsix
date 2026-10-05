@@ -1,0 +1,807 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not change! The content of this file is generated. -->
+<!-- Generated with RSIVisual standalone. -->
+<!-- KukaRoboter.OptionPackage 999.999.999 B999 -->
+<RsiContext xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="0.2.0">
+  <RsiObjects>
+    <RsiObject ObjTypeId="27" ObjType="PosCorr" ObjId="POSCORR1">
+      <Inputs>
+        <Input InIdx="1" OutObjId="AsAngleCalc1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="AsAngleCalc1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="LowerLimX" ParamId="0" ParamValue="-1000" />
+        <Parameter IsPublic="true" Name="LowerLimY" ParamId="1" ParamValue="-1000" />
+        <Parameter Name="LowerLimZ" ParamId="2" ParamValue="-1000" />
+        <Parameter Name="UpperLimX" ParamId="3" ParamValue="1000" />
+        <Parameter IsPublic="true" Name="UpperLimY" ParamId="4" ParamValue="1000" />
+        <Parameter Name="UpperLimZ" ParamId="5" ParamValue="1000" />
+        <Parameter Name="MaxRotAngle" ParamId="6" ParamValue="1000" />
+        <Parameter Name="LastCorrStat" ParamId="7" ParamValue="0" />
+        <Parameter Name="LastCorrX" ParamId="8" ParamValue="0" />
+        <Parameter Name="LastCorrY" ParamId="9" ParamValue="0" />
+        <Parameter Name="LastCorrZ" ParamId="10" ParamValue="0" />
+        <Parameter Name="LastCorrA" ParamId="11" ParamValue="0" />
+        <Parameter Name="LastCorrB" ParamId="12" ParamValue="0" />
+        <Parameter Name="LastCorrC" ParamId="13" ParamValue="0" />
+        <Parameter IsRuntime="false" Name="RefCorrSys" ParamId="0" ParamValue="4" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="31" ObjType="SUM" ObjId="SUMSideValues">
+      <Inputs>
+        <Input InIdx="0" OutObjId="RedCorGen1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ManualMove1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="RedYSensorGen" OutIdx="0" />
+        <Input InIdx="4" OutObjId="ASSIGGEN1" OutIdx="0" />
+        <Input InIdx="3" OutObjId="ControllerNG1" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Value" ParamId="0" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="60" ObjType="IIRFilter" ObjId="IIRFILTER1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SIGNALSWITCH1" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Reset" ParamId="0" ParamValue="0" />
+        <Parameter IsRuntime="false" Name="Type" ParamId="0" ParamValue="0" />
+        <Parameter IsRuntime="false" Name="Name" ParamId="1" ParamValue="1" />
+        <Parameter IsRuntime="false" Name="Order" ParamId="2" ParamValue="0" />
+        <Parameter IsRuntime="false" Name="Cutoff" ParamId="3" ParamValue="10" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="1" ObjType="RedCorGen" ObjId="RedCorGen1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="AND_1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="SOURCE1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ASSIGGEN1" OutIdx="2" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="30" ObjType="AnIn" ObjId="ArcSenseAnIn">
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="2" ObjType="BitDecode" ObjId="BitDecode1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ArcSenseIO_1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="ArcSenseIO_1">
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="10" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="EqualExtCorrectionState">
+      <Inputs>
+        <Input InIdx="0" OutObjId="STATUS4" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="4" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="9" ObjType="OR" ObjId="OR1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="1" />
+        <Input InIdx="1" OutObjId="EqualExtCorrectionState" OutIdx="0" />
+        <Input InIdx="2" OutObjId="STATUS1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="3" ObjType="BitEncode" ObjId="BitEncode1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="OR2" OutIdx="0" />
+        <Input InIdx="1" OutObjId="RedCorGen1" OutIdx="1" />
+        <Input InIdx="2" OutObjId="AND2" OutIdx="0" />
+        <Input InIdx="3" OutObjId="Threshold3D" OutIdx="0" />
+        <Input InIdx="4" OutObjId="ManualMove1" OutIdx="2" />
+        <Input InIdx="6" OutObjId="RedZSensorGen" OutIdx="1" />
+        <Input InIdx="7" OutObjId="RedYSensorGen" OutIdx="1" />
+        <Input InIdx="8" OutObjId="AND1" OutIdx="0" />
+        <Input InIdx="9" OutObjId="EqualGood" OutIdx="0" />
+        <Input InIdx="10" OutObjId="ASSIGGEN1" OutIdx="1" />
+        <Input InIdx="5" OutObjId="OR_1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="16" ObjType="Map2Sen_PInt" ObjId="ArcSenseOutPut">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitEncode1" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="12" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="10" ObjType="ArcSenseStatus" ObjId="STATUS4" LibName="ARS">
+      <Parameters>
+        <Parameter Name="Type" ParamId="0" ParamValue="8" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="10" ObjType="ArcSenseStatus" ObjId="STATUS1" LibName="ARS">
+      <Parameters>
+        <Parameter Name="Type" ParamId="0" ParamValue="9" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="AND" ObjId="AND3">
+      <Inputs>
+        <Input InIdx="0" OutObjId="TIMER1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="NOT2" OutIdx="0" />
+        <Input InIdx="2" OutObjId="BitDecode1" OutIdx="15" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="55" ObjType="Monitor" ObjId="MONITOR1">
+      <Inputs>
+        <Input InIdx="3" OutObjId="MULTI2" OutIdx="0" />
+        <Input InIdx="4" OutObjId="SigQuality1" OutIdx="0" />
+        <Input InIdx="5" OutObjId="SigQuality1" OutIdx="1" />
+        <Input InIdx="9" OutObjId="ControllerNG1" OutIdx="2" />
+        <Input InIdx="13" OutObjId="PosCalc1" OutIdx="1" />
+        <Input InIdx="15" OutObjId="ControllerNG1" OutIdx="8" />
+        <Input InIdx="16" OutObjId="ControllerNG1" OutIdx="9" />
+        <Input InIdx="17" OutObjId="ControllerNG1" OutIdx="4" />
+        <Input InIdx="18" OutObjId="ControllerNG1" OutIdx="5" />
+        <Input InIdx="19" OutObjId="ControllerNG1" OutIdx="6" />
+        <Input InIdx="20" OutObjId="ControllerNG1" OutIdx="7" />
+        <Input InIdx="21" OutObjId="ControllerNG1" OutIdx="12" />
+        <Input InIdx="22" OutObjId="ControllerNG1" OutIdx="10" />
+        <Input InIdx="23" OutObjId="ControllerNG1" OutIdx="11" />
+        <Input InIdx="2" OutObjId="IIRFILTER1" OutIdx="0" />
+        <Input InIdx="8" OutObjId="ControllerNG1" OutIdx="1" />
+        <Input InIdx="11" OutObjId="ControllerNG1" OutIdx="13" />
+        <Input InIdx="7" OutObjId="ControllerNG1" OutIdx="0" />
+        <Input InIdx="0" OutObjId="Transformation1" OutIdx="1" />
+        <Input InIdx="1" OutObjId="Transformation1" OutIdx="2" />
+        <Input InIdx="14" OutObjId="POSCORR1" OutIdx="2" />
+        <Input InIdx="12" OutObjId="POSCORR1" OutIdx="3" />
+        <Input InIdx="10" OutObjId="ControllerNG1" OutIdx="3" />
+        <Input InIdx="6" OutObjId="SigQuality1" OutIdx="2" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Refresh" ParamId="0" ParamValue="1" />
+        <Parameter Name="Timeout" ParamId="1" ParamValue="50" />
+        <Parameter Name="ReqTimeZero" ParamId="2" ParamValue="1" />
+        <Parameter IsRuntime="false" Name="IP" ParamId="0" ParamValue="192.168.0.1" />
+        <Parameter IsRuntime="false" Name="Channel" ParamId="1" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="6" ObjType="Threshold" ObjId="Threshold3D" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="5" />
+        <Input InIdx="5" OutObjId="ControllerNG1" OutIdx="13" />
+        <Input InIdx="3" OutObjId="Transformation1" OutIdx="1" />
+        <Input InIdx="4" OutObjId="Transformation1" OutIdx="2" />
+        <Input InIdx="1" OutObjId="POSCORR1" OutIdx="2" />
+        <Input InIdx="6" OutObjId="POSCORR1" OutIdx="3" />
+        <Input InIdx="2" OutObjId="POSCORR1" OutIdx="3" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Limit" ParamId="0" ParamValue="5" />
+        <Parameter IsPublic="true" Name="Mode" ParamId="1" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="AND" ObjId="AND9">
+      <Inputs>
+        <Input InIdx="0" OutObjId="OR1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="BitDecode1" OutIdx="6" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="17" ObjType="Map2Sen_PRea" ObjId="MapPreaPosCorrY">
+      <Inputs>
+        <Input InIdx="0" OutObjId="POSCORR1" OutIdx="2" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="9" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="58" ObjType="Sen_PRea" ObjId="SenPreaPosCorrY">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="9" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="10" ObjType="NOT" ObjId="NOT1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="3" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="4" ObjType="SigQuality" ObjId="SigQuality1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="NOT1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="IIRFILTER1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="PosCalc1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Frequency" ParamId="0" ParamValue="0.5" />
+        <Parameter IsPublic="true" Name="FreqRange" ParamId="1" ParamValue="0.1" />
+        <Parameter IsPublic="true" Name="TimeoutSec" ParamId="2" ParamValue="15" />
+        <Parameter IsPublic="true" Name="Mode" ParamId="3" ParamValue="0" />
+        <Parameter IsPublic="true" Name="HMinMeas" ParamId="4" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="HLength" ParamId="5" ParamValue="300" />
+        <Parameter IsPublic="true" Name="Sanity" ParamId="6" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="SigAmplitude" ParamId="7" ParamValue="3" />
+        <Parameter IsPublic="true" Name="TriggerWindowPerc" ParamId="8" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="TriggerWindowPercZero" ParamId="9" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="ArcOnTrackDelaySec" ParamId="10" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="FindSeamMiddle" ParamId="11" ParamValue="0" />
+        <Parameter IsPublic="true" Name="HeightCorrValue" ParamId="12" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MinInputValue" ParamId="13" ParamValue="0.01" />
+        <Parameter IsPublic="true" Name="MinRefCycleOn" ParamId="14" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MinRefCycleSwi" ParamId="15" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="31" ObjType="SUM" ObjId="SUMHeightValues">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ManualMove1" OutIdx="1" />
+        <Input InIdx="1" OutObjId="RedZSensorGen" OutIdx="0" />
+        <Input InIdx="2" OutObjId="ControllerNG1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Value" ParamId="0" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="2" ObjType="BitDecode" ObjId="ErrorDecodeController" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControllerNG1" OutIdx="5" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="9" ObjType="ManualMove" ObjId="ManualMove1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="4" />
+        <Input InIdx="1" OutObjId="BitDecode1" OutIdx="8" />
+        <Input InIdx="2" OutObjId="BitDecode1" OutIdx="9" />
+        <Input InIdx="3" OutObjId="BitDecode1" OutIdx="10" />
+        <Input InIdx="4" OutObjId="BitDecode1" OutIdx="11" />
+        <Input InIdx="6" OutObjId="BitDecode1" OutIdx="7" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="MMinSec" ParamId="0" ParamValue="2.5" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="EqualTimeout">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="4" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="1" ObjType="RedCorGen" ObjId="RedZSensorGen" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="12" />
+        <Input InIdx="1" OutObjId="SenPreaPosCorrZ" OutIdx="0" />
+        <Input InIdx="2" OutObjId="SOURCE1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="1" ObjType="RedCorGen" ObjId="RedYSensorGen" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="13" />
+        <Input InIdx="2" OutObjId="SOURCE1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ControllerNG1" OutIdx="13" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="58" ObjType="Sen_PRea" ObjId="SenPreaPosCorrZ">
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="2" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="45" ObjType="Source" ObjId="SOURCE1">
+      <Parameters>
+        <Parameter Name="Type" ParamId="0" ParamValue="0" />
+        <Parameter Name="Offset" ParamId="1" ParamValue="0" />
+        <Parameter Name="Amplitude" ParamId="2" ParamValue="0" />
+        <Parameter Name="Period" ParamId="3" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="ControlActive">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControllerNG1" OutIdx="4" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="2" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="ContRef">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControllerNG1" OutIdx="4" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="1" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="AND" ObjId="AND1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControlActive" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ErrorDecodeController" OutIdx="6" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="AND" ObjId="AND2">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ContRef" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ErrorDecodeController" OutIdx="6" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="55" ObjType="Monitor" ObjId="TestMonitor">
+      <Inputs>
+        <Input InIdx="1" OutObjId="BitDecode1" OutIdx="3" />
+        <Input InIdx="2" OutObjId="OR1" OutIdx="0" />
+        <Input InIdx="3" OutObjId="SigQuality1" OutIdx="0" />
+        <Input InIdx="4" OutObjId="ControllerNG1" OutIdx="4" />
+        <Input InIdx="7" OutObjId="IIRFILTER1" OutIdx="0" />
+        <Input InIdx="8" OutObjId="EqualTimeout" OutIdx="0" />
+        <Input InIdx="9" OutObjId="AND2" OutIdx="0" />
+        <Input InIdx="10" OutObjId="AND1" OutIdx="0" />
+        <Input InIdx="11" OutObjId="Threshold3D" OutIdx="0" />
+        <Input InIdx="5" OutObjId="ControllerNG1" OutIdx="13" />
+        <Input InIdx="0" OutObjId="Transformation1" OutIdx="1" />
+        <Input InIdx="6" OutObjId="POSCORR1" OutIdx="3" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Refresh" ParamId="0" ParamValue="1" />
+        <Parameter Name="Timeout" ParamId="1" ParamValue="50" />
+        <Parameter Name="ReqTimeZero" ParamId="2" ParamValue="1" />
+        <Parameter IsRuntime="false" Name="IP" ParamId="0" ParamValue="192.168.0.1" />
+        <Parameter IsRuntime="false" Name="Channel" ParamId="1" ParamValue="2" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="ArcSenseDigIn">
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="1" />
+        <Parameter IsPublic="true" Name="DataType" ParamId="1" ParamValue="3" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="59" ObjType="SignalSwitch" ObjId="SIGNALSWITCH1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="14" />
+        <Input InIdx="1" OutObjId="SIGNALSWITCH5" OutIdx="0" />
+        <Input InIdx="2" OutObjId="ArcSenseDigIn" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="42" ObjType="MULTI" ObjId="MULTI2">
+      <Inputs>
+        <Input InIdx="0" OutObjId="POW1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="IIRFILTER1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="68" ObjType="POW" ObjId="POW1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="3" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Exp" ParamId="0" ParamValue="-1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="9" ObjType="OR" ObjId="OR2">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="AND3" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="40" ObjType="Timer" ObjId="TIMER1">
+      <Inputs>
+        <Input InIdx="1" OutObjId="BitDecode1" OutIdx="3" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Reset" ParamId="0" ParamValue="1" />
+        <Parameter Name="Time" ParamId="1" ParamValue="16" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="10" ObjType="NOT" ObjId="NOT2">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="17" ObjType="Map2Sen_PRea" ObjId="MULTILAYERZ">
+      <Inputs>
+        <Input InIdx="0" OutObjId="POSCORR1" OutIdx="3" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="2" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="17" ObjType="Map2Sen_PRea" ObjId="MULTILAYERY">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControllerNG1" OutIdx="13" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="1" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="57" ObjType="Sen_PInt" ObjId="ArcSenseIO_2">
+      <Parameters>
+        <Parameter IsPublic="true" Name="Index" ParamId="0" ParamValue="11" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="2" ObjType="BitDecode" ObjId="BitDecode2" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ArcSenseIO_2" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Transformation" ObjId="Transformation1" LibName="ARS">
+      <Parameters>
+        <Parameter Name="Mode" ParamId="0" ParamValue="2" />
+        <Parameter Name="WaitCycleLKBase" ParamId="1" ParamValue="10" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="59" ObjType="SignalSwitch" ObjId="SIGNALSWITCH5">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode2" OutIdx="2" />
+        <Input InIdx="2" OutObjId="ArcSenseAnIn" OutIdx="0" />
+        <Input InIdx="1" OutObjId="ASSIGGEN1" OutIdx="3" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="EqualGood">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="0" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="11" ObjType="DelayCalc" ObjId="DelayCalc1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="1" OutObjId="IIRFILTER1" OutIdx="0" />
+        <Input InIdx="0" OutObjId="ASSIGGEN1" OutIdx="2" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="IgnoreDelay" ParamId="0" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="5" ObjType="PosCalc" ObjId="PosCalc1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="AND9" OutIdx="0" />
+        <Input InIdx="1" OutObjId="OR1" OutIdx="0" />
+        <Input InIdx="4" OutObjId="SenPreaPosCorrY" OutIdx="0" />
+        <Input InIdx="2" OutObjId="ASSIGGEN1" OutIdx="2" />
+        <Input InIdx="3" OutObjId="Transformation1" OutIdx="1" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="ControllerNG" ObjId="ControllerNG1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="IIRFILTER1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="PosCalc1" OutIdx="1" />
+        <Input InIdx="3" OutObjId="SigQuality1" OutIdx="3" />
+        <Input InIdx="4" OutObjId="EqualGettingData" OutIdx="0" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="KpSide" ParamId="0" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="KiSide" ParamId="1" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="TaSide" ParamId="2" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="KpHeight" ParamId="3" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="KiHeight" ParamId="4" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="TaHeight" ParamId="5" ParamValue="0.02" />
+        <Parameter IsPublic="true" Name="KpUserFactorSide" ParamId="6" ParamValue="100" />
+        <Parameter IsPublic="true" Name="KpUserFactorHeight" ParamId="7" ParamValue="100" />
+        <Parameter IsPublic="true" Name="SanityValue" ParamId="8" ParamValue="0.3" />
+        <Parameter IsPublic="true" Name="ControllerMode" ParamId="9" ParamValue="0" />
+        <Parameter IsPublic="true" Name="SignalAmplitude" ParamId="10" ParamValue="2.5" />
+        <Parameter IsPublic="true" Name="MaximumContAmplitude" ParamId="11" ParamValue="0.1" />
+        <Parameter IsPublic="true" Name="HeightCycle" ParamId="12" ParamValue="200" />
+        <Parameter IsPublic="true" Name="HeightRefCycle" ParamId="13" ParamValue="400" />
+        <Parameter IsPublic="true" Name="DeadZoneSide" ParamId="14" ParamValue="0.0125" />
+        <Parameter IsPublic="true" Name="DeadZoneHeight" ParamId="15" ParamValue="0.04" />
+        <Parameter IsPublic="true" Name="TriggerWindowPerc" ParamId="16" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="AsymetricHeightUp" ParamId="17" ParamValue="1.2" />
+        <Parameter IsPublic="true" Name="AsymetricHeightDown" ParamId="18" ParamValue="0.8" />
+        <Parameter IsPublic="true" Name="WeldBreakDecay" ParamId="19" ParamValue="375" />
+        <Parameter IsPublic="true" Name="WeldBreakMax" ParamId="20" ParamValue="10" />
+        <Parameter IsPublic="true" Name="ToolDirectionSwitched" ParamId="21" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MoveBackwardOn" ParamId="22" ParamValue="0" />
+        <Parameter IsPublic="true" Name="TriggerWindowPercZero" ParamId="23" ParamValue="0.2" />
+        <Parameter IsPublic="true" Name="Bias" ParamId="24" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MaxCorrWeaveSide" ParamId="25" ParamValue="0" />
+        <Parameter IsPublic="true" Name="ControlSelection" ParamId="26" ParamValue="0" />
+        <Parameter IsPublic="true" Name="PeriodsStartCorrSlow" ParamId="27" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MaxCorrWeaveHeight" ParamId="28" ParamValue="0" />
+        <Parameter IsPublic="true" Name="HeightCorrValue" ParamId="29" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MinInputValue" ParamId="30" ParamValue="0.01" />
+        <Parameter IsPublic="true" Name="NrCycRefMidVal" ParamId="31" ParamValue="0" />
+        <Parameter IsPublic="true" Name="MidValRefPercent" ParamId="32" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="0" ObjType="ASSIGGEN" ObjId="ASSIGGEN1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="BitDecode1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="OR1" OutIdx="0" />
+        <Input InIdx="2" OutObjId="BitDecode2" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Type" ParamId="0" ParamValue="0" />
+        <Parameter IsPublic="true" Name="Velocity" ParamId="1" ParamValue="0" />
+        <Parameter IsPublic="true" Name="Amplitude" ParamId="2" ParamValue="0.01" />
+        <Parameter IsPublic="true" Name="Period" ParamId="3" ParamValue="4" />
+        <Parameter IsPublic="true" Name="SoftStartCounter" ParamId="4" ParamValue="1" />
+        <Parameter IsPublic="true" Name="ArcParamChanged" ParamId="5" ParamValue="0" />
+        <Parameter IsPublic="true" Name="ReduceOffset" ParamId="6" ParamValue="0" />
+        <Parameter IsPublic="true" Name="WeaveOffset" ParamId="7" ParamValue="0" />
+        <Parameter IsPublic="true" Name="WeaveDelayRight" ParamId="8" ParamValue="0" />
+        <Parameter IsPublic="true" Name="WeaveDelayLeft" ParamId="9" ParamValue="0" />
+        <Parameter IsPublic="true" Name="WeaveDelayMode" ParamId="10" ParamValue="0" />
+        <Parameter IsPublic="true" Name="AmpMaxReachedOutIdx" ParamId="11" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="81" ObjType="PosCorrMon" ObjId="PosCorrMon_1">
+      <Parameters>
+        <Parameter Name="MaxTrans" ParamId="0" ParamValue="1000" />
+        <Parameter Name="MaxRotAngle" ParamId="1" ParamValue="1000" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="10" ObjType="NOT" ObjId="NOT_1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="STATUS1" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="8" ObjType="AND" ObjId="AND_1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="NOT_1" OutIdx="0" />
+        <Input InIdx="1" OutObjId="BitDecode1" OutIdx="2" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="EqualSignalToSmall">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="5" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="9" ObjType="OR" ObjId="OR_1">
+      <Inputs>
+        <Input InIdx="0" OutObjId="EqualSignalToSmall" OutIdx="0" />
+        <Input InIdx="1" OutObjId="EqualTimeout" OutIdx="0" />
+      </Inputs>
+    </RsiObject>
+    <RsiObject ObjTypeId="17" ObjType="Map2Sen_PRea" ObjId="HeigtRefValue">
+      <Inputs>
+        <Input InIdx="0" OutObjId="ControllerNG1" OutIdx="15" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="Index" ParamId="0" ParamValue="3" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="12" ObjType="AsAngleCalc" ObjId="AsAngleCalc1" LibName="ARS">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SUMSideValues" OutIdx="0" />
+        <Input InIdx="1" OutObjId="SUMHeightValues" OutIdx="0" />
+        <Input InIdx="2" OutObjId="ASSIGGEN1" OutIdx="2" />
+      </Inputs>
+      <Parameters>
+        <Parameter IsPublic="true" Name="Angle" ParamId="0" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+    <RsiObject ObjTypeId="7" ObjType="Equal" ObjId="EqualGettingData">
+      <Inputs>
+        <Input InIdx="0" OutObjId="SigQuality1" OutIdx="1" />
+      </Inputs>
+      <Parameters>
+        <Parameter Name="CompVal" ParamId="0" ParamValue="2" />
+        <Parameter Name="Tolerance" ParamId="1" ParamValue="0" />
+      </Parameters>
+    </RsiObject>
+  </RsiObjects>
+  <Editor>
+    <Comments />
+    <Connectors />
+    <FunctionBlocks />
+    <Groups />
+    <Links>
+      <Link From="SIGNALSWITCH1" FromPort="Out1" Points="-4953.15,115.5;-4945.15,115.5;-4937.15,115.5;-4937.15,115.5;-4894,115.5;-4878,115.5" To="IIRFILTER1" ToPort="In1" />
+      <Link From="ArcSenseIO_1" FromPort="Out1" Points="-6606.09,-1540.5;-6594.09,-1540.5;-6582.09,-1540.5;-6582.09,-1888.5;-6148,-1888.5;-6132,-1888.5" To="BitDecode1" ToPort="Value" />
+      <Link From="BitDecode1" FromPort="Out2" Points="-6006.14,-1858.5;-5886.14,-1858.5;-5766.14,-1858.5;-5766.14,-1240.5;-3928,-1240.5;-3912,-1240.5" To="OR1" ToPort="In1" />
+      <Link From="EqualExtCorrectionState" FromPort="Out1" Points="-3999.31,-1210.5;-3991.31,-1210.5;-3983.31,-1210.5;-3983.31,-1210.5;-3928,-1210.5;-3912,-1210.5" To="OR1" ToPort="In2" />
+      <Link From="STATUS1" FromPort="Status" Points="-4275.15,-1102.5;-4263.15,-1102.5;-4251.15,-1102.5;-4251.15,-1246;-3964.53,-1246;-3964.53,-1180.5;-3928,-1180.5;-3912,-1180.5" To="OR1" ToPort="In3" />
+      <Link From="OR2" FromPort="Out1" Points="-451,-1438.5;-443,-1438.5;-435,-1438.5;-435,-1240.5;-184,-1240.5;-168,-1240.5" To="BitEncode1" ToPort="Bool1" />
+      <Link From="RedCorGen1" FromPort="Ready" Points="-3166.19,-910.5;-3146.19,-910.5;-3126.19,-910.5;-3126.19,-1336;-2594.02,-1336;-2594.02,-1210.5;-184,-1210.5;-168,-1210.5" To="BitEncode1" ToPort="Bool2" />
+      <Link From="AND2" FromPort="Out1" Points="-841,-562.5;-829,-562.5;-807.69,-562.5;-807.69,-1180.5;-184,-1180.5;-168,-1180.5" To="BitEncode1" ToPort="Bool3" />
+      <Link From="Threshold3D" FromPort="State" Points="-341.49,-2284.5;-333.49,-2284.5;-325.49,-2284.5;-325.49,-1150.5;-184,-1150.5;-168,-1150.5" To="BitEncode1" ToPort="Bool4" />
+      <Link From="ManualMove1" FromPort="HandShakeOut" Points="-3035.16,-1618.5;-3027.16,-1618.5;-3019.16,-1618.5;-3019.16,-1120.5;-184,-1120.5;-168,-1120.5" To="BitEncode1" ToPort="Bool5" />
+      <Link From="RedZSensorGen" FromPort="Ready" Points="-3148.46,-778.5;-3128.46,-778.5;-3092.46,-778.5;-3092.46,-1132;-1726.08,-1132;-1726.08,-1060.5;-184,-1060.5;-168,-1060.5" To="BitEncode1" ToPort="Bool7" />
+      <Link From="RedYSensorGen" FromPort="Ready" Points="-3147.85,-658.5;-3127.85,-658.5;-3091.85,-658.5;-3091.85,-1132;-1726.08,-1132;-1726.08,-1030.5;-184,-1030.5;-168,-1030.5" To="BitEncode1" ToPort="Bool8" />
+      <Link From="AND1" FromPort="Out1" Points="-733,-418.5;-721,-418.5;-709,-418.5;-709,-1000.5;-184,-1000.5;-168,-1000.5" To="BitEncode1" ToPort="Bool9" />
+      <Link From="EqualGood" FromPort="Out1" Points="-3129.31,-82.5;-3117.31,-82.5;-3105.31,-82.5;-3105.31,-970.5;-184,-970.5;-168,-970.5" To="BitEncode1" ToPort="Bool10" />
+      <Link From="ASSIGGEN1" FromPort="NoOffset" Points="-3357.17,-1240.5;-3333.17,-1240.5;-3309.17,-1240.5;-3309.17,-686.25;-1726.08,-686.25;-1726.08,-940.5;-184,-940.5;-168,-940.5" To="BitEncode1" ToPort="Bool11" />
+      <Link From="BitEncode1" FromPort="Value" Points="-42.74,-1240.5;-34.74,-1240.5;-26.74,-1240.5;-26.74,-1240.5;-22,-1240.5;-6,-1240.5" To="ArcSenseOutPut" ToPort="In1" />
+      <Link From="TIMER1" FromPort="Out1" Points="-1240.27,-214.5;-1228.27,-214.5;-1216.27,-214.5;-1216.27,-1408.5;-766,-1408.5;-750,-1408.5" To="AND3" ToPort="In1" />
+      <Link From="NOT2" FromPort="Out1" Points="-1309,-736.5;-1297,-736.5;-1285,-736.5;-1285,-1378.5;-766,-1378.5;-750,-1378.5" To="AND3" ToPort="In2" />
+      <Link From="BitDecode1" FromPort="Out16" Points="-6006.14,-1438.5;-5998.14,-1438.5;-5990.14,-1438.5;-5990.14,-1348.5;-766,-1348.5;-750,-1348.5" To="AND3" ToPort="In3" />
+      <Link From="MULTI2" FromPort="Out1" Points="-3151,373.5;-3143,373.5;-3135,373.5;-3135,601.5;-1114,601.5;-1098,601.5" To="MONITOR1" ToPort="In4" />
+      <Link From="SigQuality1" FromPort="Ready" Points="-3976.22,-10.5;-3944.22,-10.5;-3912.22,-10.5;-3912.22,631.5;-1114,631.5;-1098,631.5" To="MONITOR1" ToPort="In5" />
+      <Link From="SigQuality1" FromPort="State" Points="-3976.22,19.5;-3952.22,19.5;-3928.22,19.5;-3928.22,661.5;-1114,661.5;-1098,661.5" To="MONITOR1" ToPort="In6" />
+      <Link From="ControllerNG1" FromPort="Y-Int" Points="-2979.19,781.5;-2875.19,781.5;-2771.19,781.5;-2771.19,781.5;-1114,781.5;-1098,781.5" To="MONITOR1" ToPort="In10" />
+      <Link From="PosCalc1" FromPort="ShiftedWeaveSig" Points="-4437.93,-556.5;-4429.93,-556.5;-4405.93,-556.5;-4405.93,1523.45;-2874.51,1523.45;-2874.51,901.5;-1114,901.5;-1098,901.5" To="MONITOR1" ToPort="In14" />
+      <Link From="ControllerNG1" FromPort="UDZHeight" Points="-2979.19,961.5;-2923.19,961.5;-2867.19,961.5;-2867.19,961.5;-1114,961.5;-1098,961.5" To="MONITOR1" ToPort="In16" />
+      <Link From="ControllerNG1" FromPort="LDZHeight" Points="-2979.19,991.5;-2931.19,991.5;-2883.19,991.5;-2883.19,991.5;-1114,991.5;-1098,991.5" To="MONITOR1" ToPort="In17" />
+      <Link From="ControllerNG1" FromPort="State" Points="-2979.19,841.5;-2891.19,841.5;-2803.19,841.5;-2803.19,1021.5;-1114,1021.5;-1098,1021.5" To="MONITOR1" ToPort="In18" />
+      <Link From="ControllerNG1" FromPort="Error" Points="-2979.19,871.5;-2899.19,871.5;-2819.19,871.5;-2819.19,1051.5;-1114,1051.5;-1098,1051.5" To="MONITOR1" ToPort="In19" />
+      <Link From="ControllerNG1" FromPort="Trigger" Points="-2979.19,901.5;-2907.19,901.5;-2835.19,901.5;-2835.19,1081.5;-1114,1081.5;-1098,1081.5" To="MONITOR1" ToPort="In20" />
+      <Link From="ControllerNG1" FromPort="MidValMeas" Points="-2979.19,931.5;-2915.19,931.5;-2851.19,931.5;-2851.19,1111.5;-1114,1111.5;-1098,1111.5" To="MONITOR1" ToPort="In21" />
+      <Link From="ControllerNG1" FromPort="ActualSideRatio" Points="-2979.19,1081.5;-2955.19,1081.5;-2931.19,1081.5;-2931.19,1141.5;-1114,1141.5;-1098,1141.5" To="MONITOR1" ToPort="In22" />
+      <Link From="ControllerNG1" FromPort="UDZSide" Points="-2979.19,1021.5;-2939.19,1021.5;-2899.19,1021.5;-2899.19,1171.5;-1114,1171.5;-1098,1171.5" To="MONITOR1" ToPort="In23" />
+      <Link From="ControllerNG1" FromPort="LDZSide" Points="-2979.19,1051.5;-2947.19,1051.5;-2915.19,1051.5;-2915.19,1201.5;-1114,1201.5;-1098,1201.5" To="MONITOR1" ToPort="In24" />
+      <Link From="BitDecode1" FromPort="Out6" Points="-6006.14,-1738.5;-5954.14,-1738.5;-5902.14,-1738.5;-5902.14,-2284.5;-532,-2284.5;-516,-2284.5" To="Threshold3D" ToPort="Reset" />
+      <Link From="OR1" FromPort="Out1" Points="-3799,-1240.5;-3791,-1240.5;-3783,-1240.5;-3783,-1124;-4858,-1124;-4858,-586.5;-4852,-586.5;-4836,-586.5" To="AND9" ToPort="In1" />
+      <Link From="BitDecode1" FromPort="Out7" Points="-6006.14,-1708.5;-5926.14,-1708.5;-5846.14,-1708.5;-5846.14,-556.5;-4852,-556.5;-4836,-556.5" To="AND9" ToPort="In2" />
+      <Link From="BitDecode1" FromPort="Out4" Points="-6006.14,-1798.5;-5902.14,-1798.5;-5798.14,-1798.5;-5798.14,-274.5;-4666,-274.5;-4650,-274.5" To="NOT1" ToPort="In1" />
+      <Link From="NOT1" FromPort="Out1" Points="-4537,-274.5;-4529,-274.5;-4521,-274.5;-4521,-10.5;-4258,-10.5;-4242,-10.5" To="SigQuality1" ToPort="Reset" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4633.13,115.5;-4621.13,115.5;-4621.13,19.5;-4258,19.5;-4242,19.5" To="SigQuality1" ToPort="Signal" />
+      <Link From="PosCalc1" FromPort="ShiftedWeaveSig" Points="-4437.93,-556.5;-4429.93,-556.5;-4421.93,-556.5;-4421.93,49.5;-4258,49.5;-4242,49.5" To="SigQuality1" ToPort="WeaveSig" />
+      <Link From="ManualMove1" FromPort="Z-Out" Points="-3035.16,-1648.5;-3019.16,-1648.5;-3003.16,-1648.5;-3003.16,-1072.5;-2818,-1072.5;-2802,-1072.5" To="SUMHeightValues" ToPort="Sum1" />
+      <Link From="RedZSensorGen" FromPort="Value" Points="-3148.46,-808.5;-3136.46,-808.5;-3108.46,-808.5;-3108.46,-1042.5;-2818,-1042.5;-2802,-1042.5" To="SUMHeightValues" ToPort="Sum2" />
+      <Link From="ControllerNG1" FromPort="Z" Points="-2979.19,751.5;-2959.19,751.5;-2939.19,751.5;-2939.19,-1012.5;-2818,-1012.5;-2802,-1012.5" To="SUMHeightValues" ToPort="Sum3" />
+      <Link From="ControllerNG1" FromPort="Error" Points="-2979.19,871.5;-2927.19,871.5;-2875.19,871.5;-2875.19,187.5;-2152,187.5;-2136,187.5" To="ErrorDecodeController" ToPort="Value" />
+      <Link From="BitDecode1" FromPort="Out5" Points="-6006.14,-1768.5;-5910.14,-1768.5;-5814.14,-1768.5;-5814.14,-1678.5;-3244,-1678.5;-3228,-1678.5" To="ManualMove1" ToPort="Ctrl" />
+      <Link From="BitDecode1" FromPort="Out9" Points="-6006.14,-1648.5;-5942.14,-1648.5;-5878.14,-1648.5;-5878.14,-1648.5;-3244,-1648.5;-3228,-1648.5" To="ManualMove1" ToPort="MoveY+" />
+      <Link From="BitDecode1" FromPort="Out10" Points="-6006.14,-1618.5;-5950.14,-1618.5;-5894.14,-1618.5;-5894.14,-1618.5;-3244,-1618.5;-3228,-1618.5" To="ManualMove1" ToPort="MoveY-" />
+      <Link From="BitDecode1" FromPort="Out11" Points="-6006.14,-1588.5;-5958.14,-1588.5;-5910.14,-1588.5;-5910.14,-1588.5;-3244,-1588.5;-3228,-1588.5" To="ManualMove1" ToPort="MoveZ+" />
+      <Link From="BitDecode1" FromPort="Out12" Points="-6006.14,-1558.5;-5966.14,-1558.5;-5926.14,-1558.5;-5926.14,-1558.5;-3244,-1558.5;-3228,-1558.5" To="ManualMove1" ToPort="MoveZ-" />
+      <Link From="BitDecode1" FromPort="Out8" Points="-6006.14,-1678.5;-5934.14,-1678.5;-5862.14,-1678.5;-5862.14,-1498.5;-3244,-1498.5;-3228,-1498.5" To="ManualMove1" ToPort="HandShakeIn" />
+      <Link From="SigQuality1" FromPort="State" Points="-3976.22,19.5;-3952.22,19.5;-3928.22,19.5;-3928.22,133.5;-3340,133.5;-3324,133.5" To="EqualTimeout" ToPort="In1" />
+      <Link From="BitDecode1" FromPort="Out13" Points="-6006.14,-1528.5;-5974.14,-1528.5;-5942.14,-1528.5;-5942.14,-808.5;-3316,-808.5;-3300,-808.5" To="RedZSensorGen" ToPort="Ctrl" />
+      <Link From="SenPreaPosCorrZ" FromPort="Out1" Points="-6606.09,-1204.5;-6598.09,-1204.5;-6590.09,-1204.5;-6590.09,-778.5;-3316,-778.5;-3300,-778.5" To="RedZSensorGen" ToPort="Offset" />
+      <Link From="SOURCE1" FromPort="Out1" Points="-3714.4,-724.5;-3702.4,-724.5;-3690.4,-724.5;-3690.4,-748.5;-3316,-748.5;-3300,-748.5" To="RedZSensorGen" ToPort="Target" />
+      <Link From="BitDecode1" FromPort="Out14" Points="-6006.14,-1498.5;-5982.14,-1498.5;-5958.14,-1498.5;-5958.14,-371.4;-3471.63,-371.4;-3471.63,-688.5;-3316,-688.5;-3300,-688.5" To="RedYSensorGen" ToPort="Ctrl" />
+      <Link From="SOURCE1" FromPort="Out1" Points="-3714.4,-724.5;-3706.4,-724.5;-3698.4,-724.5;-3698.4,-628.5;-3316,-628.5;-3300,-628.5" To="RedYSensorGen" ToPort="Target" />
+      <Link From="ControllerNG1" FromPort="State" Points="-2979.19,841.5;-2935.19,841.5;-2891.19,841.5;-2891.19,-298.5;-1108,-298.5;-1092,-298.5" To="ControlActive" ToPort="In1" />
+      <Link From="ControllerNG1" FromPort="State" Points="-2979.19,841.5;-2935.19,841.5;-2891.19,841.5;-2891.19,-652.5;-1216,-652.5;-1200,-652.5" To="ContRef" ToPort="In1" />
+      <Link From="ControlActive" FromPort="Out1" Points="-897.31,-298.5;-885.31,-298.5;-873.31,-298.5;-873.31,-418.5;-862,-418.5;-846,-418.5" To="AND1" ToPort="In1" />
+      <Link From="ErrorDecodeController" FromPort="Out7" Points="-1956.97,367.5;-1944.97,367.5;-1932.97,367.5;-1932.97,-388.5;-862,-388.5;-846,-388.5" To="AND1" ToPort="In2" />
+      <Link From="ContRef" FromPort="Out1" Points="-1005.31,-652.5;-997.31,-652.5;-989.31,-652.5;-989.31,-562.5;-970,-562.5;-954,-562.5" To="AND2" ToPort="In1" />
+      <Link From="ErrorDecodeController" FromPort="Out7" Points="-1956.97,367.5;-1944.97,367.5;-1932.97,367.5;-1932.97,-532.5;-970,-532.5;-954,-532.5" To="AND2" ToPort="In2" />
+      <Link From="BitDecode1" FromPort="Out4" Points="-6006.14,-1798.5;-5902.14,-1798.5;-5798.14,-1798.5;-5798.14,1571.45;-2842.51,1571.45;-2842.51,1297.5;-1120,1297.5;-1104,1297.5" To="TestMonitor" ToPort="In2" />
+      <Link From="OR1" FromPort="Out1" Points="-3799,-1240.5;-3791,-1240.5;-3767,-1240.5;-3767,1523.45;-2874.51,1523.45;-2874.51,1327.5;-1120,1327.5;-1104,1327.5" To="TestMonitor" ToPort="In3" />
+      <Link From="SigQuality1" FromPort="Ready" Points="-3976.22,-10.5;-3944.22,-10.5;-3912.22,-10.5;-3912.22,1523.45;-2890.51,1523.45;-2890.51,1357.5;-1120,1357.5;-1104,1357.5" To="TestMonitor" ToPort="In4" />
+      <Link From="ControllerNG1" FromPort="State" Points="-2979.19,841.5;-2891.19,841.5;-2803.19,841.5;-2803.19,1387.5;-1120,1387.5;-1104,1387.5" To="TestMonitor" ToPort="In5" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4637.13,115.5;-4629.13,115.5;-4629.13,1523.45;-2890.51,1523.45;-2890.51,1477.5;-1120,1477.5;-1104,1477.5" To="TestMonitor" ToPort="In8" />
+      <Link From="EqualTimeout" FromPort="Out1" Points="-3129.31,133.5;-3121.31,133.5;-3113.31,133.5;-3113.31,1507.5;-1120,1507.5;-1104,1507.5" To="TestMonitor" ToPort="In9" />
+      <Link From="AND2" FromPort="Out1" Points="-841,-562.5;-833,-562.5;-809,-562.5;-809,-476;-1132,-476;-1132,1537.5;-1120,1537.5;-1104,1537.5" To="TestMonitor" ToPort="In10" />
+      <Link From="AND1" FromPort="Out1" Points="-733,-418.5;-725,-418.5;-717,-418.5;-717,-332;-1132,-332;-1132,1567.5;-1120,1567.5;-1104,1567.5" To="TestMonitor" ToPort="In11" />
+      <Link From="Threshold3D" FromPort="State" Points="-341.49,-2284.5;-333.49,-2284.5;-309.49,-2284.5;-309.49,-2078;-1132,-2078;-1132,1597.5;-1120,1597.5;-1104,1597.5" To="TestMonitor" ToPort="In12" />
+      <Link From="BitDecode1" FromPort="Out15" Points="-6006.14,-1468.5;-5990.14,-1468.5;-5974.14,-1468.5;-5974.14,115.5;-5128,115.5;-5112,115.5" To="SIGNALSWITCH1" ToPort="Ctrl" />
+      <Link From="SIGNALSWITCH5" FromPort="Out1" Points="-5475.15,37.5;-5467.15,37.5;-5459.15,37.5;-5459.15,145.5;-5128,145.5;-5112,145.5" To="SIGNALSWITCH1" ToPort="In1" />
+      <Link From="ArcSenseDigIn" FromPort="Out1" Points="-6627.92,199.5;-6615.92,199.5;-6603.92,199.5;-6603.92,175.5;-5128,175.5;-5112,175.5" To="SIGNALSWITCH1" ToPort="In2" />
+      <Link From="POW1" FromPort="Out1" Points="-3482.05,265.5;-3474.05,265.5;-3466.05,265.5;-3466.05,373.5;-3280,373.5;-3264,373.5" To="MULTI2" ToPort="In1" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4637.13,115.5;-4629.13,115.5;-4629.13,451.7;-3916.43,451.7;-3916.43,403.5;-3280,403.5;-3264,403.5" To="MULTI2" ToPort="In2" />
+      <Link From="SigQuality1" FromPort="Normalize" Points="-3976.22,79.5;-3968.22,79.5;-3960.22,79.5;-3960.22,265.5;-3664,265.5;-3648,265.5" To="POW1" ToPort="In1" />
+      <Link From="SigQuality1" FromPort="Ready" Points="-3976.22,-10.5;-3964.22,-10.5;-3952.22,-10.5;-3952.22,-1438.5;-580,-1438.5;-564,-1438.5" To="OR2" ToPort="In1" />
+      <Link From="AND3" FromPort="Out1" Points="-637,-1408.5;-629,-1408.5;-621,-1408.5;-621,-1408.5;-580,-1408.5;-564,-1408.5" To="OR2" ToPort="In2" />
+      <Link From="BitDecode1" FromPort="Out4" Points="-6006.14,-1798.5;-5902.14,-1798.5;-5798.14,-1798.5;-5798.14,-184.5;-1432,-184.5;-1416,-184.5" To="TIMER1" ToPort="Reset" />
+      <Link From="SigQuality1" FromPort="Ready" Points="-3976.22,-10.5;-3964.22,-10.5;-3952.22,-10.5;-3952.22,-1180;-1694.08,-1180;-1694.08,-736.5;-1438,-736.5;-1422,-736.5" To="NOT2" ToPort="In1" />
+      <Link From="ArcSenseIO_2" FromPort="Out1" Points="-6606.09,-1438.5;-6598.09,-1438.5;-6590.09,-1438.5;-6590.09,-1366.5;-6148,-1366.5;-6132,-1366.5" To="BitDecode2" ToPort="Value" />
+      <Link From="BitDecode2" FromPort="Out3" Points="-6006.14,-1306.5;-5998.14,-1306.5;-5990.14,-1306.5;-5990.14,37.5;-5650,37.5;-5634,37.5" To="SIGNALSWITCH5" ToPort="Ctrl" />
+      <Link From="ArcSenseAnIn" FromPort="Out1" Points="-6630.09,97.5;-6622.09,97.5;-6614.09,97.5;-6614.09,97.5;-5650,97.5;-5634,97.5" To="SIGNALSWITCH5" ToPort="In2" />
+      <Link From="SigQuality1" FromPort="State" Points="-3976.22,19.5;-3956.22,19.5;-3936.22,19.5;-3936.22,-82.5;-3340,-82.5;-3324,-82.5" To="EqualGood" ToPort="In1" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4637.13,115.5;-4629.13,115.5;-4629.13,469.5;-2152,469.5;-2136,469.5" To="DelayCalc1" ToPort="Sensor" />
+      <Link From="AND9" FromPort="Out1" Points="-4723,-586.5;-4715,-586.5;-4707,-586.5;-4707,-586.5;-4570,-586.5;-4554,-586.5" To="PosCalc1" ToPort="ResetFull" />
+      <Link From="OR1" FromPort="Out1" Points="-3799,-1240.5;-3791,-1240.5;-3783,-1240.5;-3783,-1124;-4636,-1124;-4636,-556.5;-4570,-556.5;-4554,-556.5" To="PosCalc1" ToPort="ResetSigGen" />
+      <Link From="SenPreaPosCorrY" FromPort="Out1" Points="-6606.09,-1312.5;-6598.09,-1312.5;-6574.09,-1312.5;-6574.09,-466.5;-4570,-466.5;-4554,-466.5" To="PosCalc1" ToPort="PosCorrFrame" />
+      <Link From="SigQuality1" FromPort="Ready" Points="-3976.22,-10.5;-3944.22,-10.5;-3912.22,-10.5;-3912.22,721.5;-3262,721.5;-3246,721.5" To="ControllerNG1" ToPort="Ctrl" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4637.13,115.5;-4629.13,115.5;-4629.13,751.5;-3262,751.5;-3246,751.5" To="ControllerNG1" ToPort="SensorInA" />
+      <Link From="PosCalc1" FromPort="ShiftedWeaveSig" Points="-4437.93,-556.5;-4429.93,-556.5;-4421.93,-556.5;-4421.93,781.5;-3262,781.5;-3246,781.5" To="ControllerNG1" ToPort="CleanPosYIn" />
+      <Link From="BitDecode1" FromPort="Out1" Points="-6006.14,-1888.5;-5878.14,-1888.5;-5750.14,-1888.5;-5750.14,-1270.5;-3640,-1270.5;-3624,-1270.5" To="ASSIGGEN1" ToPort="Pause" />
+      <Link From="OR1" FromPort="Out1" Points="-3799,-1240.5;-3791,-1240.5;-3783,-1240.5;-3783,-1240.5;-3640,-1240.5;-3624,-1240.5" To="ASSIGGEN1" ToPort="Reset" />
+      <Link From="BitDecode2" FromPort="Out2" Points="-6006.14,-1336.5;-5990.14,-1336.5;-5974.14,-1336.5;-5974.14,-1210.5;-3640,-1210.5;-3624,-1210.5" To="ASSIGGEN1" ToPort="TcpCouple" />
+      <Link From="STATUS4" FromPort="Status" Points="-4275.15,-1210.5;-4267.15,-1210.5;-4259.15,-1210.5;-4259.15,-1210.5;-4210,-1210.5;-4194,-1210.5" To="EqualExtCorrectionState" ToPort="In1" />
+      <Link From="STATUS1" FromPort="Status" Points="-4275.15,-1102.5;-4267.15,-1102.5;-4259.15,-1102.5;-4259.15,-1060.5;-4246,-1060.5;-4230,-1060.5" To="NOT_1" ToPort="In1" />
+      <Link From="NOT_1" FromPort="Out1" Points="-4117,-1060.5;-4109,-1060.5;-4101,-1060.5;-4101,-1060.5;-3946,-1060.5;-3930,-1060.5" To="AND_1" ToPort="In1" />
+      <Link From="BitDecode1" FromPort="Out3" Points="-6006.14,-1828.5;-5894.14,-1828.5;-5782.14,-1828.5;-5782.14,-974;-4050.22,-974;-4050.22,-1030.5;-3946,-1030.5;-3930,-1030.5" To="AND_1" ToPort="In2" />
+      <Link From="AND_1" FromPort="Out1" Points="-3817,-1060.5;-3809,-1060.5;-3801,-1060.5;-3801,-940.5;-3316,-940.5;-3300,-940.5" To="RedCorGen1" ToPort="Ctrl" />
+      <Link From="IIRFILTER1" FromPort="Out1" Points="-4645.13,115.5;-4637.13,115.5;-4629.13,115.5;-4629.13,571.5;-1114,571.5;-1098,571.5" To="MONITOR1" ToPort="In3" />
+      <Link From="ControllerNG1" FromPort="Z" Points="-2979.19,751.5;-2867.19,751.5;-2755.19,751.5;-2755.19,751.5;-1114,751.5;-1098,751.5" To="MONITOR1" ToPort="In9" />
+      <Link From="SOURCE1" FromPort="Out1" Points="-3714.4,-724.5;-3702.4,-724.5;-3690.4,-724.5;-3690.4,-880.5;-3316,-880.5;-3300,-880.5" To="RedCorGen1" ToPort="Target" />
+      <Link From="ASSIGGEN1" FromPort="AbsValue" Points="-3357.17,-1210.5;-3341.17,-1210.5;-3325.17,-1210.5;-3325.17,-910.5;-3316,-910.5;-3300,-910.5" To="RedCorGen1" ToPort="Offset" />
+      <Link From="RedCorGen1" FromPort="Value" Points="-3166.19,-940.5;-3154.19,-940.5;-3142.19,-940.5;-3142.19,-1300.5;-2818,-1300.5;-2802,-1300.5" To="SUMSideValues" ToPort="Sum1" />
+      <Link From="ManualMove1" FromPort="Y-Out" Points="-3035.16,-1678.5;-3011.16,-1678.5;-2987.16,-1678.5;-2987.16,-1270.5;-2818,-1270.5;-2802,-1270.5" To="SUMSideValues" ToPort="Sum2" />
+      <Link From="RedYSensorGen" FromPort="Value" Points="-3147.85,-688.5;-3135.85,-688.5;-3123.85,-688.5;-3123.85,-1240.5;-2818,-1240.5;-2802,-1240.5" To="SUMSideValues" ToPort="Sum3" />
+      <Link From="ASSIGGEN1" FromPort="AbsValue" Points="-3357.17,-1210.5;-3341.17,-1210.5;-3325.17,-1210.5;-3325.17,439.5;-2152,439.5;-2136,439.5" To="DelayCalc1" ToPort="Weave" />
+      <Link From="ASSIGGEN1" FromPort="AbsValue" Points="-3357.17,-1210.5;-3341.17,-1210.5;-3325.17,-1210.5;-3325.17,-928.2;-4674,-928.2;-4674,-526.5;-4570,-526.5;-4554,-526.5" To="PosCalc1" ToPort="SigGenIn" />
+      <Link From="ControllerNG1" FromPort="Y-Abs" Points="-2979.19,1111.5;-2863.19,1111.5;-2747.19,1111.5;-2747.19,-1900.5;-46,-1900.5;-30,-1900.5" To="MULTILAYERY" ToPort="In1" />
+      <Link From="ControllerNG1" FromPort="Y-Abs" Points="-2979.19,1111.5;-2863.19,1111.5;-2747.19,1111.5;-2747.19,478;-3350,478;-3350,-658.5;-3316,-658.5;-3300,-658.5" To="RedYSensorGen" ToPort="Offset" />
+      <Link From="ControllerNG1" FromPort="Y-Abs" Points="-2979.19,1111.5;-2863.19,1111.5;-2747.19,1111.5;-2747.19,841.5;-1114,841.5;-1098,841.5" To="MONITOR1" ToPort="In12" />
+      <Link From="ControllerNG1" FromPort="Y-Abs" Points="-2979.19,1111.5;-2963.19,1111.5;-2947.19,1111.5;-2947.19,1417.5;-1120,1417.5;-1104,1417.5" To="TestMonitor" ToPort="In6" />
+      <Link From="ControllerNG1" FromPort="Y-Abs" Points="-2979.19,1111.5;-2863.19,1111.5;-2747.19,1111.5;-2747.19,-2134.5;-532,-2134.5;-516,-2134.5" To="Threshold3D" ToPort="SenOffsetIntY" />
+      <Link From="SigQuality1" FromPort="State" Points="-3976.22,19.5;-3952.22,19.5;-3928.22,19.5;-3928.22,241.5;-3340,241.5;-3324,241.5" To="EqualSignalToSmall" ToPort="In1" />
+      <Link From="EqualSignalToSmall" FromPort="Out1" Points="-3129.31,241.5;-3117.31,241.5;-3073.31,241.5;-3073.31,-484.5;-2590,-484.5;-2574,-484.5" To="OR_1" ToPort="In1" />
+      <Link From="EqualTimeout" FromPort="Out1" Points="-3129.31,133.5;-3117.31,133.5;-3089.31,133.5;-3089.31,-454.5;-2590,-454.5;-2574,-454.5" To="OR_1" ToPort="In2" />
+      <Link From="OR_1" FromPort="Out1" Points="-2461,-484.5;-2449,-484.5;-2437,-484.5;-2437,-1132;-1742.08,-1132;-1742.08,-1090.5;-184,-1090.5;-168,-1090.5" To="BitEncode1" ToPort="Bool6" />
+      <Link From="ASSIGGEN1" FromPort="SimSignal" Points="-3357.17,-1180.5;-3349.17,-1180.5;-3341.17,-1180.5;-3341.17,-944.2;-5704,-944.2;-5704,67.5;-5650,67.5;-5634,67.5" To="SIGNALSWITCH5" ToPort="In1" />
+      <Link From="SigQuality1" FromPort="Normalize" Points="-3976.22,79.5;-3968.22,79.5;-3960.22,79.5;-3960.22,811.5;-3262,811.5;-3246,811.5" To="ControllerNG1" ToPort="NormIn" />
+      <Link From="ASSIGGEN1" FromPort="Value" Points="-3357.17,-1270.5;-3325.17,-1270.5;-3293.17,-1270.5;-3293.17,-1180.5;-2818,-1180.5;-2802,-1180.5" To="SUMSideValues" ToPort="Sum5" />
+      <Link From="ControllerNG1" FromPort="Y" Points="-2979.19,721.5;-2967.19,721.5;-2955.19,721.5;-2955.19,-1210.5;-2818,-1210.5;-2802,-1210.5" To="SUMSideValues" ToPort="Sum4" />
+      <Link From="ControllerNG1" FromPort="Y" Points="-2979.19,721.5;-2859.19,721.5;-2739.19,721.5;-2739.19,721.5;-1114,721.5;-1098,721.5" To="MONITOR1" ToPort="In8" />
+      <Link From="ControllerNG1" FromPort="HeightRef" Points="-2979.19,1171.5;-2855.19,1171.5;-2731.19,1171.5;-2731.19,-1624.5;-46,-1624.5;-30,-1624.5" To="HeigtRefValue" ToPort="In1" />
+      <Link From="AsAngleCalc1" FromPort="Position_Y" Points="-2182.87,-1300.5;-2166.87,-1300.5;-2150.87,-1300.5;-2150.87,-1066.5;-2002,-1066.5;-1986,-1066.5" To="POSCORR1" ToPort="CorrY" />
+      <Link From="AsAngleCalc1" FromPort="Position_Z" Points="-2182.87,-1270.5;-2174.87,-1270.5;-2166.87,-1270.5;-2166.87,-1036.5;-2002,-1036.5;-1986,-1036.5" To="POSCORR1" ToPort="CorrZ" />
+      <Link From="SUMSideValues" FromPort="Sum" Points="-2627.69,-1300.5;-2619.69,-1300.5;-2611.69,-1300.5;-2611.69,-1300.5;-2374,-1300.5;-2358,-1300.5" To="AsAngleCalc1" ToPort="Side" />
+      <Link From="SUMHeightValues" FromPort="Sum" Points="-2627.69,-1072.5;-2615.69,-1072.5;-2603.69,-1072.5;-2603.69,-1270.5;-2374,-1270.5;-2358,-1270.5" To="AsAngleCalc1" ToPort="Height" />
+      <Link From="Transformation1" FromPort="TTS-Y" Points="-6635.38,-736.5;-6623.38,-736.5;-6611.38,-736.5;-6611.38,-2194.5;-532,-2194.5;-516,-2194.5" To="Threshold3D" ToPort="PosActMeasTTSY" />
+      <Link From="Transformation1" FromPort="TTS-Z" Points="-6635.38,-706.5;-6615.38,-706.5;-6595.38,-706.5;-6595.38,-2164.5;-532,-2164.5;-516,-2164.5" To="Threshold3D" ToPort="PosActMeasTTSZ" />
+      <Link From="Transformation1" FromPort="TTS-Y" Points="-6635.38,-736.5;-6619.38,-736.5;-6603.38,-736.5;-6603.38,511.5;-1114,511.5;-1098,511.5" To="MONITOR1" ToPort="In1" />
+      <Link From="Transformation1" FromPort="TTS-Y" Points="-6635.38,-736.5;-6619.38,-736.5;-6587.38,-736.5;-6587.38,1523.45;-2874.51,1523.45;-2874.51,1267.5;-1120,1267.5;-1104,1267.5" To="TestMonitor" ToPort="In1" />
+      <Link From="Transformation1" FromPort="TTS-Y" Points="-6635.38,-736.5;-6619.38,-736.5;-6603.38,-736.5;-6603.38,-496.5;-4570,-496.5;-4554,-496.5" To="PosCalc1" ToPort="PosActMeasTTS" />
+      <Link From="Transformation1" FromPort="TTS-Z" Points="-6635.38,-706.5;-6627.38,-706.5;-6619.38,-706.5;-6619.38,541.5;-1114,541.5;-1098,541.5" To="MONITOR1" ToPort="In2" />
+      <Link From="POSCORR1" FromPort="Y" Points="-1772.97,-1036.5;-1760.97,-1036.5;-1748.97,-1036.5;-1748.97,-1720.5;-46,-1720.5;-30,-1720.5" To="MapPreaPosCorrY" ToPort="In1" />
+      <Link From="POSCORR1" FromPort="Y" Points="-1772.97,-1036.5;-1760.97,-1036.5;-1748.97,-1036.5;-1748.97,-2254.5;-532,-2254.5;-516,-2254.5" To="Threshold3D" ToPort="CorFrameIntY" />
+      <Link From="POSCORR1" FromPort="Y" Points="-1772.97,-1036.5;-1756.97,-1036.5;-1740.97,-1036.5;-1740.97,931.5;-1114,931.5;-1098,931.5" To="MONITOR1" ToPort="In15" />
+      <Link From="POSCORR1" FromPort="Z" Points="-1772.97,-1006.5;-1764.97,-1006.5;-1756.97,-1006.5;-1756.97,871.5;-1114,871.5;-1098,871.5" To="MONITOR1" ToPort="In13" />
+      <Link From="POSCORR1" FromPort="Z" Points="-1772.97,-1006.5;-1764.97,-1006.5;-1756.97,-1006.5;-1756.97,1447.5;-1120,1447.5;-1104,1447.5" To="TestMonitor" ToPort="In7" />
+      <Link From="POSCORR1" FromPort="Z" Points="-1772.97,-1006.5;-1752.97,-1006.5;-1732.97,-1006.5;-1732.97,-1810.5;-46,-1810.5;-30,-1810.5" To="MULTILAYERZ" ToPort="In1" />
+      <Link From="POSCORR1" FromPort="Z" Points="-1772.97,-1006.5;-1752.97,-1006.5;-1732.97,-1006.5;-1732.97,-2104.5;-532,-2104.5;-516,-2104.5" To="Threshold3D" ToPort="SenOffsetIntZ" />
+      <Link From="POSCORR1" FromPort="Z" Points="-1772.97,-1006.5;-1752.97,-1006.5;-1732.97,-1006.5;-1732.97,-2224.5;-532,-2224.5;-516,-2224.5" To="Threshold3D" ToPort="CorFrameIntZ" />
+      <Link From="ASSIGGEN1" FromPort="AbsValue" Points="-3357.17,-1210.5;-3329.17,-1210.5;-3301.17,-1210.5;-3301.17,-1352;-2578.02,-1352;-2578.02,-1240.5;-2374,-1240.5;-2358,-1240.5" To="AsAngleCalc1" ToPort="AbsSide" />
+      <Link From="ControllerNG1" FromPort="Z-Int" Points="-2979.19,811.5;-2883.19,811.5;-2787.19,811.5;-2787.19,811.5;-1114,811.5;-1098,811.5" To="MONITOR1" ToPort="In11" />
+      <Link From="SigQuality1" FromPort="State" Points="-3976.22,19.5;-3952.22,19.5;-3928.22,19.5;-3928.22,25.5;-3340,25.5;-3324,25.5" To="EqualGettingData" ToPort="In1" />
+      <Link From="EqualGettingData" FromPort="Out1" Points="-3129.31,25.5;-3121.31,25.5;-3113.31,25.5;-3113.31,125.3;-3328,125.3;-3328,841.5;-3262,841.5;-3246,841.5" To="ControllerNG1" ToPort="SigQualGetData" />
+      <Link From="SigQuality1" FromPort="Debug" Points="-3976.22,49.5;-3960.22,49.5;-3944.22,49.5;-3944.22,691.5;-1114,691.5;-1098,691.5" To="MONITOR1" ToPort="In7" />
+    </Links>
+    <Nodes>
+      <Node Location="-1968,-1116" Name="POSCORR1" Type="PosCorr" />
+      <Node Location="-2784,-1320" Name="SUMSideValues" NumberOfInputs="6" Type="SUM" />
+      <Node Location="-4860,96" Name="IIRFILTER1" Type="IIRFilter" />
+      <Node Location="-3282,-960" Name="RedCorGen1" Type="RedCorGen" />
+      <Node Location="-6786,78" Name="ArcSenseAnIn" Type="AnIn" />
+      <Node Location="-6114,-1908" Name="BitDecode1" NumberOfOutputs="17" Type="BitDecode" />
+      <Node Location="-6762,-1560" Name="ArcSenseIO_1" Type="Sen_PInt" />
+      <Node Location="-4176,-1230" Name="EqualExtCorrectionState" Type="Equal" />
+      <Node Location="-3894,-1260" Name="OR1" NumberOfInputs="4" Type="OR" />
+      <Node Location="-150,-1260" Name="BitEncode1" NumberOfInputs="12" Type="BitEncode" />
+      <Node Location="12,-1260" Name="ArcSenseOutPut" Type="Map2Sen_PInt" />
+      <Node Location="-4428,-1230" Name="STATUS4" Type="ArcSenseStatus" />
+      <Node Location="-4428,-1122" Name="STATUS1" Type="ArcSenseStatus" />
+      <Node Location="-732,-1428" Name="AND3" NumberOfInputs="4" Type="AND" />
+      <Node Location="-1080,492" Name="MONITOR1" NumberOfInputs="25" Type="Monitor" />
+      <Node Location="-498,-2304" Name="Threshold3D" Type="Threshold" />
+      <Node Location="-4818,-606" Name="AND9" NumberOfInputs="3" Type="AND" />
+      <Node Location="-12,-1740" Name="MapPreaPosCorrY" Type="Map2Sen_PRea" />
+      <Node Location="-6762,-1332" Name="SenPreaPosCorrY" Type="Sen_PRea" />
+      <Node Location="-4632,-294" Name="NOT1" Type="NOT" />
+      <Node Location="-4224,-30" Name="SigQuality1" Type="SigQuality" />
+      <Node Location="-2784,-1092" Name="SUMHeightValues" NumberOfInputs="4" Type="SUM" />
+      <Node Location="-2118,168" Name="ErrorDecodeController" NumberOfOutputs="8" Type="BitDecode" />
+      <Node Location="-3210,-1698" Name="ManualMove1" Type="ManualMove" />
+      <Node Location="-3306,114" Name="EqualTimeout" Type="Equal" />
+      <Node Location="-3282,-828" Name="RedZSensorGen" Type="RedCorGen" />
+      <Node Location="-3282,-708" Name="RedYSensorGen" Type="RedCorGen" />
+      <Node Location="-6762,-1224" Name="SenPreaPosCorrZ" Type="Sen_PRea" />
+      <Node Location="-3894,-744" Name="SOURCE1" Type="Source" />
+      <Node Location="-1074,-318" Name="ControlActive" Type="Equal" />
+      <Node Location="-1182,-672" Name="ContRef" Type="Equal" />
+      <Node Location="-828,-438" Name="AND1" NumberOfInputs="3" Type="AND" />
+      <Node Location="-936,-582" Name="AND2" NumberOfInputs="3" Type="AND" />
+      <Node Location="-1086,1248" Name="TestMonitor" NumberOfInputs="13" Type="Monitor" />
+      <Node Location="-6804,180" Name="ArcSenseDigIn" Type="DigIn" />
+      <Node Location="-5094,96" Name="SIGNALSWITCH1" Type="SignalSwitch" />
+      <Node Location="-3246,354" Name="MULTI2" Type="MULTI" />
+      <Node Location="-3630,246" Name="POW1" Type="POW" />
+      <Node Location="-546,-1458" Name="OR2" NumberOfInputs="3" Type="OR" />
+      <Node Location="-1398,-234" Name="TIMER1" Type="Timer" />
+      <Node Location="-1404,-756" Name="NOT2" Type="NOT" />
+      <Node Location="-12,-1830" Name="MULTILAYERZ" Type="Map2Sen_PRea" />
+      <Node Location="-12,-1920" Name="MULTILAYERY" Type="Map2Sen_PRea" />
+      <Node Location="-6762,-1458" Name="ArcSenseIO_2" Type="Sen_PInt" />
+      <Node Location="-6114,-1386" Name="BitDecode2" NumberOfOutputs="4" Type="BitDecode" />
+      <Node Location="-6852,-786" Name="Transformation1" Type="Transformation" />
+      <Node Location="-5616,18" Name="SIGNALSWITCH5" Type="SignalSwitch" />
+      <Node Location="-3306,-102" Name="EqualGood" Type="Equal" />
+      <Node Location="-2118,420" Name="DelayCalc1" Type="DelayCalc" />
+      <Node Location="-4536,-606" Name="PosCalc1" Type="PosCalc" />
+      <Node Location="-3228,702" Name="ControllerNG1" Type="ControllerNG" />
+      <Node Location="-3606,-1290" Name="ASSIGGEN1" Type="ASSIGGEN" />
+      <Node Location="-6834,-996" Name="PosCorrMon_1" Type="PosCorrMon" />
+      <Node Location="-4212,-1080" Name="NOT_1" Type="NOT" />
+      <Node Location="-3912,-1080" Name="AND_1" NumberOfInputs="3" Type="AND" />
+      <Node Location="-3306,222" Name="EqualSignalToSmall" Type="Equal" />
+      <Node Location="-2556,-504" Name="OR_1" NumberOfInputs="3" Type="OR" />
+      <Node Location="-12,-1644" Name="HeigtRefValue" Type="Map2Sen_PRea" />
+      <Node Location="-2340,-1320" Name="AsAngleCalc1" Type="AsAngleCalc" />
+      <Node Location="-3306,6" Name="EqualGettingData" Type="Equal" />
+    </Nodes>
+    <Toolboxes>
+      <Toolbox Name="RSI" Version="1.3.1" />
+      <Toolbox Name="ARS" Version="1.0.0" />
+    </Toolboxes>
+  </Editor>
+</RsiContext>

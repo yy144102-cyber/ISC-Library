@@ -1,0 +1,48 @@
+{
+  "key": "dv-split-optimization",
+  "form": "min_f  GLOW( f · Δv_total )   s.t.  Σ_i f_i = 1,  0.05 ≤ f_i ≤ 0.95。不成立時の目的値は 1e9 · (1 + infeasibility)",
+  "variables": {
+    "f_i": "段 i へのΔV配分比 [-]",
+    "Δv_total": "全段合計の要求ΔV [m/s]",
+    "GLOW": "離昇質量 [kg]（目的関数）",
+    "infeasibility": "不成立度合い [-]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "124-151",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "48-50",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "judgment",
+  "validity_range": {
+    "bounds": "f_i ∈ [0.05, 0.95]、Σ f_i = 1（rocket.py:147-148）",
+    "solver": "SLSQP。多スタート既定4点（1点は均等割、残りは偏らせた初期点）（rocket.py:125,141-146）",
+    "single_stage": "1段のときは探索せず [Δv_total] を返す（rocket.py:131-133）"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "SLSQP＋多スタート（既定4点）でも大域最適の保証はなく、結果はペナルティ形状（1e9×不成立度）に依存する。得られた配分は feasibility と均等割との比較で妥当性を確認すること。3段以上ではグリッド初期化の追加が推奨されている。",
+  "limitations_ref": "lim",
+  "limitations_basis": "explicit",
+  "limitations_inference": null,
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "basis=judgment: ソルバ選択・境界値 0.05/0.95・多スタート点数 4・ペナルティ形状は原典プロジェクトの実装上の選択（構成判断）であり、文献記載ではない（VR-6 の許容対象）。設計者の記載は 06_adversarial_review_v2.md:3（Claude Fable 5）。原典コード側にも注意書きあり（rocket.py:128-130）。均等割との非劣化比較はテストに組込済（06:50）。"
+}

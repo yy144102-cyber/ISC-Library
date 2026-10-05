@@ -1,0 +1,39 @@
+{
+  "key": "multistage-stacking-glow",
+  "form": "上段から下段へ m_upper,i = m0,(i+1)（最上段は m_upper = m_payload）。GLOW = m0,1（最下段の点火時質量）。Δv_total = Σ_i Δv_i",
+  "variables": {
+    "m_upper,i": "段 i の上載質量 [kg]",
+    "m0,i": "段 i の点火時全備質量 [kg]",
+    "m_payload": "ペイロード質量 [kg]",
+    "GLOW": "離昇質量 Gross Lift-Off Weight [kg]",
+    "Δv_i": "段 i に配分されたΔV [m/s]"
+  },
+  "common_name": "GLOW（離昇質量）",
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "104,106,113-114",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "order": "stages[0] を最下段とし、上段から下段へ積み上げる（rocket.py:52,100,106）",
+    "shape_check": "stages と dv_split の長さが一致すること（rocket.py:101-102）",
+    "feasibility": "いずれかの段で k ≥ 1 になった時点で GLOW = inf を返し打ち切る（rocket.py:110-112）",
+    "inherits": "各段の m0（stage-ignition-mass）の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": null,
+  "limitations_ref": null,
+  "limitations_candidate": "直列多段のみを対象とし、段間構造質量を計上していない。並列ブースタ（ストラップオン）構成は表現できない。",
+  "candidate_basis": "judgment",
+  "candidate_author": "Claude Code",
+  "note": "docs/06_adversarial_review_v2.md の P系指摘（06:37-54）に多段積み上げ／GLOW 固有の記述はない。P-1 の ε 一定・質量項未計上は各段の m0 側（stage-ignition-mass）で記録済みであり、積み上げ構造そのものの限界は原典にない。VR-2 により limitations は null、VR-9 により候補のみ記録する。この項目は VR-3 の判定では null と同じ扱いとする。"
+}

@@ -1,0 +1,22 @@
+&ACCESS RV3
+&REL 11
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF arcoff_ohta( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+coordinate()
+;FOLD OUT 1 'Weld start' State=FALSE ;%{PE}%R 8.3.44,%MKUKATPBASIS,%COUT,%VOUTX,%P 2:1, 3:Weld start, 5:FALSE, 6:
+$OUT[1]=FALSE
+;ENDFOLD
+
+END

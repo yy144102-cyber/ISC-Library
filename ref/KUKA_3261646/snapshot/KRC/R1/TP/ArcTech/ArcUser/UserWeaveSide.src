@@ -1,0 +1,99 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech User Pettern Figure
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech\ArcUser
+DEF UserWeaveSide( )
+END
+;********************************************************
+;[Global Routine] ArcWeaveUserInitSide Call from Init Loop
+;********************************************************
+GLOBAL DEF ArcWeaveUserInitSide()
+DECL INT tI
+FOR tI = 1 TO 10
+  ON_ERROR_PROCEED
+  uArcW1SetOut[tI].Active = (uArcW1SetOut[tI].SignNr > 0)
+  ON_ERROR_PROCEED
+  uArcW2SetOut[tI].Active = (uArcW2SetOut[tI].SignNr > 0)
+  ON_ERROR_PROCEED
+  uArcW3SetOut[tI].Active = (uArcW2SetOut[tI].SignNr > 0)
+  ON_ERROR_PROCEED  
+  uArcW4SetOut[tI].Active = (uArcW2SetOut[tI].SignNr > 0)
+ENDFOR
+INTERRUPT OFF irtArcWeaveSideLeft
+INTERRUPT OFF irtArcWeaveSideRight
+GLOBAL INTERRUPT DECL irtArcWeaveSideLeft WHEN $TECHVAL[ctArcMechGenerator1] < 0.01 DO ArcWeaveUserLeft()
+GLOBAL INTERRUPT DECL irtArcWeaveSideRight WHEN $TECHVAL[ctArcMechGenerator1] > 0.01 DO ArcWeaveUserRight()
+ArcWeaveUserMid()
+END
+;********************************************************
+;[Global Routine] ArcWeaveUserSetSide Call from Loop
+;********************************************************
+GLOBAL DEF ArcWeaveUserSetSide()
+SWITCH enArcCurrentState
+  CASE #Welding
+    INTERRUPT ON irtArcWeaveSideLeft
+    INTERRUPT ON irtArcWeaveSideRight
+  DEFAULT
+    INTERRUPT OFF irtArcWeaveSideLeft
+    INTERRUPT OFF irtArcWeaveSideRight
+    ArcWeaveUserMid()
+ENDSWITCH
+END
+;********************************************************
+;[Global Routine] ArcWeaveUserMid
+;********************************************************
+GLOBAL DEF ArcWeaveUserMid()
+SWITCH gArcActIlfWelder
+  CASE 1 ;Welder1
+    ArcOutputReset(1,uArcW1SetOut[]) ;Reset Output Left Side
+    ArcOutputReset(2,uArcW1SetOut[]) ;Reset Output Right Side
+  CASE 2 ;Welder2
+    ArcOutputReset(1,uArcW2SetOut[]) ;Reset Output Left Side
+    ArcOutputReset(2,uArcW2SetOut[]) ;Reset Output Right Side  
+  CASE 3 ;Welder3
+    ArcOutputReset(1,uArcW3SetOut[]) ;Reset Output Left Side
+    ArcOutputReset(2,uArcW3SetOut[]) ;Reset Output Right Side  
+  CASE 4 ;Welder4
+    ArcOutputReset(1,uArcW4SetOut[]) ;Reset Output Left Side
+    ArcOutputReset(2,uArcW4SetOut[]) ;Reset Output Right Side  
+ENDSWITCH
+END
+;********************************************************
+;[Global Routine] ArcWeaveUserLeft
+;********************************************************
+GLOBAL DEF ArcWeaveUserLeft()
+SWITCH gArcActIlfWelder
+  CASE 1 ;Welder1
+    ArcOutputReset(2,uArcW1SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(1,uArcW1SetOut[]) ;Set Output Left Side
+  CASE 2 ;Welder2
+    ArcOutputReset(2,uArcW2SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(1,uArcW2SetOut[]) ;Set Output Left Side
+  CASE 3 ;Welder3
+    ArcOutputReset(2,uArcW3SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(1,uArcW3SetOut[]) ;Set Output Left Side
+  CASE 4 ;Welder4
+    ArcOutputReset(2,uArcW4SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(1,uArcW4SetOut[]) ;Set Output Left Side
+ENDSWITCH
+END
+;********************************************************
+;[Global Routine] ArcWeaveUserRight
+;********************************************************
+GLOBAL DEF ArcWeaveUserRight()
+SWITCH gArcActIlfWelder
+  CASE 1 ;Welder1
+    ArcOutputReset(1,uArcW1SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(2,uArcW1SetOut[]) ;Set Output Left Side
+  CASE 2 ;Welder2
+    ArcOutputReset(1,uArcW2SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(2,uArcW2SetOut[]) ;Set Output Left Side
+  CASE 3 ;Welder3
+    ArcOutputReset(1,uArcW3SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(2,uArcW3SetOut[]) ;Set Output Left Side
+  CASE 4 ;Welder4
+    ArcOutputReset(1,uArcW4SetOut[]) ;Reset Output Right Side
+      ArcOutputSet(2,uArcW4SetOut[]) ;Set Output Left Side
+ENDSWITCH
+END

@@ -1,0 +1,49 @@
+{
+  "key": "stage-propellant-mass",
+  "form": "m_prop = (R − 1) · m_upper / (1 − k),   k = (R − 1) · e'",
+  "variables": {
+    "m_prop": "段の推進剤質量 [kg]",
+    "m_upper": "上載質量（上段の全備質量＋ペイロード）[kg]",
+    "R": "質量比 [-]",
+    "e'": "乾燥質量／推進剤質量の比 [-]",
+    "k": "クロージャ指標 [-]"
+  },
+  "common_name": null,
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "78,91",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    },
+    {
+      "id": "lim",
+      "path": "Library\\engineering\\sources\\loop-agent\\docs\\06_adversarial_review_v2.md",
+      "lines": "42-43",
+      "sha256": "01d31f24d973f047565ec5c12745879819bde9c73f9ba68631cbcead7cb6ddb3",
+      "referenced_by": [
+        "limitations"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "k": "k < 1（rocket.py:88-89）。k → 1 で m_prop は発散する",
+    "m_upper": "m_upper > 0",
+    "inherits": "R と e' の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": "ε 一定近似の上に立つため、段規模が大きく異なる構成を比較すると推進剤質量が系統的にずれる。フェアリング・残留推進剤・ウルッジ/マージンは m_prop に含まれない。k が 1 に近い領域では分母 (1−k) が小さく、ε のわずかな誤差が m_prop を大きく動かす。",
+  "limitations_ref": "lim",
+  "limitations_basis": "inferred",
+  "limitations_inference": "P-1 の ε 一定・質量項未計上（06:42-43）は m_prop を名指ししていないが、本式は e' を介してのみ ε に依存し、その出力が推進剤質量であるため、ε の誤差と未計上分がそのまま m_prop に現れると対応づけた。分母 (1−k) の感度は本式の形から導いた。",
+  "limitations_candidate": null,
+  "candidate_basis": null,
+  "candidate_author": null,
+  "note": "導出は rocket.py:75-79（docstring）に記載。"
+}

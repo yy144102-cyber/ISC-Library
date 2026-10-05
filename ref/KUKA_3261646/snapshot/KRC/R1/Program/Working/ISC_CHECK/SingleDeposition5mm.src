@@ -1,0 +1,356 @@
+&ACCESS RVO
+&REL 28
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF SingleDeposition5mm( )
+DECL INT i,j,Layer,StartLayer
+DECL REAL WeldLength,Pitch,Velocity,BSX,BSY,BSZ
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+
+StartLayer = 37
+Layer = 100
+WeldLength = 350.0
+Pitch = 1.45
+
+BSX = 0.0
+BSY = -380.0
+BSZ = 0.0
+INIBase(BSX,BSY,BSZ)
+
+INIPosition( )
+
+MotionPar(#PTPmotion,10.0)
+PTP XHOMEX
+MotionPar(#CPmotion,0.1)
+LIN XHOVERX
+
+FOR i = StartLayer TO Layer
+   FOR j = 1 TO 6
+      I[1] = i
+      oLayerNum = i
+      oSideNum = 1
+      oLayerType = 10
+      oLayerIndex = 1
+      
+      
+      WAAM_RSI_ON()
+      
+      
+      Velocity = HightClaculation(i,j,Pitch,WeldLength)
+      IF i <> (i / 2) * 2 THEN
+         MotionPar(#CPmotion,0.1)
+         LIN XAPOJX
+         LIN XP1
+      ELSE
+         MotionPar(#CPmotion,0.1)
+         LIN XAPRJX
+         LIN XP2
+      ENDIF
+      
+      
+      oIsScanning = TRUE
+      WAIT SEC 1.0
+      
+      WeldingAct(#_ON,i)   
+      IF i <> (i / 2) * 2 THEN
+         MotionPar(#CPmotion,Velocity)
+         LIN XP2
+      ELSE
+         MotionPar(#CPmotion,Velocity)
+         LIN XP1
+      ENDIF
+      WeldingAct(#_OFF,i)
+      
+      
+      
+      WAIT SEC 1.0
+      oIsScanning = FALSE
+      
+      
+      
+      IF i <> (i / 2) * 2 THEN
+         MotionPar(#CPmotion,0.1)
+         LIN XAPRJX
+      ELSE
+         MotionPar(#CPmotion,0.1)
+         LIN XAPOJX
+      ENDIF
+      WAAM_RSI_OFF()
+      IF i < Layer THEN
+         ;HALT
+         WAIT SEC 1.0
+      ENDIF
+   ENDFOR
+ENDFOR
+
+MotionPar(#PTPmotion,10.0)
+PTP XHOVERX
+PTP XHOMEX
+
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEF INIPosition( )
+
+;FOLD Position Calculation
+   XAPOJX = XOJPX
+   XAPRJX = XRJPX
+   XP1 = XOJPX
+   XP2 = XRJPX
+;ENDFOLD
+
+END
+
+DEF INIBase(BSX:IN,BSY:IN,BSZ:IN)
+DECL REAL BSX,BSY,BSZ
+
+;FOLD Position Calculation
+   BASE_DATA[1].X = 1800.0 + BSX
+   BASE_DATA[1].Y = 80.22 + BSY
+   BASE_DATA[1].Z = -960.0 + BSZ
+   BASE_DATA[1].A = 0.0
+   BASE_DATA[1].B = -0.5
+   BASE_DATA[1].C = -0.1
+;ENDFOLD
+
+END
+
+DEFFCT REAL HightClaculation(Layer:IN,Parts:IN,Pitch:IN,Length:IN,SX:IN,SY:IN,SZ:IN)
+DECL INT Layer,Parts
+DECL REAL Pitch,Hight,Length,_Result,Velocity,Value,SX,SY,SZ
+
+;FOLD Hight Calculation
+   XAPOJX.Y =  - (Length / 2.0)
+   XAPRJX.Y =  (Length / 2.0)
+   XAPOJX.Z =  350.0
+   XAPRJX.Z =  350.0
+
+   IF Parts == 1 THEN
+      Value = 300.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+
+   IF Parts == 2 THEN
+      Value = 200.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+
+   IF Parts == 3 THEN
+      Value = 100.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+
+   IF Parts == 4 THEN
+      Value = 0.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+
+   IF Parts == 5 THEN
+      Value = -100.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+
+   IF Parts == 6 THEN
+      Value = -200.0
+      XAPOJX.X =  Value
+      XAPRJX.X =  Value
+      XP1.X =  Value
+      XP2.X =  Value
+      XP1.Y =  - (Length / 2.0)
+      XP2.Y =  (Length / 2.0) - 0.0
+   ENDIF
+   
+   
+   
+   IF Layer == 1 THEN
+      Layer = 1
+      Hight = 0.0
+      Velocity = 500.0
+      XP1.Z =  Hight
+      XP2.Z =  Hight
+   ENDIF
+   IF Layer == 2 THEN
+      Layer = 1
+      Hight = 3.0
+      Velocity = 650.0
+      XP1.Z =  Hight
+      XP2.Z =  Hight
+   ENDIF
+   IF Layer == 3 THEN
+      Layer = 1
+      Hight = 4.5
+      Velocity = 800.0
+      XP1.Z =  Hight
+      XP2.Z =  Hight
+   ENDIF
+   IF Layer == 4 THEN
+      Layer = 1
+      Hight = 6.0
+      Velocity = 800.0
+      XP1.Z =  Hight
+      XP2.Z =  Hight
+   ENDIF
+   IF Layer >= 5 THEN
+      Layer = Layer - 4
+      Hight = 6.0
+      Velocity = 1000.0
+      XP1.Z =  Hight + (Pitch * Layer)
+      XP2.Z =  Hight + (Pitch * Layer)
+   ENDIF
+   _Result = VelocityCalc(Velocity)
+   RETURN (_Result)
+;ENDFOLD
+
+ENDFCT
+
+DEFFCT REAL VelocityCalc(Velocity:IN)
+DECL REAL Velocity,_Result
+
+;FOLD Velocity Calculation
+   IF ($OUT[9] == TRUE) OR ($OUT[10] == TRUE) THEN
+      _Result = (Velocity / 60.0) / 1000.0
+   ELSE
+      _Result = (Velocity / 60.0) / 1000.0
+   ENDIF
+   RETURN(_Result)
+;ENDFOLD
+
+ENDFCT
+
+DEF WeldingAct(Type:IN,Layer:IN)
+DECL Action Type
+DECL INT Layer
+
+;FOLD Welding Action
+   SWITCH Type
+      CASE #_ON
+         IF Layer == 1 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+         ENDIF
+         IF Layer == 2 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT2) DO ArcMainNG(#PreDefinition, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#GasPreflow, WDAT2) DO ArcMainNG(#GasPreflow, WDAT2, WP2) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT2) DELAY = ArcGetDelay(#ArcPreOn, WDAT2) DO ArcMainNG(#ArcOnMoveStd, WDAT2, WP2) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT2, WP2)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT2, WP2)
+         ENDIF
+         IF Layer == 3 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT3) DO ArcMainNG(#PreDefinition, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#GasPreflow, WDAT3) DO ArcMainNG(#GasPreflow, WDAT3, WP3) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT3) DELAY = ArcGetDelay(#ArcPreOn, WDAT3) DO ArcMainNG(#ArcOnMoveStd, WDAT3, WP3) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT3, WP3)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT3, WP3)
+         ENDIF
+         IF Layer == 4 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT4) DO ArcMainNG(#PreDefinition, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#GasPreflow, WDAT4) DO ArcMainNG(#GasPreflow, WDAT4, WP4) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#ArcPreOn, WDAT4) DO ArcMainNG(#ArcOnMoveStd, WDAT4, WP4) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT4, WP4)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT4, WP4)
+         ENDIF
+         IF Layer >= 5 THEN
+            TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT5) DO ArcMainNG(#PreDefinition, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#GasPreflow, WDAT5) DO ArcMainNG(#GasPreflow, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT5) DELAY = ArcGetDelay(#ArcPreOn, WDAT5) DO ArcMainNG(#ArcOnMoveStd, WDAT5, WP5) PRIO = -1 
+            ArcMainNG(#ArcOnBeforeMoveStd, WDAT5, WP5)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOnAfterMoveStd, WDAT5, WP5)
+         ENDIF
+      CASE #_OFF
+         IF (Layer >= 1) AND (Layer <= 3) THEN
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+            ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+         ELSE
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT5, WP5) PRIO = -1
+            TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT5, WP5) PRIO = -1
+            ArcMainNG(#ArcOffBeforeMoveStd, WDAT5, WP5)
+            MotionPar(#CPmotion,0.1)
+            LIN $POS_ACT
+            ArcMainNG(#ArcOffAfterMoveStd, WDAT5, WP5)
+         ENDIF
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END

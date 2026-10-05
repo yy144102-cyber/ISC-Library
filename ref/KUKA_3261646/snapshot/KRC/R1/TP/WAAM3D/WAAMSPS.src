@@ -1,0 +1,126 @@
+&ACCESS RVO2
+&REL 38
+&PARAM DISKPATH = KRC:\R1\TP\WAAM3D
+DEF WAAMSPS()
+   ;/////////////////////////////////////////////////////////
+   ;                                                        ;
+   ;                    WAAMSPS Functions                   ;
+   ;                                                        ;
+   ;                    Created: 24/06/22                   ;
+   ;                                                        ;
+   ;                                                        ;
+   ; These are a set of functions used to configure outputs ;
+   ; and variables which are used for WAAMCtrl over RSI.    ;
+   ; Also contained in this file, is control of certain     ;
+   ; aspects of the system through the PLC such as pilot    ;
+   ; arc, robot collisions. These are split into individual ;
+   ; subroutines for editing and modification and exectued  ;
+   ; in the WAAMSPS_LOOP called by the SPS.sub program      ;
+   ;                                                        ;
+   ;                  Last Updated: 01/09/22                ;
+   ;                                                        ;
+   ;/////////////////////////////////////////////////////////
+END
+
+GLOBAL DEF WAAMSPS_SETUP()
+   
+   AB_Setup()
+   CRASH_nHandle = 0
+   ;WeldingMode = TRUE
+   
+END
+
+GLOBAL DEF WAAMSPS_LOOP()
+   
+   AB_SUBMIT_LOOP_PLC()
+   ;AB_SUBMIT_LOOP()
+   PYRO_READ()
+   ;WAAMPLC_CONTROL()
+   WAAM_VARIBLE_UPDATE()
+   WAAM_COLLISION()
+   WAAMPLC_MODE()
+   GAS_CONTROL()
+   PLC_CHECKS()
+   
+END
+
+GLOBAL DEF WAAMPLC_MODE()
+   ;IF iWAAMProcess == FALSE THEN
+      ;WAAMPlasma()
+   ;ELSE 
+      WAAMCwMIG()
+   ;ENDIF
+END
+
+GLOBAL DEF WAAMPLC_CONTROL()
+   
+END
+
+GLOBAL DEF WAAM_VARIBLE_UPDATE()
+   
+   TEST_POS = $AXIS_ACT.A2 * 1000
+   
+   oTravelSpeed = $VEL_ACT * 100000
+   
+   rPYRO_DATA = iPYRO_DATA / 1000.0
+   ;rTENT_PRESSURE = iTENT_PRESSURE[0]*1 + iTENT_PRESSURE[1]*2 + iTENT_PRESSURE[2]*4 + iTENT_PRESSURE[3]*8 + iTENT_PRESSURE[4]*16 + iTENT_PRESSURE[5]*32 + iTENT_PRESSURE[6]*64 - iTENT_PRESSURE[7]*128
+  ; rFLOW_RATE = iFLOW_RATE/100.0
+   $SEN_PINT[7] = oTravelSpeed
+   $SEN_PREA[2] = rPYRO_DATA
+   $SEN_PREA[3] = r1ColourTemperatureCh1
+   $SEN_PREA[4] = rTENT_PRESSURE
+   $SEN_PREA[5] = rFLOW_RATE
+   oErrorMessage = iErrorNumber
+   
+END
+
+GLOBAL DEF WAAM_COLLISION()
+   
+   IF bCOLLISION_DETECTION == FALSE THEN
+      IF CRASH_nHandle == 0 THEN
+         CRASH_Msg = {modul[] "COLLISION DETECTED", Nr 1, msg_txt[] "THE ROBOT HAS COLLIDED WITH AN OBJECT."}
+         CRASH_Opt = {vl_stop true, clear_p_reset true, clear_p_SAW false, log_to_DB false}
+         CRASH_nHandle = Set_KrlMsg (#state, CRASH_Msg, CRASH_Par[], CRASH_Opt)
+      ENDIF
+   ENDIF
+   
+   IF (CRASH_nHandle > 0) THEN
+      IF bCOLLISION_DETECTION == TRUE THEN
+         CRASH_Result = Clear_KrlMsg(CRASH_nHandle)
+         CRASH_nHandle = 0
+      ENDIF
+   ENDIF
+   
+END
+
+GLOBAL DEF GAS_CONTROL()
+    SWITCH $PRO_STATE1
+      CASE #P_RESET, #P_END, #P_FREE
+         $OUT[50] = FALSE
+         $OUT[51] = FALSE
+      DEFAULT
+   ENDSWITCH
+END
+
+GLOBAL DEF PLC_CHECKS()
+   PLC_SIGNALS[1] = bEE_COOL_FLOW
+   PLC_SIGNALS[2] = bEE_COOL_TEMP
+   PLC_SIGNALS[3] = TRUE
+   PLC_SIGNALS[4] = TRUE
+   PLC_SIGNALS[5] = TRUE
+   
+   FOR MsgNumP = 1 to 5
+      IF PLC_SIGNALS[MsgNumP] == FALSE THEN
+         IF PLCData[MsgNumP].PLC_nHandle == 0 THEN
+            PLCData[MsgNumP].PLC_nHandle = Set_KrlMsg (#state, PLCData[MsgNumP].PLC_Msg, PLC_Par[], PLCData[MsgNumP].PLC_Opt)
+         ENDIF
+      ENDIF
+      
+      IF (PLCData[MsgNumP].PLC_nHandle > 0) THEN
+         IF PLC_SIGNALS[MsgNumP] == TRUE THEN
+            PLC_Result[MsgNumP] = Clear_KrlMsg(PLCData[MsgNumP].PLC_nHandle)
+            PLCData[MsgNumP].PLC_nHandle = 0
+         ENDIF
+      ENDIF
+   ENDFOR
+END

@@ -1,0 +1,56 @@
+&ACCESS RVP
+&REL 13
+&PARAM KRL_MODEL_IGNORE = TRUE
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF DryRun_20260915( )
+DECL INT i,Layer,StartLayer
+DECL REAL WeldLength,Pitch,Velocity,SX,SY,SZ
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+MotionPar(#PTPmotion,1.0)
+PTP $POS_ACT
+
+PTP XHOMEX
+LIN XHOVERX
+
+LIN XP1
+LIN XP2
+LIN XP3
+
+PTP XHOVERX
+PTP XHOMEX
+
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+
+END

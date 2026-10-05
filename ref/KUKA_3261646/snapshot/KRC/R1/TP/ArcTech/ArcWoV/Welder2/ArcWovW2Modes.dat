@@ -1,0 +1,20 @@
+&ACCESS R2
+&REL 1
+&COMMENT Generated from WOV
+DEFDAT  ARCWOVW2MODES PUBLIC
+
+DECL GLOBAL stArcModeCoding_T wArcW2ModiCoding[16]
+wArcW2ModiCoding[1]={InUse FALSE}
+
+DECL GLOBAL stParameter_T wArcW2ParamDef[16,25]
+wArcW2ParamDef[1,1]={Active FALSE}
+
+DECL GLOBAL stArcClChannel_T wArcW2OChannel[16,8]
+wArcW2OChannel[1,1]={NrPoints 0}
+
+DECL GLOBAL stArcClChannel_T wArcW2IChannel[8]
+wArcW2IChannel[1]={NrPoints 0}
+
+DECL GLOBAL stArcSlopeActive_T wArcW2SlopeActive[16]
+wArcW2SlopeActive[1]={C1 FALSE}
+ENDDAT

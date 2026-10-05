@@ -1,0 +1,37 @@
+{
+  "key": "thrust-to-weight-ratio",
+  "form": "TWR = F / (m0 · g0)",
+  "variables": {
+    "TWR": "点火時推重比 [-]",
+    "F": "段合計推力 [N]",
+    "m0": "その段の点火時全備質量 [kg]",
+    "g0": "標準重力加速度 9.80665 [m/s^2]"
+  },
+  "common_name": "推重比（thrust-to-weight ratio）",
+  "source_origin": null,
+  "source_refs": [
+    {
+      "id": "src",
+      "path": "Library\\engineering\\sources\\loop-agent\\src\\loop_agent\\physics\\rocket.py",
+      "lines": "94",
+      "sha256": "092854cb1bed6130497a0c17b68492911048e54ee2323da5d13f76d7b9a4eb6c",
+      "referenced_by": [
+        "form"
+      ]
+    }
+  ],
+  "basis": "published",
+  "validity_range": {
+    "evaluation_point": "段点火時（m0）の1点でのみ評価する（rocket.py:47）",
+    "availability": "thrust_N が指定された段のみ算出する（rocket.py:29,94）",
+    "inherits": "m0（stage-ignition-mass）の適用範囲を継承する"
+  },
+  "validity_gate": null,
+  "validity_gate_ref": null,
+  "limitations": null,
+  "limitations_ref": null,
+  "limitations_candidate": "点火時1点のみの検査であり、推進剤消費に伴う燃焼中のTWR推移を見ていない。推力の高度変化（海面推力→真空推力）も無視している。",
+  "candidate_basis": "judgment",
+  "candidate_author": "Claude Code",
+  "note": "docs/06_adversarial_review_v2.md の P系指摘（06:37-54）に TWR に関する記述はない。前回調査で 06:42-43 を根拠に『limitations 記載あり』と数えたのは誤りで、あれは質量計上への指摘であり TWR 固有の限界ではない。VR-2 により limitations は null、VR-9 により候補のみ記録する。この項目は VR-3 の判定では null と同じ扱いとする。"
+}

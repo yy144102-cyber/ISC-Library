@@ -1,0 +1,119 @@
+&ACCESS RVO
+&REL 60
+&PARAM DISKPATH = KRC:\R1\Program\Working
+DEF  Repair_CMT ( )
+DECL REAL Dia,Length,Angle,Velocity
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+MotionPar(#PTPmotion,10.0)
+PTP $POS_ACT
+
+Length = 50.0 ;mm
+Velocity =1800.0 ;mm/min
+Dia = $POS_ACT.Y * 2.0
+Velocity = VelocityCalc(Velocity,Dia)
+Angle = Length / ((Dia * 3.1415) / 360.0)
+
+;-------kyoride hoshushitaibaaiha kesukoto----------
+;Angle = 146.0   ;0 kara 400
+;---------------------------------------------------
+Point[1] = $POS_ACT
+Point[1].E1 =  (Point[1].E1 + (Angle * 1/3))
+
+Point[2] = $POS_ACT
+Point[2].E1 =  (Point[2].E1 + (Angle * 2/3))
+
+Point[3] = $POS_ACT
+Point[3].E1 = (Point[3].E1 + Angle)
+
+WAIT SEC 1.0
+WeldingAct(#_ON)
+MotionPar(#PTPmotion,Velocity)
+PTP Point[1] C_PTP
+PTP Point[2] C_PTP
+PTP Point[3] C_PTP
+
+;PTP_REL {E1 360}
+
+WeldingAct(#_OFF)
+WAIT SEC 1.0
+
+END
+
+DEF MotionPar(Type:IN,Velocity:IN)
+DECL Motion Type
+DECL REAL Velocity
+
+;FOLD ParSet
+   SWITCH Type
+      CASE #PTPmotion
+         $BWDSTART=FALSE
+         PDAT_ACT=PPDAT1
+         FDAT_ACT=FP1
+         BAS(#PTP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      CASE #CPmotion
+         $BWDSTART=FALSE
+         LDAT_ACT=LCPDAT1
+         FDAT_ACT=FP1
+         BAS(#CP_PARAMS,Velocity)
+         SET_CD_PARAMS (0)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END
+
+DEFFCT REAL VelocityCalc(Velocity:IN,Dia:IN)
+DECL REAL Velocity,Dia,_Result
+
+;FOLD Velocity Calculation
+   IF ($OUT[9] == TRUE) OR ($OUT[10] == TRUE) THEN
+      _Result = Velocity / ((Dia * 3.1415 * 15.0) / 100.0) 
+      ;konopojishona wa 15rpm
+   ELSE
+      _Result = 10.0 ;%
+   ENDIF
+   RETURN(_Result)
+;ENDFOLD
+
+ENDFCT
+
+DEF WeldingAct(Type:IN)
+DECL Action Type
+
+;FOLD Welding Action
+   SWITCH Type
+      CASE #_ON
+         TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+         ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+         MotionPar(#CPmotion,0.1)
+         LIN $POS_ACT
+         ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+      CASE #_OFF
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+         TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+         ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+         MotionPar(#CPmotion,0.1)
+         LIN $POS_ACT
+         ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+      DEFAULT
+         HALT
+   ENDSWITCH
+;ENDFOLD
+
+END

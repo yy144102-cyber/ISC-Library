@@ -1,0 +1,124 @@
+&ACCESS R1
+&REL 45
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\TP\HmiEasy
+DEF HmiEasyLib( )
+END
+GLOBAL DEFFCT BOOL HmiEasyAnyViewIsOpen()
+
+ON_ERROR_PROCEED
+return NOT (StrComp(" ", HmiEasy.ActView[], #NOT_CASE_SENS))
+SWITCH ($ERR.NUMBER)
+  CASE 1422
+    return false
+  DEFAULT
+    ERR_RAISE($ERR)
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEFFCT BOOL HmiEasyViewIsOpen(ViewName[]:IN)
+DECL CHAR ViewName[]  
+
+ON_ERROR_PROCEED
+return StrComp(ViewName[], HmiEasy.ActView[], #NOT_CASE_SENS)
+
+SWITCH ($ERR.NUMBER)
+  CASE 1422
+    return false
+  DEFAULT
+    ERR_RAISE($ERR)
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF HmiEasyOpenView(ViewName[]: IN)
+DECL CHAR ViewName[]  
+DECL BOOL bRet
+
+bRet=StrClear(HmiEasy.OpenView[])
+HmiEasy.OpenView[]=ViewName[]
+WAIT FOR HmiEasyViewIsOpen(ViewName[])
+bRet=StrClear(HmiEasy.OpenView[])
+
+END
+
+GLOBAL DEFFCT BOOL HmiEasyTabIsOpen(TabNr: IN)
+DECL INT TabNr
+
+IF NOT (HmiEasyAnyViewIsOpen()) THEN
+  return FALSE
+ENDIF
+
+IF (TabNr==HmiEasy.ActTab) THEN
+  return TRUE
+ELSE
+  return FALSE
+ENDIF
+
+ENDFCT
+
+GLOBAL DEFFCT BOOL HmiEasyViewWithTabIsOpen(ViewName[]:IN, TabNr: IN)
+DECL CHAR ViewName[]  
+DECL INT TabNr
+
+IF NOT (HmiEasyTabIsOpen(TabNr)) THEN
+  return FALSE
+ENDIF
+
+ON_ERROR_PROCEED
+return StrComp(ViewName[], HmiEasy.ActView[], #NOT_CASE_SENS)
+
+SWITCH ($ERR.NUMBER)
+  CASE 1422
+    return false
+  DEFAULT
+    ERR_RAISE($ERR)
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF HmiEasyOpenTab(TabNr: IN)
+DECL INT TabNr
+
+HmiEasy.OpenTab=TabNr
+WAIT FOR HmiEasyTabIsOpen(TabNr)
+HmiEasy.OpenTab=0
+
+END
+
+GLOBAL DEF HmiEasyCloseActView()
+HmiEasy.CloseActView=TRUE
+WAIT FOR NOT HmiEasyAnyViewIsOpen()
+HmiEasy.CloseActView=FALSE
+END
+
+GLOBAL DEF HmiEasyCloseView(ViewName[]: IN)
+DECL CHAR ViewName[]  
+IF (HmiEasyViewIsOpen(ViewName[])) THEN
+  HmiEasyCloseActView()  
+ENDIF
+END
+
+GLOBAL DEF HmiEasyOpenViewWithTab(ViewName[]: IN, TabNr : IN)
+
+DECL CHAR ViewName[]  
+DECL INT TabNr
+
+HmiEasyOpenView(ViewName[])
+WAIT FOR HmiEasyViewIsOpen(ViewName[])
+HmiEasyOpenTab(TabNr)
+
+END
+
+GLOBAL DEF HmiEasySetString(Var[]: OUT, Value: IN)
+DECL CHAR Var[]  
+DECL CHAR Value[]  
+DECL BOOL bRet
+
+bRet = StrClear(Var[])
+
+Var[]=Value[]
+
+END

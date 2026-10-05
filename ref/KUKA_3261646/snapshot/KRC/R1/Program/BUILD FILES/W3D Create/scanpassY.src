@@ -1,0 +1,138 @@
+&ACCESS RVO
+&REL 202
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\BUILD FILES
+DEF scanpassY( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+halt
+halt
+oLayerNum=1
+oLayerType = 1
+oLayerIndex=1
+oSideNum=1
+oIsScanning=FALSE
+WAAM_RSI_ON()
+;FOLD SPTP HOME Vel=100 % DEFAULT ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XHOME WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FHOME), $BASE = SBASE(FHOME.BASE_NO), $IPO_MODE = SIPO_MODE(FHOME.IPO_FRAME), $LOAD = SLOAD(FHOME.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PDEFAULT), $APO = SAPO_PTP(PDEFAULT), $GEAR_JERK[1] = SGEAR_JERK(PDEFAULT), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+
+
+;hi
+
+xweld.x=xweld.x+5
+
+
+
+Xweld.a=Xweld.a+0
+xweld.z=xweld.z+0
+
+;FOLD LIN weld Vel=2 m/s CPDAT2 Tool[1]:MIG Base[1]:Base1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=weld; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT2; Kuka.VelocityPath=2; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT2
+FDAT_ACT = Fweld
+BAS(#CP_PARAMS, 2.0)
+SET_CD_PARAMS (0)
+LIN Xweld
+;ENDFOLD
+
+;FOLD ARCON WDAT4 LIN weld Vel=2 m/s CPDAT3 Tool[1]:MIG Base[1]:Base1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arconlin; Kuka.IsGlobalPoint=False; Kuka.PointName=weld; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT3; Kuka.VelocityPath=2; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT4; ArcTech.Basic=3.5.5.537; ArcTech.Advanced=3.5.1.36
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT3
+FDAT_ACT = Fweld
+BAS(#CP_PARAMS, 2.0)
+SET_CD_PARAMS (0)
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT4) DO ArcMainNG(#PreDefinition, WDAT4, Wweld) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#GasPreflow, WDAT4) DO ArcMainNG(#GasPreflow, WDAT4, Wweld) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT4) DELAY = ArcGetDelay(#ArcPreOn, WDAT4) DO ArcMainNG(#ArcOnMoveStd, WDAT4, Wweld) PRIO = -1 
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT4, Wweld)
+LIN Xweld
+ArcMainNG(#ArcOnAfterMoveStd, WDAT4, Wweld)
+;ENDFOLD
+
+xweld.y=xweld.y+(100)
+
+;FOLD ARCOFF WDAT5 LIN weld CPDAT4 Tool[1]:MIG Base[1]:Base1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.arctech.arcofflin; Kuka.IsGlobalPoint=False; Kuka.PointName=weld; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT4; Kuka.VelocityPath=2; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; ArcTech.WdatVarName=WDAT5; ArcTech.Basic=3.5.5.537; ArcTech.Advanced=3.5.1.36
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT4
+FDAT_ACT = Fweld
+BAS(#CP_PARAMS, gArcBasVelDefinition)
+SET_CD_PARAMS (0)
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT5, Wweld) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT5, Wweld) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT5) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT5, Wweld) PRIO = -1 
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT5, Wweld)
+LIN Xweld
+ArcMainNG(#ArcOffAfterMoveStd, WDAT5, Wweld)
+;ENDFOLD
+
+
+;FOLD WAIT Time= 2.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=2.0
+;ENDFOLD
+WAIT SEC 2.0
+;ENDFOLD
+xweld.y=xweld.y-(100)
+
+;FOLD PTP home Vel=100 % PDAT1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=home; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=100; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = Fhome
+BAS(#PTP_PARAMS, 100.0)
+SET_CD_PARAMS (0)
+PTP Xhome
+;ENDFOLD
+WAAM_RSI_OFF()
+halt
+halt
+
+
+
+;FOLD LIN start Vel=2 m/s CPDAT1 Tool[1]:MIG Base[1]:Base1 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=start; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=2; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = Fstart
+BAS(#CP_PARAMS, 2.0)
+SET_CD_PARAMS (0)
+LIN Xstart
+;ENDFOLD
+
+xweld=xstart
+
+;FOLD SPTP HOME Vel=100 % DEFAULT ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XHOME WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FHOME), $BASE = SBASE(FHOME.BASE_NO), $IPO_MODE = SIPO_MODE(FHOME.IPO_FRAME), $LOAD = SLOAD(FHOME.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PDEFAULT), $APO = SAPO_PTP(PDEFAULT), $GEAR_JERK[1] = SGEAR_JERK(PDEFAULT), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+
+END

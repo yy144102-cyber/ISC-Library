@@ -1,0 +1,20 @@
+&ACCESS R2
+&REL 1
+&COMMENT Generated from WOV
+DEFDAT ARCWOVWELDER PUBLIC
+DECL GLOBAL stArcWelder_T wArcWelder[4]
+wArcWelder[1]={Type #Standard,Name[] "Universal welder",Id 1}
+wArcWelder[2]={Type #None,Name[] " ",Id 2}
+wArcWelder[3]={Type #None,Name[] " ",Id 3}
+wArcWelder[4]={Type #None,Name[] " ",Id 4}
+DECL GLOBAL stArcPsKxrFile_T wArcPsKxrFile1[4]
+wArcPsKxrFile1[1]={PsMsgType #Error,KxrFile[] " "}
+wArcPsKxrFile1[2]={PsMsgType #None,KxrFile[] " "}
+wArcPsKxrFile1[3]={PsMsgType #None,KxrFile[] " "}
+wArcPsKxrFile1[4]={PsMsgType #None,KxrFile[] " "}
+DECL GLOBAL stArcPsKxrFile_T wArcPsKxrFile2[4]
+wArcPsKxrFile2[1]={PsMsgType #Warning,KxrFile[] " "}
+wArcPsKxrFile2[2]={PsMsgType #None,KxrFile[] " "}
+wArcPsKxrFile2[3]={PsMsgType #None,KxrFile[] " "}
+wArcPsKxrFile2[4]={PsMsgType #None,KxrFile[] " "}
+ENDDAT

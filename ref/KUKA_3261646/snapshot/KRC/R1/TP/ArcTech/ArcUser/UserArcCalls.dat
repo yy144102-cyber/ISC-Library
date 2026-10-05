@@ -1,0 +1,5 @@
+&ACCESS R2
+&COMMENT ArcTech User Calls module
+DEFDAT UserArcCalls
+DECL BOOL ATAu_Test = FALSE
+ENDDAT

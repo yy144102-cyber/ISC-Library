@@ -1,0 +1,81 @@
+&ACCESS R2
+&REL 1
+&COMMENT ArcTech
+&PARAM DISKPATH = KRC:\R1\TP\ArcTech
+DEFDAT  ARCERROR
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mArcSyncIgnitionFlag=FALSE ;TRUE when synchrony motion is under control
+DECL BOOL mArcErrorOnDistance=FALSE ;TRUE When StillStand error on distance
+DECL BOOL mArcErrorOnVel=FALSE ;TRUE When StillStand error on Velocity
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL INT mMsgHeartHandle=0 ;Handle integer value from Message State
+DECL INT mNumberCondSignal=3 ;Number of input signals configuration
+DECL INT mOV_APPLError=10 ;Default speed on error reaction
+DECL INT mArcPreStartTimeOut=321602 ;TimeOut fro PreStart
+DECL INT mArcMemVelTime=0 ;Velocity TimeOut StillStand
+DECL INT mArcMemDistanceTime=0 ;Distance TimeOut StillStand
+DECL INT mArcWatchdogTimeNext=0 ;Toggle Watchdog Next Time ($ROB_TIMER)
+DECL INT mArcWatchdogTimeLast=0 ;Toggle Watchdog Last Time ($ROB_TIMER)
+DECL INT mArcWatchdogTimeDiff=0 ;Toggle Watchdog Time Diff.
+DECL INT mArcInputErrorHandler[6] ;Handler1 for Message on Error Condition
+mArcInputErrorHandler[1]=0
+mArcInputErrorHandler[2]=0
+mArcInputErrorHandler[3]=0
+mArcInputErrorHandler[4]=0
+mArcInputErrorHandler[5]=0
+mArcInputErrorHandler[6]=0
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL CONST REAL mDistanceReduceSpeed=2.00000 ;Reduce speed before distance on error
+DECL CONST REAL mArcMinDistance=0.01000000 ;Enable On Interrupt On Distance
+DECL REAL mArcDistanceInterruptOn=0.0 ;Enable On Interrupt On Distance
+DECL REAL mArcVelCp=0.0 ;Save Speed Value
+DECL REAL mDistanceOnStart=0.0 ;Distance to start Interrupt
+DECL REAL mDistanceBeforeError=769.073608 ;Distance before error (ErrorDistance-mDistanceReduceSpeed)
+DECL REAL mDistanceOnError=769.073608 ;Distance before error (ErrorDistance-mDistanceReduceSpeed)
+DECL REAL mArcMemDistance=258.284882 ;Distance used for StillStand
+DECL REAL mHHeartBit=0.0 ;Memory $ROB_TIMER on Signal pulse High
+DECL REAL mLHeartBit=0.0 ;Memory $ROB_TIMER on Signal pulse Low
+;*****************************************************************************************
+;ENUM
+;*****************************************************************************************
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+;*****************************************************************************************
+;ARRAY
+;*****************************************************************************************
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;Input Condition to check on Motion
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DECL stArcSignal_T mCond[6]
+mCond[1]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 407}}
+mCond[2]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 2001}}
+mCond[3]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 2006}}
+mCond[4]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 1025}}
+mCond[5]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 1025}}
+mCond[6]={State TRUE,SignNr 0,TimeOut 0.0,Offset {SignNr 1025}}
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;Save time out on signal missing
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DECL REAL mTOut[6]
+mTOut[1]=0.0
+mTOut[2]=0.0
+mTOut[3]=0.0
+mTOut[4]=0.0
+mTOut[5]=0.0
+mTOut[6]=0.0
+;*****************************************************************************************
+;FRAME
+;*****************************************************************************************
+DECL FRAME mMoveDistance={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+;*****************************************************************************************
+;POSITION
+;*****************************************************************************************
+DECL E6POS mPOS_ACT={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 'B0000',T 'B0000',E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+ENDDAT

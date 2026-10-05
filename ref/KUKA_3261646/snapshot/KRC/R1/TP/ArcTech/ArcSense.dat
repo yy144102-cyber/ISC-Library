@@ -1,0 +1,262 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEFDAT ArcSense PUBLIC
+;*****************************************************************************************
+;STRUC
+;*****************************************************************************************
+DECL GLOBAL stArcSQNameTable_T mSQNames[1]
+mSQNames[1]={SqDescription[] "Default",StrucName[] "Default"}
+;*****************************************************************************************
+;BOOL
+;*****************************************************************************************
+DECL BOOL mRSIErrMsg                    = TRUE
+DECL BOOL mResumeTrigger                = TRUE
+DECL BOOL mControlIsOff                 = FALSE
+DECL BOOL mSigGenStop                   = FALSE
+;*****************************************************************************************
+;INT
+;*****************************************************************************************
+DECL INT mSigQualTimeoutSec             = 15 ;For Timeout to find good signal. 15 = Default
+;$Sen_Pint[] for First IO Block
+DECL GLOBAL INT gArsIO1 = 10 ;Global because Statukey PlugIn reads this
+;ArcSense BitDecode Inputs
+;gArsIO 1 -> TRUE; Pause WeaveSignal Generator FALSE; StartSignal Generator
+;gArsIO 2 -> TRUE; Reset WeaveSignal Generator FALSE; StartSignal Generator
+;For Start WeaveSignal ArcSenseIO (ArcSenseIO 1 & ArcSenseIO 2 )
+;gArsIO 3 -> TRUE; Reduce Weaveoffset          FALSE; Stop Reduce Weaveoffset
+;gArsIO 4 -> TRUE; Stop RSI Process(Parameterdetection,SignalQuality,Control) ; False StartRSIProcess
+;gArsIO 5 -> TRUE; ManualMove: CTRL Eingang fuer ManualMove Block
+;gArsIO 6 -> TRUE; Threshold: Schlauch?berwachung Inactiv
+;gArsIO 7 -> TRUE; RedCorGen: komplettter Abbau Weave+Sensor / False Abbau Weave only
+;gArsIO 8 -> TRUE; ManualMove: HandShake Eingang für Manual Move Block
+;gArsIO 9 -> TRUE; ManualMove: Move Y+
+;gArsIO 10 -> TRUE;ManualMove: Move Y-
+;gArsIO 11 -> TRUE;ManualMove: Move Z+
+;gArsIO 12 -> TRUE;ManualMove: Move Z-
+;gArsIO 13 -> TRUE; ReduceCorZ : starts to reduce the sensor offset Z, FALSE; Stops reducing the sensor offset Z
+;gArsIO 14 -> TRUE; ReduceCorSensorY  starts to reduce the sensor offset Y, FALSE; Stops reducing the sensor offset Y
+;gArsIO 15 -> TRUE; Analogsignal, FALSE; Digitalsignal
+;gArsIO 16 -> TRUE; Weldingstate Hot, FALSE; Weldingstate Cold
+;$Sen_Pint[] for Second IO Block
+DECL GLOBAL INT gArsIO2 = 11 ;Global because Statukey PlugIn reads this
+;ArcSense BitDecode Inputs
+;gArsIO 17 -> TRUE; ToolDirection Z
+;gArsIO 18 -> TRUE; Tcp Couple
+;gArsIO 19 -> TRUE; Use Anout for simulatione
+DECL GLOBAL INT gArsStateIO = 12 ;Global because Statukey PlugIn reads this
+; gArsStateIO 1 -> ArcSense correction active or correction time after signal quality check
+; gArsStateIO 2 -> RedCorGen: Finished Reduce Correction
+; gArsStateIO 3 -> ControllerNG: Failed to Generate Reference Signal in Time
+; gArsStateIO 4 -> Threshold: Left maximum allowed Threshold.
+; gArsStateIO 5 -> ManualMove: Handshake Out
+; gArsStateIO 6 -> SignalQuality: Failed to find Signal in Time
+; gArsStateIO 7 -> RedCorZ: Abbau Sensor Only Rdy
+; gArsStateIO 8 -> RedCorY: Abbau Sensor Only Rdy
+; gArsStateIO 9 ->  ControllerNG: Critical Sanity Break (More then 10 Sanity breaks in short duration) Signal in Time
+; gArsStateIO 10
+; gArsStateIO 11
+; gArsStateIO 12
+; gArsStateIO 13
+; gArsStateIO 14
+; gArsStateIO 15
+; gArsStateIO 16
+;*****************************************************************************************
+;REAL
+;*****************************************************************************************
+DECL REAL mSigQualSanity                = 0.175000 ;For Peak Detection. 0.175 = Default, 1 = highest sensitivity, 0 = lowest sensitivity
+DECL REAL mSigQualFreqRange             = 0.100000 ;For Deviation between Input Signal and Weave Signal. 0.1 = Default, If lower it is more sensitiv
+DECL REAL mSigQualPeriodOfWeave         = 0.496000
+DECL REAL mMaxAmpControl                = 0.025    ;Maximum Control in one RSI Cycle (4ms)
+DECL REAL mMaxHeigthCorCyc              = 1.00000
+;*****************************************************************************************
+;CHAR
+;*****************************************************************************************
+;Angle Calculation
+DECL CONST CHAR Ars_AngleCalc[24]
+Ars_AngleCalc[]="AsAngleCalc1"
+DECL CONST CHAR Ars_Angle[24]
+Ars_Angle[]="Angle"
+;Signal Generator
+DECL CONST CHAR Ars_SigGen[24]
+Ars_SigGen[]="ASSIGGEN1"
+DECL CONST CHAR Ars_SigGen_Type[24]
+Ars_SigGen_Type[]="Type"
+DECL CONST CHAR Ars_SigGen_Velocity[24]
+Ars_SigGen_Velocity[]="Velocity"
+DECL CONST CHAR Ars_SigGen_Amplitude[24]
+Ars_SigGen_Amplitude[]="Amplitude"
+DECL CONST CHAR Ars_SigGen_Period[24]
+Ars_SigGen_Period[]="Period"
+DECL CONST CHAR Ars_SigGen_SoftStartCtn[24]
+Ars_SigGen_SoftStartCtn[]="SoftStartCounter"
+DECL CONST CHAR Ars_SigGen_ArcParamChgd[24]
+Ars_SigGen_ArcParamChgd[]="ArcParamChanged"
+DECL CONST CHAR Ars_SigGen_ReduceOffset[24]
+Ars_SigGen_ReduceOffset[]="ReduceOffset"
+DECL CONST CHAR Ars_SigGen_WeaveOffset[24]
+Ars_SigGen_WeaveOffset[]="WeaveOffset"
+DECL CONST CHAR Ars_SigGen_WeaveDelRight[24]
+Ars_SigGen_WeaveDelRight[]="WeaveDelayRight"
+DECL CONST CHAR Ars_SigGen_WeaveDelLeft[24]
+Ars_SigGen_WeaveDelLeft[]="WeaveDelayLeft"
+DECL CONST CHAR Ars_SigGen_WeaveDelMode[24]
+Ars_SigGen_WeaveDelMode[]="WeaveDelayMode"
+DECL CONST CHAR Ars_SigGen_AmpMaxOutIdx[24]
+Ars_SigGen_AmpMaxOutIdx[]="AmpMaxReachedOutIdx"
+;IO NAMES
+DECL CONST CHAR ArcSenseIO_1B[24]
+ArcSenseIO_1B[]="ArcSenseIO_1"
+DECL CONST CHAR ArcSenseIO_2B[24]
+ArcSenseIO_2B[]="ArcSenseIO_2"
+DECL CONST CHAR ArcSenseIO_1B_Idx[24]
+ArcSenseIO_1B_Idx[]="Index"
+DECL CONST CHAR ArcSenseIO_2B_Idx[24]
+ArcSenseIO_2B_Idx[]="Index"
+DECL CONST CHAR ArcSenseAnaIn[24]
+ArcSenseAnaIn[]="ArcSenseAnIn"
+DECL CONST CHAR ArcSenseDigIn[24]
+ArcSenseDigIn[]="ArcSenseDigIn"
+DECL CONST CHAR ArcSenseDigitalDataType[24]
+ArcSenseDigitalDataType[]="DataType"
+DECL CONST CHAR ArcSenseSensorIO_Idx[24]
+ArcSenseSensorIO_Idx[]="Index"
+DECL CONST CHAR Ars_DecodeBlock[24]
+Ars_DecodeBlock[]="ArcSenseOutput"
+DECL CONST CHAR Ars_DecodeBlock_Idx[24]
+Ars_DecodeBlock_Idx[]="Index"
+;max Deviation
+DECL CONST CHAR Ars_Threshold3D[24]
+Ars_Threshold3D[]="Threshold3D"
+DECL CONST CHAR Ars_ThreshLim[24]
+Ars_ThreshLim[]="Limit"
+;RedCorGen
+DECL CONST CHAR Ars_RedCorrGen[24]
+Ars_RedCorrGen[]="RedCorGen1"
+DECL CONST CHAR Ars_RedCorrGenY[24]
+Ars_RedCorrGenY[]="RedYSensorGen"
+DECL CONST CHAR Ars_RedCorrGenZ[24]
+Ars_RedCorrGenZ[]="RedZSensorGen"
+;Signal Quality
+DECL CONST CHAR Ars_SigQuality1[24]
+Ars_SigQuality1[]="SigQuality1"
+DECL CONST CHAR Ars_Frequency[24]
+Ars_Frequency[]="Frequency"
+DECL CONST CHAR Ars_SQMode[24]
+Ars_SQMode[]="Mode"
+DECL CONST CHAR Ars_SigQualSanity[24]
+Ars_SigQualSanity[]="Sanity"
+DECL CONST CHAR Ars_SigQualAmplitude[24]
+Ars_SigQualAmplitude[]="SigAmplitude"
+DECL CONST CHAR Ars_SigQualWindow[24]
+Ars_SigQualWindow[]="TriggerWindowPerc"
+DECL CONST CHAR Ars_SigQualWindowZero[24]
+Ars_SigQualWindowZero[]="TriggerWindowPercZero"
+DECL CONST CHAR Ars_FreqRange[24]
+Ars_FreqRange[]="FreqRange"
+DECL CONST CHAR Ars_TimeoutSec[24]
+Ars_TimeoutSec[]="TimeoutSec"
+DECL CONST CHAR Ars_ArcOnTrackDelaySec[24]
+Ars_ArcOnTrackDelaySec[]="ArcOnTrackDelaySec"
+DECL CONST CHAR Ars_FindSeamMiddle[24]
+Ars_FindSeamMiddle[]="FindSeamMiddle"
+DECL CONST CHAR Ars_HeightCorrValue[24]
+Ars_HeightCorrValue[]="HeightCorrValue"
+DECL CONST CHAR Ars_MinInputValue[24]
+Ars_MinInputValue[]="MinInputValue"
+DECL CONST CHAR Ars_MinRefCycleOn[24]
+Ars_MinRefCycleOn[]="MinRefCycleOn"
+DECL CONST CHAR Ars_MinRefCycleSwi[24]
+Ars_MinRefCycleSwi[]="MinRefCycleSwi"
+;Control
+DECL CONST CHAR Ars_Control[24]
+Ars_Control[]="ControllerNG1"
+DECL CONST CHAR Ars_UserGainSide[24]
+Ars_UserGainSide[]="KpUserFactorSide"
+DECL CONST CHAR Ars_UserGainHeight[24]
+Ars_UserGainHeight[]="KpUserFactorHeight"
+DECL CONST CHAR Ars_Mode[24]
+Ars_Mode[]="ControllerMode"
+DECL CONST CHAR Ars_SigGenAmp[24]
+Ars_SigGenAmp[]="SignalAmplitude"
+DECL CONST CHAR Ars_Amplitude[24]
+Ars_Amplitude[]="MaximumContAmplitude"
+DECL CONST CHAR Ars_ToolDirection[24]
+Ars_ToolDirection[]="ToolDirectionSwitched"
+DECL CONST CHAR Ars_MoveBackwardOn[24]
+Ars_MoveBackwardOn[]="MoveBackwardOn"
+DECL CONST CHAR Ars_Window[24]
+Ars_Window[]="TriggerWindowPerc"
+DECL CONST CHAR Ars_WindowZero[24]
+Ars_WindowZero[]="TriggerWindowPercZero"
+DECL CONST CHAR Ars_Bias[24]
+Ars_Bias[]="Bias"
+DECL CONST CHAR Ars_MaxCorrWeaveSide[24]
+Ars_MaxCorrWeaveSide[]="MaxCorrWeaveSide"
+DECL CONST CHAR Ars_MaxCorrWeaveHeight[24]
+Ars_MaxCorrWeaveHeight[]="MaxCorrWeaveHeight"
+DECL CONST CHAR Ars_ControlSelection[24]
+Ars_ControlSelection[]="ControlSelection"
+DECL CONST CHAR Ars_PeriodsCorrSlow[24]
+Ars_PeriodsCorrSlow[]="PeriodsStartCorrSlow"
+DECL CONST CHAR Ars_KpSide[24]
+Ars_KpSide[]="KpSide"
+DECL CONST CHAR Ars_KiSide[24]
+Ars_KiSide[]="KiSide"
+DECL CONST CHAR Ars_TaSide[24]
+Ars_TaSide[]="TaSide"
+DECL CONST CHAR Ars_KpHeight[24]
+Ars_KpHeight[]="KpHeight"
+DECL CONST CHAR Ars_KiHeight[24]
+Ars_KiHeight[]="KiHeight"
+DECL CONST CHAR Ars_TaHeight[24]
+Ars_TaHeight[]="TaHeight"
+DECL CONST CHAR Ars_DZSide[24]
+Ars_DZSide[]="DeadZoneSide"
+DECL CONST CHAR Ars_DZHeight[24]
+Ars_DZHeight[]="DeadZoneHeight"
+DECL CONST CHAR Ars_AsymHeightUp[24]
+Ars_AsymHeightUp[]="AsymetricHeightUp"
+DECL CONST CHAR Ars_AsymHeightDown[24]
+Ars_AsymHeightDown[]="AsymetricHeightDown"
+DECL CONST CHAR Ars_SanityValue[24]
+Ars_SanityValue[]="SanityValue"
+DECL CONST CHAR Ars_TrigWindowPerc[24]
+Ars_TrigWindowPerc[]="TriggerWindowPerc"
+DECL CONST CHAR Ars_WeldBreakDecay[24]
+Ars_WeldBreakDecay[]="WeldBreakDecay"
+DECL CONST CHAR Ars_WeldBreakMax[24]
+Ars_WeldBreakMax[]="WeldBreakMax"
+DECL CONST CHAR Ars_HeightCycle[24]
+Ars_HeightCycle[]="HeightCycle"
+DECL CONST CHAR Ars_HeightRefCycle[24]
+Ars_HeightRefCycle[]="HeightRefCycle"
+DECL CONST CHAR Ars_NrCycRefMidVal[24]
+Ars_NrCycRefMidVal[]="NrCycRefMidVal"
+DECL CONST CHAR Ars_MidValRefPercent[24]
+Ars_MidValRefPercent[]="MidValRefPercent"
+;DelayCalc
+DECL CONST CHAR Ars_DelayCalc[24]
+Ars_DelayCalc[]="DelayCalc1"
+DECL CONST CHAR Ars_IgnoreDelay[24]
+Ars_IgnoreDelay[]="IgnoreDelay"
+;Multilayer
+DECL CONST CHAR Ars_MultilayerY[24]
+Ars_MultilayerY[]="MULTILAYERY"
+DECL CONST CHAR Ars_MultilayerZ[24]
+Ars_MultilayerZ[]="MULTILAYERZ"
+DECL CONST CHAR Ars_MultilayerIndex[24]
+Ars_MultilayerIndex[]="Index"
+;*****************************************************************************************
+;CONSTANTS
+;*****************************************************************************************
+DECL CONST INT mSigGenTriangle          = 0
+DECL CONST INT mSigGenTrapecoid         = 1
+DECL CONST INT mSigQualTria             = 0
+DECL CONST INT mSigQualTrap             = 1
+DECL CONST INT mSigQualHeight           = 2
+DECL CONST INT mControlSide             = 0
+DECL CONST INT mControlHeight           = 1
+DECL CONST INT mThresholdFull           = 0
+DECL CONST INT mThresholdSen            = 1
+DECL CONST INT mThresholdMeas           = 2
+ENDDAT

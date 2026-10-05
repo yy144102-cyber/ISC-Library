@@ -1,0 +1,271 @@
+&ACCESS RVO
+&REL 141
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\BUILD FILES
+DEF Torch_Cleaning1( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+$OUT[57] = FALSE
+$OUT[58] = FALSE
+$OUT[59] = FALSE
+
+
+
+;FOLD PTP HOMEC Vel=60 % PDAT2 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOMEC; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT2; Kuka.VelocityPtp=60; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT2
+FDAT_ACT = FHOMEC
+BAS(#PTP_PARAMS, 60.0)
+SET_CD_PARAMS (0)
+PTP XHOMEC
+;ENDFOLD
+
+;FOLD SPTP P1 Vel=50 % PDAT1 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=50; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP1 WITH $VEL_AXIS[1] = SVEL_JOINT(50.0), $TOOL = STOOL2(FP1), $BASE = SBASE(FP1.BASE_NO), $IPO_MODE = SIPO_MODE(FP1.IPO_FRAME), $LOAD = SLOAD(FP1.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT1), $APO = SAPO_PTP(PPDAT1), $GEAR_JERK[1] = SGEAR_JERK(PPDAT1), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+
+
+;FOLD LIN P2 Vel=0.02 m/s CPDAT1 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P2; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.02; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = FP2
+BAS(#CP_PARAMS, 0.02)
+SET_CD_PARAMS (0)
+LIN XP2
+;ENDFOLD
+$OUT[2009] = TRUE
+WAIT SEC 1
+$OUT[2009] = FALSE
+
+
+;FOLD WAIT Time= 1.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=1.0
+;ENDFOLD
+WAIT SEC 1.0
+;ENDFOLD
+$OUT[403] = FALSE
+;FOLD LIN P3 Vel=0.01 m/s CPDAT2 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P3; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT2; Kuka.VelocityPath=0.01; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT2
+FDAT_ACT = FP3
+BAS(#CP_PARAMS, 0.01)
+SET_CD_PARAMS (0)
+LIN XP3
+;ENDFOLD
+
+
+;FOLD WAIT Time= 1.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=1.0
+;ENDFOLD
+$OUT[59] = TRUE
+WAIT FOR $IN[59]
+;ENDFOLD
+
+;FOLD WAIT Time= 2.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=2.0
+;ENDFOLD
+WAIT SEC 2.0
+;ENDFOLD
+
+$OUT[403] = TRUE
+
+;FOLD WAIT Time= 2.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=2.0
+;ENDFOLD
+WAIT SEC 2.0
+;ENDFOLD
+
+$OUT[403] = FALSE
+
+;FOLD WAIT Time= 7.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=7.0
+;ENDFOLD
+WAIT SEC 7.0
+;ENDFOLD
+
+;FOLD LIN P1 Vel=0.05 m/s CPDAT3 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT3; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT3
+FDAT_ACT = FP1
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP1
+;ENDFOLD
+
+
+;FOLD LIN P4 Vel=0.05 m/s CPDAT4 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P4; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT4; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT4
+FDAT_ACT = FP4
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP4
+;ENDFOLD
+
+
+
+;FOLD LIN P11 Vel=0.02 m/s CPDAT11 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P11; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT11; Kuka.VelocityPath=0.02; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT11
+FDAT_ACT = FP11
+BAS(#CP_PARAMS, 0.02)
+SET_CD_PARAMS (0)
+LIN XP11
+;ENDFOLD
+
+;FOLD LIN P5 Vel=0.01 m/s CPDAT5 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P5; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT5; Kuka.VelocityPath=0.01; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT5
+FDAT_ACT = FP5
+BAS(#CP_PARAMS, 0.01)
+SET_CD_PARAMS (0)
+LIN XP5
+;ENDFOLD
+
+
+$OUT[57] = TRUE
+WAIT FOR $IN[57]
+;FOLD WAIT Time= 4.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=4.0
+;ENDFOLD
+WAIT SEC 4.0
+;ENDFOLD
+
+
+;FOLD LIN P6 Vel=0.002 m/s CPDAT6 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P6; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT6; Kuka.VelocityPath=0.002; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT6
+FDAT_ACT = FP6
+BAS(#CP_PARAMS, 0.002)
+SET_CD_PARAMS (0)
+LIN XP6
+;ENDFOLD
+
+
+
+
+
+;FOLD LIN P7 Vel=0.02 m/s CPDAT7 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P7; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT7; Kuka.VelocityPath=0.02; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT7
+FDAT_ACT = FP7
+BAS(#CP_PARAMS, 0.02)
+SET_CD_PARAMS (0)
+LIN XP7
+;ENDFOLD
+
+
+
+;FOLD LIN P8 Vel=0.05 m/s CPDAT8 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P8; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT8; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT8
+FDAT_ACT = FP8
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP8
+;ENDFOLD
+
+
+;FOLD LIN P9 Vel=0.03 m/s CPDAT9 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P9; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT9; Kuka.VelocityPath=0.03; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT9
+FDAT_ACT = FP9
+BAS(#CP_PARAMS, 0.03)
+SET_CD_PARAMS (0)
+LIN XP9
+;ENDFOLD
+
+
+$OUT[58] = TRUE
+WAIT FOR $IN[58]
+
+;FOLD WAIT Time= 1.0 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=1.0
+;ENDFOLD
+WAIT SEC 1.0
+;ENDFOLD
+
+;FOLD LIN P10 Vel=0.06 m/s CPDAT10 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P10; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT10; Kuka.VelocityPath=0.06; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT10
+FDAT_ACT = FP10
+BAS(#CP_PARAMS, 0.06)
+SET_CD_PARAMS (0)
+LIN XP10
+;ENDFOLD
+
+
+
+
+
+;FOLD PTP HOMEC Vel=60 % PDAT3 Tool[5]:Torch_Cleaning Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOMEC; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=60; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT3
+FDAT_ACT = FHOMEC
+BAS(#PTP_PARAMS, 60.0)
+SET_CD_PARAMS (0)
+PTP XHOMEC
+;ENDFOLD
+
+
+END

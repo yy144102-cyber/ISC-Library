@@ -1,0 +1,196 @@
+&ACCESS RV
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF layer1_S1()
+;FOLD INI;%{PE}
+;FOLD BASISTECH INI
+GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+INTERRUPT ON 3
+BAS (#INITMOV,0 )
+;ENDFOLD (BASISTECH INI)
+;FOLD USER INI
+;Make your modifications here
+;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD Actual psition
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP $POS_ACT
+;ENDFOLD
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FWeld
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP Approach1
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerIndex = 1   ; Layer index is the stage number
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerType = 10
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerNum = 1
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oSideNum = 1
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO WAAM_RSI_ON() PRIO=-1
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerCompleted=False
+WAIT SEC 1.0
+
+; make sure arc start point is good
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS(0)
+LIN XP1
+WAIT SEC 1
+
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOnMoveStd, WDAT1, WPV) PRIO = -1
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WPV)
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, WDAT1.Weld.Velocity)
+SET_CD_PARAMS(0)
+LIN XP1
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WPV)
+
+;Layer 1
+CIRC XP2, XP3 C_Dis C_Dis
+
+;Layer 1
+CIRC XP4, XP5 C_Dis C_Dis
+
+;Layer 1
+CIRC XP6, XP7 C_Dis C_Dis
+
+;Layer 1
+CIRC XP8, XP9 C_Dis C_Dis
+
+;Layer 1
+CIRC XP10, XP11 C_Dis C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT13 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT13, WPV)
+CIRC XP12, XP13 C_Dis C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT13, WPV)
+BAS(#CP_PARAMS,WDAT13.Weld.Velocity)
+
+;Layer 2
+CIRC XP14, XP15 C_Dis C_Dis
+
+;Layer 2
+CIRC XP16, XP17 C_Dis C_Dis
+
+;Layer 2
+CIRC XP18, XP19 C_Dis C_Dis
+
+;Layer 2
+CIRC XP20, XP21 C_Dis C_Dis
+
+;Layer 2
+CIRC XP22, XP23 C_Dis C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT25 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT25, WPV)
+CIRC XP24, XP25 C_Dis C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT25, WPV)
+BAS(#CP_PARAMS,WDAT25.Weld.Velocity)
+
+;Layer 3
+CIRC XP26, XP27 C_Dis C_Dis
+
+;Layer 3
+CIRC XP28, XP29 C_Dis C_Dis
+
+;Layer 3
+CIRC XP30, XP31 C_Dis C_Dis
+
+;Layer 3
+CIRC XP32, XP33 C_Dis C_Dis
+
+;Layer 3
+CIRC XP34, XP35 C_Dis C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT37 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT37, WPV)
+CIRC XP36, XP37 C_Dis C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT37, WPV)
+BAS(#CP_PARAMS,WDAT37.Weld.Velocity)
+
+;Layer 4
+CIRC XP38, XP39 C_Dis C_Dis
+
+;Layer 4
+CIRC XP40, XP41 C_Dis C_Dis
+
+;Layer 4
+CIRC XP42, XP43 C_Dis C_Dis
+
+;Layer 4
+CIRC XP44, XP45 C_Dis C_Dis
+
+;Layer 4
+CIRC XP46, XP47 C_Dis C_Dis
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT49 , WPV) PRIO = -1
+ArcMainNG(#ArcSwiBeforeMoveStd, WDAT49, WPV)
+CIRC XP48, XP49 C_Dis C_Dis
+ArcMainNG(#ArcSwiAfterMoveStd, WDAT49, WPV)
+BAS(#CP_PARAMS,WDAT49.Weld.Velocity)
+
+;Layer 5
+CIRC XP50, XP51 C_Dis C_Dis
+
+;Layer 5
+CIRC XP52, XP53 C_Dis C_Dis
+
+;Layer 5
+CIRC XP54, XP55 C_Dis C_Dis
+
+;Layer 5
+CIRC XP56, XP57 C_Dis C_Dis
+
+;Layer 5
+CIRC XP58, XP59 C_Dis C_Dis
+
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT61) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT61, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT61) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT61, WPV) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT61) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT61, WPV) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT61, WPV)
+BAS(#CP_PARAMS,WDAT61.Weld.Velocity)
+CIRC XP60, XP61
+ArcMainNG(#ArcOffAfterMoveStd, WDAT61, WPV)
+
+TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO oLayerCompleted=True
+WAAM_RSI_OFF()
+WAAM_RSI_DELETE()
+
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT
+FDAT_ACT = FWeld
+BAS(#CP_PARAMS, 0.1)
+SET_CD_PARAMS(0)
+LIN Retract61
+
+WAIT SEC 0
+
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT
+FDAT_ACT = FHome
+BAS(#PTP_PARAMS, 10)
+SET_CD_PARAMS(0)
+PTP XHOMEX
+
+END
+

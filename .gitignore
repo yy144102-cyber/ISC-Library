@@ -1,0 +1,6 @@
+# nested git clone, read only
+ref/PicoGK/
+
+# copyrighted manuals: never pushed (workspace.md R5)
+engineering/references/**/*.pdf
+engineering/references/**/*.txt

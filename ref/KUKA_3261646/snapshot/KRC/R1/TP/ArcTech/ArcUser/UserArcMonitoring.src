@@ -1,0 +1,6 @@
+&ACCESS R2
+&COMMENT ArcTech UserArcMonitoring
+DEF  UserArcMonitoring( )
+END
+GLOBAL DEF UserSignalsPLC()
+END

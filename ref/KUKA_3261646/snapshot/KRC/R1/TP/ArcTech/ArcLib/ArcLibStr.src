@@ -1,0 +1,313 @@
+&ACCESS R2
+&COMMENT ArcTech
+DEF ArcLibStr( )
+END
+;*****************************************************************************************
+;[Global String Routine] Return TRue if String (char array) is empty
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcIsStrEmpty(tStr[] :IN)
+DECL BOOL tEmpty
+DECL INT tI
+DECL INT tLen
+DECL CHAR tStr[]
+tEmpty = TRUE
+tLen = STRLEN(tStr[])
+FOR tI = 1 TO tLen
+  IF (tStr[tI] <> " ") THEN
+    tEmpty = FALSE
+  ENDIF
+ENDFOR
+RETURN tEmpty
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert String to Boolean
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcStrToBool(tVar[] :IN)
+DECL BOOL tBoolRet
+DECL CHAR tVar[]
+IF (STRTOBOOL(tVar[],tBoolRet)) THEN
+  RETURN tBoolRet
+ENDIF
+RETURN FALSE
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert String to Integer
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArcStrToInt(tVar[] :IN)
+DECL INT tIntRet
+DECL CHAR tVar[]
+IF (STRTOINT(tVar[],tIntRet)) THEN
+  RETURN tIntRet
+ENDIF
+RETURN 0
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert String to Real
+;*****************************************************************************************
+GLOBAL DEFFCT REAL ArcStrToReal(tVar[] :IN)
+DECL REAL tRealRet
+DECL CHAR tVar[]
+IF (STRTOREAL(tVar[],tRealRet)) THEN
+  RETURN tRealRet
+ENDIF
+RETURN 0.0
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert Real to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[128] ArcRealToStr(tVar:IN)
+DECL REAL tVar
+DECL CHAR tStr[128]
+DECL STATE_T STATE
+DECL INT OFFSET
+OFFSET = 0
+SWRITE(tStr[],STATE,OFFSET,"%#6.2f",tVar)
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert Integer to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[128] ArcIntToStr(tVar:IN)
+DECL INT tVar
+DECL CHAR tStr[128]
+DECL STATE_T STATE
+DECL INT OFFSET
+OFFSET = 0
+SWRITE(tStr[],STATE,OFFSET,"%d",tVar)
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Convert Bool to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[128] ArcBoolToStr(tVar:IN)
+DECL BOOL tVar
+DECL CHAR tStr[128]
+IF (tVar == TRUE) THEN
+  tStr[] = "TRUE"
+ELSE
+  tStr[] = "FALSE"
+ENDIF
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] String Length
+;*****************************************************************************************
+GLOBAL DEFFCT INT ArcStrLen(tStr1[] :IN)
+DECL BOOL tBoolRes
+DECL CHAR tStr1[]
+RETURN STRLEN(tStr1[])
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Add2 String to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrAdd(tStr1[] :IN,tStr2[] :IN)
+DECL INT tBoolRes
+DECL CHAR tStr[256],tStr1[],tStr2[]
+tBoolRes = STRADD(tStr[],tStr1[])
+tBoolRes = STRADD(tStr[],tStr2[])
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Add3 String to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrAdd3(tStr1[] :IN,tStr2[] :IN,tStr3[] :IN)
+DECL INT tBoolRes
+DECL CHAR tStr[256],tStr1[],tStr2[],tStr3[]
+tBoolRes = STRADD(tStr[],tStr1[])
+tBoolRes = STRADD(tStr[],tStr2[])
+tBoolRes = STRADD(tStr[],tStr3[])
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Add4 String to String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrAdd4(tStr1[] :IN,tStr2[] :IN,tStr3[] :IN,tStr4[] :IN)
+DECL INT tBoolRes
+DECL CHAR tStr[256],tStr1[],tStr2[],tStr3[],tStr4[]
+tBoolRes = STRADD(tStr[],tStr1[])
+tBoolRes = STRADD(tStr[],tStr2[])
+tBoolRes = STRADD(tStr[],tStr3[])
+tBoolRes = STRADD(tStr[],tStr4[])
+RETURN tStr[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Compare tow Strings
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcStrComp(tStr[]:IN, tStr1[]:IN)
+DECL CHAR tStr[],tStr1[]
+RETURN(STRCOMP(tStr[],tStr1[],#Not_CASE_Sens))
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Remove Space from String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrRemoveSpace(tStr[] :IN)
+DECL BOOL tB
+DECL INT LenNum
+DECL INT tI
+DECL INT tII
+DECL CHAR tStr[]
+DECL CHAR tStr1[256]
+tII = 1
+tB = STRCOPY(tStr1[]," ")
+tStr1[] = " "
+LenNum = StrLen(tStr[])
+FOR tI = 1 TO (LenNum)
+  IF (tStr[tI] <> " ") THEN
+    tStr1[tII] = tStr[tI]
+    tII = tII+1
+  ENDIF
+ENDFOR
+RETURN(tStr1[])
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Remove from Start String some String Left
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrRemoveLeft(tStr[] :IN, tFindStr[] :IN)
+DECL CHAR tStr[],tFindStr[]
+DECL CHAR tStr1[256]
+DECL INT StrPos
+DECL INT LenNum
+DECL INT LenNumFind
+DECL INT tI
+tStr1[] = " "
+LenNum = StrLen(tStr[])
+LenNumFind = StrLen(tFindStr[])-1
+StrPos=StrFind(1,tStr[],tFindStr[],#NOT_CASE_SENS)
+IF StrPos > 0 THEN
+  FOR tI = 1 TO (LenNum-StrPos-LenNumFind)
+    tStr1[tI] = tStr[tI + StrPos + LenNumFind]
+  ENDFOR
+  RETURN(tStr1[])
+ELSE
+  RETURN(tStr[])
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Remove from End String some String Right
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrRemoveRight(tStr[] :IN, tFindStr[] :IN)
+DECL CHAR tStr[],tFindStr[]
+DECL CHAR tStr1[256]
+DECL INT StrPos
+DECL INT LenNum
+DECL INT tI
+LenNum = StrLen(tStr[])
+StrPos = StrFind(1,tStr[],tFindStr[],#NOT_CASE_SENS)
+IF StrPos >0 THEN
+  FOR tI=1 TO (StrPos-1)
+    tStr1[tI] = tStr[tI]
+  ENDFOR
+  RETURN(tStr1[])
+ELSE
+  RETURN(tStr[])
+ENDIF
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Remove from String first and last character
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrRemoveFirstAndLast(tStr[] :IN)
+DECL INT tI,tII,tLen
+DECL CHAR tStr[],Str1[256]
+tLen = StrLen(tStr[])
+tII = 1
+FOR tI = 2 TO (tLen - 1)
+  Str1[tII] = tStr[tI]
+  tII = tII + 1
+ENDFOR
+RETURN Str1[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Copy from String to String max 24 Char
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[24] ArcStringCopyChar24(tStr[] :IN)
+DECL CHAR tStr[],tStr1[24]
+IF (StrLen(tStr[]) == 0) THEN
+  RETURN " "
+ENDIF
+  IF STRCOPY(tStr1[],tStr[]) THEN
+  ENDIF  
+RETURN tStr1[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Copy from String to String max 80 Char
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[80] ArcStringCopyChar80(tStr[] :IN)
+DECL CHAR tStr[],tStr1[80]
+IF (StrLen(tStr[]) == 0) THEN
+  RETURN " "
+ENDIF
+  IF STRCOPY(tStr1[],tStr[]) THEN
+  ENDIF  
+RETURN tStr1[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Extract String
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[256] ArcStrMid(tStr[] :IN,tStart :IN,tLen :IN)
+DECL INT tI,tII,tStrLen,tStart,tLen,tEnd
+DECL CHAR tStr[],Str1[256]
+tLen = tLen - 1
+IF tLen < 0 THEN
+  tLen = 0
+ENDIF
+tStrLen = StrLen(tStr[])
+tEnd = tStart + tLen
+IF (tEnd > tStrLen) THEN
+  RETURN "ERROR > Start + Leng"
+ENDIF
+tII = 1
+FOR tI = tStart TO tEnd
+   Str1[tII] = tStr[tI]
+   tII = tII + 1
+ENDFOR
+RETURN Str1[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Set Max Char 26
+;*****************************************************************************************
+GLOBAL DEFFCT CHAR[26] ArcStrToMaxChar26(tStr[] :IN)
+DECL BOOL tB
+DECL INT tI
+DECL INT tLen
+DECL CHAR tStr[]
+DECL CHAR tStr1[26]
+tLen = StrLen(tStr[])
+IF (tLen > 26) THEN
+  FOR tI = 1 TO 24
+    tStr1[tI] = tStr[tI]
+  ENDFOR
+  tStr1[25] = "."
+  tStr1[26] = "."
+  RETURN  tStr1[] 
+ENDIF
+tB = STRCOPY(tStr1[],tStr[])
+RETURN tStr1[]
+ENDFCT
+;*****************************************************************************************
+;[Global String Routine] Set Max Char 26
+;*****************************************************************************************
+GLOBAL DEFFCT BOOL ArcStrSplit(tStr[] :IN,tSplit :IN,tOutSplit[,] :OUT)
+DECL BOOL tReturn
+DECL INT tI
+DECL INT tII
+DECL INT tIndex1
+DECL INT tIndex2
+DECL INT tFind
+DECL CHAR tStr[]
+DECL CHAR tSplit
+DECL CHAR tOutSplit[,]
+tReturn = FALSE
+tIndex1 = 1
+tIndex2 = 1
+FOR tI = 1 TO StrLen(tStr[])
+  IF (tStr[tI] <> tSplit) THEN
+    tOutSplit[tIndex1,tIndex2] = tStr[tI]
+    tIndex2 = tIndex2 + 1
+  ELSE
+    tReturn = TRUE
+    tIndex1 = tIndex1 + 1
+    tIndex2 = 1
+  ENDIF
+ENDFOR
+RETURN tReturn
+ENDFCT
