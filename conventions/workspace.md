@@ -44,11 +44,21 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
 
 ## 2. 同期（git / GitHub）
 
-**R3. git で管理するのは Library と各 Project（1プロジェクト1リポジトリ）。GitHub の private リポジトリで、このPCと出張PCを同期する。**
+**R3. git で管理するのは Library と各 Project（1プロジェクト1リポジトリ）。このPCと出張PCで使うもの（Library と WAAM の Project）は、GitHub の private リポジトリで同期する。**
 当面は個人アカウント（`yy144102-cyber`）。コミットの著者も個人の設定のまま。
+
+| ローカル | GitHub |
+|---|---|
+| `Library` | `yy144102-cyber/isc-library` |
+| `Project/WAAM/260922_WeaveTest-UECRepro` | `yy144102-cyber/isc-260922_WeaveTest-UECRepro` |
+
+- GitHub のリポジトリ名は頭に `isc-` を付ける。個人アカウントにある、仕事と関係のないリポジトリと区別するため。ローカルのフォルダ名は §1 のまま（clone のときにフォルダ名を指定する）
+- ほかの Project（Rocket、Agent）は、このPCのローカルの git だけで持つ
+- GitHub の履歴は 2026-10-05 に新しく始めた。それより前の履歴は、このPCのタグ `local-history-20261005`（と枝 `master`）にだけある
+
 理由: USB でフォルダをコピーする運用では、どちらかが古くなっても気づけなかった。
 
-**R4. 作業の始めに pull、終わりに push する。**
+**R4. 作業の始めに pull、終わりに push する。** VS Code では「ソース管理」の「変更を同期」が pull と push を続けて行う。
 理由: 2台で同じファイルを直すと衝突する。
 
 **R5. 次のものは GitHub に上げない。`.gitignore` で機械的に除外する。**
@@ -96,7 +106,15 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
 
 ## 4. 新しいPCでの準備
 
-1. `Library` と使う `Project` を GitHub から clone し、§1 の構成に置く
+1. GitHub から clone し、§1 の構成に置く（R3 の表。リポジトリ名とフォルダ名が違うので、フォルダ名を指定する）。ワークスペース直下の Git Bash で:
+
+   ```
+   git clone https://github.com/yy144102-cyber/isc-library.git Library
+   git clone https://github.com/yy144102-cyber/isc-260922_WeaveTest-UECRepro.git Project/WAAM/260922_WeaveTest-UECRepro
+   cp Library/tools/pre-commit Library/.git/hooks/pre-commit
+   ```
+
+   3行目は Library のコミット前の検査（相関式）を入れる。`.git/hooks/` は git に入らないので、clone のたびに入れ直す
 2. ワークスペース直下に `CLAUDE.md` を作り、次の3行を書く
 
    ```

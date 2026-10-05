@@ -1,6 +1,7 @@
 # Library
 
 複数のプロジェクトで使うもの（workspace.md §1）。**Project に依存しない。単独で clone して動く**（R1）。
+GitHub: `yy144102-cyber/isc-library`（private。workspace.md R3）。
 
 | フォルダ | 中身 | 扱い |
 |---|---|---|
