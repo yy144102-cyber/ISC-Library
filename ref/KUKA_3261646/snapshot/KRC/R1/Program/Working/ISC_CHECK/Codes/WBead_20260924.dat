@@ -1,0 +1,144 @@
+&ACCESS RVO
+&REL 1
+DEFDAT  WBead_20260924 PUBLIC
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;ENDFOLD (EXTERNAL DECLERATIONS)
+
+;=============================================================
+; WBead_20260924 - weaving bead deposition   ( data )
+;
+; VERSION  2026-09-25  scratch - arc not yet struck ( V1 )
+;
+; This file holds ONLY values that do not change while running.
+; Derived values and run-time state live in WBead.src.
+;
+; Units are the ones the controller requires.
+; Shop-floor units are given in comments. Do NOT convert in code.
+;=============================================================
+
+;=============================================================
+; 1. TUNING PARAMETERS      operator edits this section only
+;=============================================================
+
+;--- frames --------------------------------------------------
+DECL INT  WB_toolNo           = 1        ; Tool[1]  : torch TCP. Load[1] follows it
+; @ASSUME Tool[1] is the calibrated torch TCP
+;         VERIFY: tool/base management window on the smartPAD
+DECL INT  WB_baseNo           = 17       ; Base[17] : on external kinematic KP1-V1000_40
+                                         ;  offset Z 310.8, A 75.75 from the positioner
+
+;--- PTP dynamics ( INT, 1..100 ) ----------------------------
+DECL INT  WB_ptpVelPct        = 10
+DECL INT  WB_ptpAccPct        = 100
+
+;--- CP dynamics ---------------------------------------------
+DECL REAL WB_approachMPerSec  = 0.1        ; = 6000 mm/min
+DECL REAL WB_tsMPerSec        = 0.0666667  ; = 4000 mm/min  ( weave path feed )
+                                           ; net along the seam:
+                                           ; 4000 * 4.0 / 30.265 = 529 mm/min
+DECL REAL WB_cpAccMPerSec2    = 1.0
+DECL REAL WB_oriVelDegPerSec  = 100.0
+DECL REAL WB_oriAccDegPerSec2 = 100.0
+; Machine limits ( $machine.dat, 2026-09 archive ):
+;   $VEL_MA = {CP 3.0 m/s, ORI 400 deg/s}  $ACC_MA = {CP 10 m/s2, ORI 1000 deg/s2}
+
+;--- approximation -------------------------------------------
+DECL REAL WB_apoDistMm        = 1.0        ; $APO.CDIS, used by C_DIS
+
+;--- geometry ------------------------------------------------
+DECL REAL WB_weaveStepMm      = 4.0        ; advance per weave cycle ( along the pass )
+DECL REAL WB_weaveAmplitudeMm = 7.5        ; single-side amplitude ( across ). full swing 15 mm
+DECL REAL WB_layerStepMm      = 1.40        ; Z raised per layer ( nominal layer height )
+                                           ; NOT a basis for absolute Z.
+                                           ; real bead height must be measured.
+DECL INT  WB_cyclesPerPass    = 62         ; 62 * 4.0 = 248 mm bead
+DECL INT  WB_numLayers        = 116        ; layers in THIS run ( restart: remaining count )
+                                           ; phase 1: 1 / phase 3,4: 116 ( full build )
+DECL REAL WB_liftZMm          = 50.0
+DECL REAL WB_dwellSec         = 30.0
+
+;--- direction and mode --------------------------------------
+DECL BOOL WB_progAlongY       = TRUE       ; TRUE = progress along Y, weave along X
+DECL BOOL WB_firstPassPlus    = FALSE      ; TRUE  = first pass runs toward +Y of Base[17]
+                                           ;         (+X when WB_progAlongY = FALSE)
+                                           ; FALSE = first pass runs toward -Y
+                                           ; 2026-09: FALSE. WB_posStart is taught at the
+                                           ;   +Y end (Y 134.5), bead 248 mm -> runs to Y -113.5
+                                           ; restart: the direction the next bead runs
+DECL BOOL WB_dryRun           = FALSE       ; TRUE  = WB_ArcOn / WB_ArcOff are not called
+                                           ; FALSE = they are called. Whether the arc
+                                           ;         actually strikes is decided by the
+                                           ;         ArcTech status key "welding on/off"
+
+;--- pause ---------------------------------------------------
+DECL BOOL WB_pauseEnabled     = FALSE       ; TRUE  = stop at WB_posHome after layer
+                                           ;         WB_pauseAfterLayer ( HALT. Start
+                                           ;         resumes. See PAUSE in .src )
+                                           ; FALSE = no pause
+DECL INT  WB_pauseAfterLayer  = 1          ; used only when WB_pauseEnabled = TRUE
+                                           ;   counts layers of this run, like
+                                           ;   WB_numLayers. No pause after the last
+                                           ;   layer of the run
+
+;--- W3D interface ( call pattern taken from working ISC code )
+DECL INT  WB_sideNum          = 1
+DECL INT  WB_layerType        = 10
+DECL INT  WB_layerIndex       = 1
+; @ASSUME oSideNum / oLayerType / oLayerIndex keep the values used by
+;         WVDepositionMaster.src, which is known to have run.
+;         Their meaning is NOT documented.
+;         VERIFY: ask W3D / Aichi Sangyo for the interface spec
+
+;--- weld conditions -------------------------------------
+; Written into WDAT1 at the start of WBead ( see .src ).
+; Read and edit HERE. Do not edit WDAT1 below.
+; Channel names are the ArcTech settings made in WorkVisual
+; ( TP\ArcTech\ArcWoV\Welder1\ArcWovW1Modes.dat ).
+;
+;   Ch1  undefined, always 1                      ( fixed in WDAT1 )
+;   Ch2  iWave synergic line  ( ArcTech label: "Job Number" )
+;   Ch3  hot wire feed speed  [m/min]
+;   Ch4  cold wire feed speed [m/min]   0 = no cold wire
+;   Ch5  arc length correction          0          ( fixed in WDAT1 )
+;   Ch6  dynamic correction             0          ( fixed in WDAT1 )
+;
+; Strike, weld and crater use the same values in this build.
+DECL INT  WB_synergicLine     = 3727       ; Ch2
+DECL REAL WB_hotWfsMPerMin    = 9.0        ; Ch3
+DECL REAL WB_coldWfsMPerMin   = 0.0        ; Ch4  UEC used plain MIG
+DECL REAL WB_preflowSec       = 2.0        ; value used by ISC WVDepositionRJ on this cell
+DECL REAL WB_postflowSec      = 2.0        ; value used by ISC WVDepositionRJ on this cell
+DECL REAL WB_craterSec        = 0.0        ; 0 = no crater fill. UEC only dropped the start signal
+; Weld travel speed is WB_tsMPerSec above ( also written into WDAT1.Weld.Velocity ).
+; Gas flow 20 L/min : set on the regulator / welder. Not set by this program.
+
+;=============================================================
+; 2. FIXED DATA             taught points, rarely edited
+;=============================================================
+; WB_posHome / WB_posRetract : X/Y/Z from DryRun_20260915 (XHOMEX / XHOVERX),
+;   A changed 180 -> -90 on the machine.
+;   S 18 / T 10 match the live $POS_ACT at home (checked on the machine).
+; See also C4: E6AXIS may suit a home position better.
+DECL E6POS WB_posHome    = {X 0.0,Y 0.0,Z 1000.0,A -90.0,B 0.0,C 0.0,S 18,T 10,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL E6POS WB_posRetract = {X 0.0,Y 0.0,Z  700.0,A -90.0,B 0.0,C 0.0,S 18,T 10,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+; Taught on the machine. Z is the top of the substrate, not a calculated value.
+; X -92.75 -> -82.50 : more margin to the edge of the base plate.
+;   Weave spans X -90.00 .. -75.00 ( +/- WB_weaveAmplitudeMm ).
+DECL E6POS WB_posStart   = {X 30.5,Y 134.50,Z -124.00,A -90.0,B 0.0,C 0.0,S 18,T 10,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+;--- ArcTech data sets -----------------------------------
+; Structure cloned from ISC WVDepositionRJ.dat, which welded on this cell.
+; One data set holds strike, weld, weave and crater; WB_ArcOn and
+; WB_ArcOff both use it, as the ISC program did.
+; Ch2 / Ch3 / Ch4, velocity and the three times are OVERWRITTEN at the
+; start of WBead from the table in section 1. Values here are only a copy.
+; Weave pattern is #None: the weave is made by the robot path ( LIN_REL ).
+DECL stArcDat_T WDAT1={WdatId[] "WDAT1",Info {Version 307020112,WId 1,WName[] "Universal welder"},Strike {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set1",StartTime 0.0,PreFlowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 9.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set2",Velocity 0.0666667,Channel1 1.00000,Channel2 3727.00,Channel3 9.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,Frequency 2.00000,LeftSideDelay 0.0,RightSideDelay 0.0},Crater {JobModeId[] "WAAM3D CwMIG",ParamSetId[] "Set3",CraterTime 0.0,PostflowTime 2.00000,Channel1 1.00000,Channel2 3727.00,Channel3 9.00000,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,BurnBackTime 0.0},Advanced {IgnitionErrorStrategy 1,WeldErrorStrategy 1,SlopeOption #None,SlopeOptionOff #None,SlopeTime 0.0,SlopeDistance 0.0,SlopeTimeOff 0.0,SlopeDistanceOff 0.0,SlopeStartOptionOff #AtArcOff,OnTheFlyActiveOn FALSE,OnTheFlyActiveOff FALSE,OnTheFlyDistanceOn 0.0,OnTheFlyDistanceOff 0.0,PreStartOn FALSE,PreStartLocal FALSE,PreStartTime 0.0,MoveBackAtArcOffOption #None,MoveBackAtArcOffDistance 0.0}}
+DECL stArcDat_T WP1={WdatId[] "WP1",Info {Version 307020112},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE},Advanced {BitCodedRobotMark 0}}
+
+ENDDAT

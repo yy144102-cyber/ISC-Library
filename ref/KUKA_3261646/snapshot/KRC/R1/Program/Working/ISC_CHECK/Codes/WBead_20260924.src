@@ -1,0 +1,381 @@
+&ACCESS RVO
+&REL 1
+DEF WBead_20260924( )
+;=============================================================
+; WBead_20260924 - weaving bead deposition
+;
+; VERSION  2026-09-25  scratch - arc not yet struck ( V1 )
+;          file name kept: no arc yet, so edited in place
+;
+; VERIFIED
+;   stage 0-1  krlcheck ok / compiled on the controller
+;   stage 2    T1, 1 layer, dry run, completed. path, weave and
+;              direction ok. S/T of WB_posHome match $POS_ACT
+;   stage 3-4  AUTO, POV 100%, 1 layer, dry run, completed
+;              ( went straight to 100%; lower steps not run )
+;   stage 5    AUTO, POV 100%, 116 layers, dry run, completed
+;   --- stages 0-5 cover the WB_dryRun = TRUE path only. ---
+;   The arc path ( WB_ArcOn / WB_ArcOff, WDAT1 ) was added after
+;   stage 5 and is NOT verified yet.
+;   2026-09-25 edit: pause after layer WB_pauseAfterLayer,
+;   WAAM_RSI_ON / WAAM_RSI_OFF enabled, renames
+;   ( see docs/WBead_naming_review.md ):
+;     T1, then AUTO, dry run, pause after layer 1: motion ok.
+;     Opening / closing the enclosure and Start worked as
+;     intended. ( user report 2026-09-25; POV steps and layer
+;     count are in the record sheet )
+;   2026-09-25 WB_pauseEnabled added ( condition only, no new
+;   motion lines ):
+;     ---  not yet. T1: once TRUE ( pauses ), once FALSE ( runs on )
+;   stage 6a   ---  not yet ( T1, WB_dryRun = FALSE, welding OFF key )
+;   stage 6b   ---  not yet ( 1 layer, arc on )
+;   stage 7    ---  not yet ( all layers, arc on )
+;
+; PHASES   ( phase 2 is intentionally unused )
+;   1  WB_numLayers = 1    WB_dryRun = TRUE    single pass, no arc
+;   3  WB_numLayers = 116  WB_dryRun = TRUE    full height, no arc
+;   4  WB_numLayers = 116  WB_dryRun = FALSE   arc on
+;
+; ARC
+;   WB_dryRun = FALSE makes WB_ArcOn / WB_ArcOff run. Whether the arc
+;   strikes is then decided by the ArcTech status key "welding on/off"
+;   ( Configuration > Status keys > ArcTech ). In AUT the key switch
+;   input $IN[400] decides instead.
+;   CAUTION: ArcTech welds in T1 by default. Wear protective equipment.
+;
+; RSI
+;   WAAM_RSI_ON / WAAM_RSI_OFF ( W3D ) wrap each layer, outside the
+;   arc, as in ISC WVDepositionMaster. They run in dry run too.
+;   RSI only exchanges data with the W3D PC; it does not correct
+;   the path. In T1, "Caution - sensor correction is activated!!!"
+;   appears at every WAAM_RSI_ON ( every layer ). That is normal.
+;
+; PAUSE
+;   WB_pauseEnabled = TRUE with WB_pauseAfterLayer = n stops the
+;   build after layer n. FALSE runs all layers without stopping:
+;     up WB_liftZMm -> WB_posRetract -> WB_posHome -> HALT
+;   Start resumes:
+;     WB_posRetract -> above the layer end -> layerEndPos
+;   then the normal layer step and dwell, and layer n + 1.
+;   While stopped at the HALT:
+;     - do NOT cancel, reset or reselect the program. layerEndPos
+;       exists only while the program runs
+;     - the enclosure door is on the E-stop circuit. After opening
+;       it: close it, acknowledge the messages, drives on, check
+;       $IN[400] ( AB System Ready ) is TRUE, then press Start
+;   A pause is not a restart. The robot is stationary at home, so
+;   no _REL motion is interrupted ( see RESTART CAUTION ).
+;
+; RESTART POLICY
+;   Always start from the top. Block selection from a later line
+;   skips the parameter setup and the derived values below.
+;   To resume an interrupted build:
+;     1. count the layers actually deposited
+;     2. set WB_numLayers to the remaining count
+;     3. set WB_firstPassPlus to the direction the next bead runs
+;     4. jog to the actual bead top, update WB_posStart
+;     5. set WB_pauseEnabled, and WB_pauseAfterLayer ( counts
+;        layers of this run )
+;     6. start from the top
+;
+; RESTART CAUTION
+;   A _REL motion interrupted mid-segment is re-executed IN FULL
+;   from the interruption point. The path WILL shift.
+;   Stopping and resuming does not return to the original path.
+;   Check the layer-end position reported below before resuming.
+;=============================================================
+
+;--- declarations ( no statements above this block ) ----------
+DECL INT   layerIdx, cycIdx, axisIdx
+DECL BOOL  passPlus
+DECL FRAME fwdQuarterRise, fwdHalfFall, revQuarterRise, revHalfFall
+DECL FRAME quarterRise, halfFall, layerStep, lift
+DECL E6POS layerEndPos, aboveEndPos
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;=============================================================
+; motion parameters      set once, explicitly
+; Nothing below relies on what BAS(#INITMOV,0) left behind.
+;=============================================================
+;--- frames --------------------------------------------------
+; Frames go through BAS(#FRAMES), not direct assignment.
+; Base[17] is assigned to the external kinematic KP1-V1000_40, so
+; BAS builds it as EK(root of KP1, #EASYS, BASE_DATA[17]).
+; "$BASE = BASE_DATA[17]" would skip that and put the base 310.8 mm
+; above the ROBOT's own root instead of on the positioner table.
+; BAS also sets $LOAD from LOAD_DATA[tool no.] and updates
+; $ACT_TOOL / $ACT_BASE shown on the smartPAD.
+FDAT_ACT.TOOL_NO   = WB_toolNo
+FDAT_ACT.BASE_NO   = WB_baseNo
+FDAT_ACT.IPO_FRAME = #BASE
+BAS (#FRAMES, 0)
+
+;--- weld conditions -> WDAT1 -----------------------------
+; Exception to S2 ( .dat must not change at run time ):
+;   done at the start, unconditionally, from .dat parameters only.
+;   The TRIGGERs in WB_ArcOn read WDAT1 during the advance run, so
+;   this block must come before the first motion instruction.
+WDAT1.Strike.Channel2     = WB_synergicLine
+WDAT1.Strike.Channel3     = WB_hotWfsMPerMin
+WDAT1.Strike.Channel4     = WB_coldWfsMPerMin
+WDAT1.Strike.PreFlowTime  = WB_preflowSec
+WDAT1.Weld.Channel2       = WB_synergicLine
+WDAT1.Weld.Channel3       = WB_hotWfsMPerMin
+WDAT1.Weld.Channel4       = WB_coldWfsMPerMin
+WDAT1.Weld.Velocity       = WB_tsMPerSec
+WDAT1.Crater.Channel2     = WB_synergicLine
+WDAT1.Crater.Channel3     = WB_hotWfsMPerMin
+WDAT1.Crater.Channel4     = WB_coldWfsMPerMin
+WDAT1.Crater.CraterTime   = WB_craterSec
+WDAT1.Crater.PostflowTime = WB_postflowSec
+
+;--- PTP -----------------------------------------------------
+FOR axisIdx = 1 TO 6
+   $VEL_AXIS[axisIdx] = WB_ptpVelPct
+   $ACC_AXIS[axisIdx] = WB_ptpAccPct
+ENDFOR
+
+;--- CP ------------------------------------------------------
+$VEL.CP   = WB_approachMPerSec
+$VEL.ORI1 = WB_oriVelDegPerSec
+$VEL.ORI2 = WB_oriVelDegPerSec
+$ACC.CP   = WB_cpAccMPerSec2
+$ACC.ORI1 = WB_oriAccDegPerSec2
+$ACC.ORI2 = WB_oriAccDegPerSec2
+$ORI_TYPE = #VAR
+
+;--- approximation ( C_DIS only ) ----------------------------
+$APO.CDIS = WB_apoDistMm
+
+;--- relative motion and advance run -------------------------
+$ROTSYS  = #BASE
+; $ADVANCE: how many motion blocks the controller plans ahead.
+; C_DIS needs it. Controller default 3, maximum 5 ( SI 8.2 ).
+; Written here, not in .dat: a controller setting, not a build
+; parameter. Stage 5 ( AUT, 100%, 116 layers ) ran with 3.
+; When planning is late, LIN_REL does not round the corner but
+; stops exactly there ( SI 9.7.5 ). If the weave stops at the
+; corners, try 5.
+$ADVANCE = 3
+
+;=============================================================
+; derived values      computed here only, never stored in .dat
+;
+; One weave cycle, seen from above. Three straight LIN_REL moves:
+;
+;          1              top    ( +amp )
+;         / \
+;        0   \   3        centre ( 3 is 0 of the next cycle )
+;             \ /
+;              2          bottom ( -amp )
+;        |<-step>|        ---> pass toward +
+;
+;   0 -> 1   quarterRise   along +step/4   across +amp     centre to top
+;   1 -> 2   halfFall      along +step/2   across -2 amp   top to bottom
+;   2 -> 3   quarterRise   along +step/4   across +amp     bottom to centre
+;
+;   2 -> 3 and 0 -> 1 of the next cycle are the same move, so
+;   bottom to top is one straight line, split at the centre.
+;   There is no corner there, so C_DIS does not change the path.
+;
+;   rise / fall = toward top / bottom, ACROSS the pass in the X/Y
+;   plane of Base[17]. NOT Z. The Z moves are layerStep and lift.
+;   step   = WB_weaveStepMm, amp = WB_weaveAmplitudeMm
+;   along  = progress axis ( Y if WB_progAlongY, else X )
+;   across = weave axis    ( the other one ), top = + side
+;   net per cycle: along = step, across = 0
+;
+; fwd = pass toward +, rev = pass toward -. rev has the same
+; across values and negated along values. Both sets are built up
+; front, so no state has to be flipped between layers.
+;=============================================================
+fwdQuarterRise = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+fwdHalfFall    = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+revQuarterRise = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+revHalfFall    = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+
+IF WB_progAlongY THEN
+   ; progress along Y, weave along X
+   fwdQuarterRise.Y =  WB_weaveStepMm / 4.0
+   fwdQuarterRise.X =  WB_weaveAmplitudeMm
+   fwdHalfFall.Y    =  WB_weaveStepMm / 2.0
+   fwdHalfFall.X    = -2.0 * WB_weaveAmplitudeMm
+
+   revQuarterRise.Y = -WB_weaveStepMm / 4.0
+   revQuarterRise.X =  WB_weaveAmplitudeMm
+   revHalfFall.Y    = -WB_weaveStepMm / 2.0
+   revHalfFall.X    = -2.0 * WB_weaveAmplitudeMm
+ELSE
+   ; progress along X, weave along Y
+   fwdQuarterRise.X =  WB_weaveStepMm / 4.0
+   fwdQuarterRise.Y =  WB_weaveAmplitudeMm
+   fwdHalfFall.X    =  WB_weaveStepMm / 2.0
+   fwdHalfFall.Y    = -2.0 * WB_weaveAmplitudeMm
+
+   revQuarterRise.X = -WB_weaveStepMm / 4.0
+   revQuarterRise.Y =  WB_weaveAmplitudeMm
+   revHalfFall.X    = -WB_weaveStepMm / 2.0
+   revHalfFall.Y    = -2.0 * WB_weaveAmplitudeMm
+ENDIF
+
+layerStep = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+layerStep.Z = WB_layerStepMm
+
+lift = {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+lift.Z = WB_liftZMm
+
+;=============================================================
+; motion
+;=============================================================
+; the first motion instruction must be a complete PTP
+PTP WB_posHome
+
+; PTP, not LIN. This span caused an A4 over-speed stop in AUTO
+; when it was run as LIN with unset CP parameters.
+PTP WB_posRetract
+
+; exact stop: arc ignition in phase 4 needs a stationary point.
+; KSS 8.7 syntax defines #BASE/#TOOL for _REL motions only.
+LIN WB_posStart
+
+FOR layerIdx = 1 TO WB_numLayers
+
+   ;--- direction derived from the index, never stored --------
+   ; even layer test. KSS 8.7 lists only + - * / ; INT division
+   ; truncates, so (n / 2) * 2 == n holds only when n is even.
+   passPlus = WB_firstPassPlus
+   IF ((layerIdx / 2) * 2) == layerIdx THEN
+      passPlus = NOT passPlus
+   ENDIF
+
+   IF passPlus THEN
+      quarterRise = fwdQuarterRise
+      halfFall    = fwdHalfFall
+   ELSE
+      quarterRise = revQuarterRise
+      halfFall    = revHalfFall
+   ENDIF
+
+   ;--- W3D interface -----------------------------------------
+   ; Call pattern copied from WVDepositionMaster.src (known to run).
+   ; Meaning of these globals is not documented.
+   I[1]        = layerIdx
+   oLayerNum   = layerIdx
+   oSideNum    = WB_sideNum
+   oLayerType  = WB_layerType
+   oLayerIndex = WB_layerIndex
+
+   ;--- RSI and arc on ----------------------------------------
+   ; Order as in ISC WVDepositionMaster ( known to run ): RSI on
+   ; before the arc, off after it. Whatever time RSI needs to start
+   ; is then spent before ignition, not with the arc burning on a
+   ; stationary torch.
+   ; @TODO keep or drop W3D RSI ( ledger G-2 ).
+   WAAM_RSI_ON( )
+   IF NOT WB_dryRun THEN
+      WB_ArcOn( )
+   ENDIF
+
+   ;--- deposition --------------------------------------------
+   $VEL.CP = WB_tsMPerSec
+
+   FOR cycIdx = 1 TO WB_cyclesPerPass
+      LIN_REL quarterRise C_DIS #BASE
+      LIN_REL halfFall    C_DIS #BASE
+      LIN_REL quarterRise C_DIS #BASE
+   ENDFOR
+
+   ;--- arc and RSI off ---------------------------------------
+   IF NOT WB_dryRun THEN
+      WB_ArcOff( )
+   ENDIF
+   WAAM_RSI_OFF( )
+
+   $VEL.CP = WB_approachMPerSec
+
+   ;--- layer boundary ----------------------------------------
+   ; The only place where the real position is captured.
+   ; Needed because WB_layerStepMm is nominal and the real bead
+   ; height differs, and because an interrupted _REL motion
+   ; shifts the path. The pause below returns to it.
+   layerEndPos = $POS_ACT
+   ; @TODO layerEndPos is lost when the program ends.
+   ;       Decide where to persist it. Options under discussion:
+   ;       a separate .dat module, $CONFIG.DAT, or an operator
+   ;       readout. Until then, read it in the variable monitor
+   ;       before resetting the program.
+
+   IF layerIdx < WB_numLayers THEN
+
+      ;--- pause ( see PAUSE in the header ) --------------------
+      IF WB_pauseEnabled AND (layerIdx == WB_pauseAfterLayer) THEN
+         aboveEndPos   = layerEndPos
+         aboveEndPos.Z = layerEndPos.Z + WB_liftZMm
+
+         ; leave: same lines as the final retract
+         LIN_REL lift C_DIS #BASE
+         PTP WB_posRetract
+         PTP WB_posHome
+
+         HALT
+
+         ; return: same way as the first approach to WB_posStart.
+         ; LIN keeps the torch orientation and a straight path near
+         ; the wall; S/T of the E6POS are ignored by LIN.
+         PTP WB_posRetract
+         LIN aboveEndPos
+         LIN layerEndPos
+      ENDIF
+
+      LIN_REL layerStep C_DIS #BASE
+      WAIT SEC WB_dwellSec
+   ENDIF
+
+ENDFOR
+
+;--- retract -------------------------------------------------
+LIN_REL lift C_DIS #BASE
+PTP WB_posRetract
+PTP WB_posHome
+
+END
+
+DEF WB_ArcOn( )
+;=============================================================
+; ArcTech ARC ON.
+; Same lines as the ARCON inline form expands to ( see teach\line.src
+; on this controller ), with the motion replaced by a zero-length LIN
+; at the current position. Copied from ISC WVDepositionRJ.src
+; WeldingAct, which welded on this cell. Only MotionPar() was removed:
+; $VEL.CP is already the approach speed when this is called.
+; Do not edit these lines by hand.
+;=============================================================
+TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#ArcPreOn, WDAT1) DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1
+ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+LIN $POS_ACT
+ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+END
+
+DEF WB_ArcOff( )
+;=============================================================
+; ArcTech ARC OFF. Same origin as WB_ArcOn ( ARCOFF inline form,
+; ISC WeldingAct CASE #_OFF ). Crater values come from WDAT1.Crater.
+;=============================================================
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore2, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd2, WDAT1, WP1) PRIO = -1
+TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1
+ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+LIN $POS_ACT
+ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+END

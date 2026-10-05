@@ -1,4 +1,4 @@
-&ACCESS RVO
+&ACCESS RVP
 &REL 37
 &COMMENT HANDLER on external automatic
 DEF  CELL ( )

@@ -8,7 +8,7 @@ DEFDAT  ARCLOOP
 ;*****************************************************************************************
 DECL BOOL mArcChecksumMsgSet=FALSE ;CheckSum ArcLinkXT
 DECL BOOL mArcChecksumMsgSave=FALSE ;Saved CheckSum ArcLinkXT
-DECL BOOL mArcClearedOutputFlag=TRUE ;Flag to clear output once
+DECL BOOL mArcClearedOutputFlag=FALSE ;Flag to clear output once
 DECL BOOL mArcStatKeyHotBuffer=FALSE ;Storage of Statuskey Hot
 DECL BOOL mArcStatKeyHotRising=FALSE ;Rising Edge of Status Key Hot
 DECL BOOL mArcStatKeyHotFalling=FALSE ;Falling Edge of Status Key Hot
@@ -24,8 +24,8 @@ mSigState[4]=FALSE
 ;*****************************************************************************************
 ;INT
 ;*****************************************************************************************
-DECL INT mArcModeOP=1 ;Coded $MODEOP State
-DECL INT mArcModeOPSave=1 ;Coded storage of $MODEOP State
+DECL INT mArcModeOP=4 ;Coded $MODEOP State
+DECL INT mArcModeOPSave=4 ;Coded storage of $MODEOP State
 DECL INT mProModeState=1 ;Coded $ProMode state
 DECL INT mProModeStateBuffer=1 ;Coded storage of $MODE_OP State
 DECL INT mArcCollisionDlgHandle=0 ;Collision Monitoring Dialog handle
@@ -70,8 +70,8 @@ mWelderId[2]=0
 mWelderId[3]=0
 mWelderId[4]=0
 DECL INT mArcInitEnd=0 ;Handle for message on initialization of arc
-DECL INT mArcInitTimeStart=69017 ;Mem rob time on start
-DECL INT mArcInitTimeCycle=808 ;Calc initialization time
+DECL INT mArcInitTimeStart=68925 ;Mem rob time on start
+DECL INT mArcInitTimeCycle=763 ;Calc initialization time
 ;*****************************************************************************************
 ;REAL
 ;*****************************************************************************************

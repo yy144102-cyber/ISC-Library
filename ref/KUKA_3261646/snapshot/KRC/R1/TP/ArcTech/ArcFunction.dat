@@ -1,5 +1,5 @@
 &ACCESS R2
-&REL 1
+&REL 2
 &COMMENT ArcTech
 &PARAM DISKPATH = KRC:\R1\TP\ArcTech
 DEFDAT  ARCFUNCTION
@@ -34,7 +34,7 @@ mHandlMsgErrorNr[5]=0
 mHandlMsgErrorNr[6]=0
 mHandlMsgErrorNr[7]=0
 mHandlMsgErrorNr[8]=0
-DECL INT mArcReadInputIndex=4
+DECL INT mArcReadInputIndex=6
 DECL INT mMsgNo=0
 DECL INT mMsgNrSk=0
 ;*****************************************************************************************

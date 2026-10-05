@@ -13,7 +13,7 @@ DECL CHAR mPathToFile[255] ;Path to File
 mPathToFile[]=" "
 ENUM enFileFunc_T NumberOfFiles,CloseAllFiles,MkDir,OpenFileToWrite,StrToBuffer,NlStrToBuffer,BufferToFile,CloseFile,VarToBuffer1,VarToBuffer2,VarToBuffer3,VarToBuffer4,VarToBuffer5,VarToBuffer6,VarToBuffer7,VarToBuffer8
 STRUC stgArcLog CHAR Text[80],CHAR Point[40],INT IlfWelder,SkWelder,REAL Dis,REAL RTime,CHAR Call[256],CHAR Seam[40]
-DECL INT gPosDiag=31
+DECL INT gPosDiag=49
 DECL stgArcLog gArcLog[500]
 gArcLog[1]={Text[] "[STATE] PrepIgnition_Cold                                                       ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 4617621.00,Call[] "Rob  :/R1/L0001_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
 gArcLog[2]={Text[] "[STATE] Ignition_Cold                                                           ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 4617622.00,Call[] "Rob  :/R1/L0001_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
@@ -46,25 +46,25 @@ gArcLog[28]={Text[] "[SUBMIT] LineSelected                                      
 gArcLog[29]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 69552.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
 gArcLog[30]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 71198.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
 gArcLog[31]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 281405.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
-gArcLog[32]={Text[] "Last",RTime 0.0}
-gArcLog[33]={Text[] "[STATE] GasPostFlow                                                             ",Point[] "XP45",IlfWelder 1,SkWelder 1,Dis 243.660461,RTime 15355165.0,Call[] "Rob  :/R1/L0007_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[34]={Text[] "[STATE] StopGasFlow                                                             ",Point[] "XP45",IlfWelder 1,SkWelder 1,Dis 243.660461,RTime 15357166.0,Call[] "Rob  :/R1/L0007_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[35]={Text[] "[STATE] WeldingDone                                                             ",Point[] "XP45",IlfWelder 1,SkWelder 1,Dis 243.660461,RTime 15357167.0,Call[] "Rob  :/R1/L0007_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[36]={Text[] "[WIRE] WireIsFree                                                               ",Point[] "XP45",IlfWelder 1,SkWelder 1,Dis 243.660461,RTime 15357168.0,Call[] "Rob  :/R1/L0007_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[37]={Text[] "[ARCERROR] ArcAllConditionInit                                                  ",Point[] "XP45",IlfWelder 1,SkWelder 1,Dis 243.660461,RTime 15357168.0,Call[] "Rob  :/R1/L0007_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[38]={Text[] "[MAIN] PreDefinition                                                            ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378678.0,Call[] "RobT :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[39]={Text[] "[MAIN] ArcOnAfterMoveStd                                                        ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378686.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[40]={Text[] "[MAIN] Wait PreDefinition gArcPreDefTimeEnable = FALSE                          ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378687.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[41]={Text[] "[ARCERROR] ArcConditionWeldSet                                                  ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378689.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[42]={Text[] "[STATE] Init                                                                    ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378693.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[43]={Text[] "[STATE] CheckPowerSource                                                        ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378693.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[44]={Text[] "[STATE] CheckRobotReady                                                         ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378696.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[45]={Text[] "[STATE] CheckPeriphery                                                          ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378696.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[46]={Text[] "[STATE] PrepIgnition                                                            ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15378702.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[47]={Text[] "[STATE] Ignition                                                                ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15380705.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[48]={Text[] "[STATE] WaitArcStable                                                           ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15380769.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[49]={Text[] "[STATE] Welding                                                                 ",Point[] "XP1",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15380770.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
-gArcLog[50]={Text[] "[MAIN] ArcOffAfterMoveStd                                                       ",Point[] "XP43",IlfWelder 1,SkWelder 1,Dis 243.583511,RTime 15394299.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
+gArcLog[32]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 1426094.00,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[33]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 1427796.00,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[34]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 69197.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[35]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 70907.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[36]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 187406.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[37]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 252815.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[38]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 14372887.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[39]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 14482855.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[40]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 14513055.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[41]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 14848222.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[42]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 15072472.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[43]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 69240.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[44]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 70986.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[45]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 218851.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[46]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 248739.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[47]={Text[] "[RESET OUT] SubmitInit                                                          ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 69439.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[48]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 71187.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[49]={Text[] "[SUBMIT] LineSelected                                                           ",Point[] "*",IlfWelder 1,SkWelder 1,Dis 0.0,RTime 160624.0,Call[] "Sub  :/R1/SPS.SUB",Seam[] "*"}
+gArcLog[50]={Text[] "Last",RTime 0.0}
 gArcLog[51]={Text[] "[WEAVE] Call From Robot ArcWeaveOff                                             ",Point[] "XP43",IlfWelder 1,SkWelder 1,Dis 243.583511,RTime 15394301.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
 gArcLog[52]={Text[] "[STATE] StopWelding                                                             ",Point[] "XP43",IlfWelder 1,SkWelder 1,Dis 243.583511,RTime 15394308.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
 gArcLog[53]={Text[] "[STATE] GasPostFlow                                                             ",Point[] "XP43",IlfWelder 1,SkWelder 1,Dis 243.583511,RTime 15394308.0,Call[] "Rob  :/R1/L0008_S1_CWGMA_ISC.SRC",Seam[] "No Name"}
