@@ -13,7 +13,7 @@ GitHub: `yy144102-cyber/isc-library`（private。workspace.md R3）。
 | `engineering/correlations/` | ロケット設計の相関式。書式は `FORMAT.md`、検査は `tools/check_correlations.py`（pre-commit） | 編集する |
 | `engineering/sources/` | 相関式の根拠のファイル（ハッシュで検査される） | 変えない |
 | `engineering/references/` | 参考文献。**git に入っていない**（下記） | 読むだけ |
-| `tools/` | プロジェクトに属さないスクリプト | |
+| `tools/` | プロジェクトに属さないスクリプト。`pc-setup/` は2台の開発環境を揃えるための一覧（winget）と版の確認（workspace.md R14） | |
 
 ## スキル（krl-coding-standard）の読み込み
 

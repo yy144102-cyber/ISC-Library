@@ -92,21 +92,35 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
 **R13. 改行コードは、ファイルのバイト列で数えて確かめる（Python で `b'\r\n'` を数える、など）。Git Bash の `grep` で `\r` を探さない。**
 理由: Git Bash の `grep` は CR を読み飛ばし、CRLF のファイルでも `\r` が 0 件になる。これで CRLF のファイルを LF と誤認し、規約（R6）と事実台帳に誤った事実を書いた（2026-09-29。CRLF の試験ファイルで 0 件になることを確かめた）。
 
+**R14. 2台の開発環境を揃える。VS Code は「設定の同期」で同期し、ソフト本体は `Library/tools/pc-setup/winget-packages.json` で同じものを入れる。**
+- VS Code: 2台とも GitHub アカウント（`yy144102-cyber`）で「設定の同期」をオンにする。拡張機能・設定・キー割り当ても同期する
+- ソフト本体（VS Code、git、Python、PowerShell 7、Claude デスクトップアプリ）: `winget import` で入れる（§4）。Python だけ版を 3.11.9 に固定する。ほかは自動で更新される
+- Python の追加パッケージは使っていない。krlcheck と相関式の検査は、標準の機能だけで動く（2026-10-17、import の行で確認）
+- 道具を足したら一覧に足して push し、もう1台で `winget import` し直す。**ここは手順に頼る。足し忘れても機械では気づけない**
+- 版は `Library/tools/pc-setup/check-env.ps1` で測り、下の表に書く
+
+理由: 2台で環境が食い違い、作業の仕方を変える羽目になった（2026-09-29: このPCに VS Code の Python の拡張機能が無く、krlcheck のタスクが動かなかった。タスクを python の直接呼び出しに書き換えた）。
+
 ### 実測値
 
-| 項目 | このPC（2026-09-28） | 出張PC |
+`pwsh -File Library/tools/pc-setup/check-env.ps1` の結果。
+
+| 項目 | このPC（2026-10-17） | 出張PC |
 |---|---|---|
 | OS | Windows 11 Pro 10.0.26200 | 未測定 |
 | PowerShell | 7.6.5（5.1 も併存） | 未測定 |
 | git | 2.53.0.windows.1 | 未測定 |
 | Python | 3.11.9 | 未測定 |
-| .NET SDK | 9.0.317 / 10.0.102 | 未測定 |
+| VS Code | 1.140.0（拡張機能 25） | 未測定 |
+| winget | 1.29.380 | 未測定 |
+| .NET SDK | 9.0.317 / 10.0.102 | 未測定（WAAM では使わない） |
 
 ---
 
 ## 4. 新しいPCでの準備
 
-1. GitHub から clone し、§1 の構成に置く（R3 の表。リポジトリ名とフォルダ名が違うので、フォルダ名を指定する）。ワークスペース直下の Git Bash で:
+1. git を入れる（PowerShell で `winget install --id Git.Git -e`）。clone に要るので、ほかより先に入れる
+2. GitHub から clone し、§1 の構成に置く（R3 の表。リポジトリ名とフォルダ名が違うので、フォルダ名を指定する）。ワークスペース直下の Git Bash で:
 
    ```
    git clone https://github.com/yy144102-cyber/isc-library.git Library
@@ -115,7 +129,14 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
    ```
 
    3行目は Library のコミット前の検査（相関式）を入れる。`.git/hooks/` は git に入らないので、clone のたびに入れ直す
-2. ワークスペース直下に `CLAUDE.md` を作り、次の3行を書く
+3. 残りのソフトを入れる（R14）。ワークスペース直下の PowerShell で:
+
+   ```
+   winget import -i Library/tools/pc-setup/winget-packages.json --accept-package-agreements --accept-source-agreements
+   ```
+
+4. VS Code で「設定の同期」をオンにする（R14）。左下の歯車 →「設定の同期をオンにする」→ すべての項目を選んだまま、GitHub（`yy144102-cyber`）でサインインする
+5. ワークスペース直下に `CLAUDE.md` を作り、次の3行を書く
 
    ```
    @Library/conventions/workspace.md
@@ -123,8 +144,8 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
    @Library/conventions/operator.md
    ```
 
-3. ワークスペース直下に `.claude/settings.json` を作り、`{"permissions":{"deny":["WebSearch","WebFetch"]}}` と書く（R10）
-4. Library のスキルごとに、ワークスペース直下の `.claude/skills/` にジャンクションを作る（R12）。ワークスペース直下の PowerShell で:
+6. ワークスペース直下に `.claude/settings.json` を作り、`{"permissions":{"deny":["WebSearch","WebFetch"]}}` と書く（R10）
+7. Library のスキルごとに、ワークスペース直下の `.claude/skills/` にジャンクションを作る（R12）。ワークスペース直下の PowerShell で:
 
    ```
    New-Item -ItemType Directory -Force .claude\skills
@@ -132,10 +153,10 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
    ```
 
    **外すときは `cmd /c rmdir <リンクのパス>` を使う。** フォルダごと消す操作（エクスプローラーでの削除、`Remove-Item -Recurse`、`rm -rf`）で消すと、リンク先の正本の中身まで消えることがある
-5. `Library/README.md` に従い、git に入っていないもの（マニュアルなど）をコピーする
-6. §3 の実測値を測って、表の列を埋める
+8. `Library/README.md` に従い、git に入っていないもの（マニュアルなど）をコピーする
+9. `pwsh -File Library/tools/pc-setup/check-env.ps1` で版を測り、§3 の表の列を埋める
 
-2 の `@` による読み込みが効くことは、2026-09-29 にこのPCで確認した（新しいセッションで3ファイルの中身が指示として読み込まれた）。
+5 の `@` による読み込みが効くことは、2026-09-29 にこのPCで確認した（新しいセッションで3ファイルの中身が指示として読み込まれた）。
 
 ---
 
@@ -164,7 +185,7 @@ Claude Code が作るサブエージェントにも効く。公式ドキュメ�
 
 ## 6. スキル
 
-**R12. Library のスキルは、ワークスペース直下の `.claude/skills/` にジャンクションを作って読み込ませる（§4 の手順4）。claude.ai には上げない。**
+**R12. Library のスキルは、ワークスペース直下の `.claude/skills/` にジャンクションを作って読み込ませる（§4 の手順7）。claude.ai には上げない。**
 理由: Library の中に置いただけでは、Library の下のファイルに触るまで読み込まれない。そのため Project で作業すると、claude.ai に上げた古い写し（ガスの事実が抜けた版）が使われた（2026-09-29 実測）。
 ワークスペース直下の `.claude/skills/` は起動時に読み込まれ、claude.ai から同期したスキルと名前が重なると同期していない方が優先される（公式: https://code.claude.com/docs/en/skills 。デスクトップアプリで調べた）。ジャンクションでも起動時に読み込まれ、正本が優先されることを 2026-09-29 に `/skills` で確かめた。
 シンボリックリンクは、このPCでは管理者権限が要る（2026-09-29 実測）。ジャンクションは要らない。
