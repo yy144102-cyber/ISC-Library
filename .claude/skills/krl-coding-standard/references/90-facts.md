@@ -168,6 +168,13 @@ S/T の概念）以外は KSS 8.7 側を優先する。
 | `TOOL()` は `$TOOL = TOOL_DATA[n]`、`$LOAD` を `LOAD_DATA[n]`（**ツール番号と同じ番号**）から入れ、負荷未設定時は既定値。`$ACT_TOOL` を更新 | [実機] |
 | `#INITMOV` はベースを `$WORLD`、ツールを `TOOL_DATA[1]` にし、速度・加速度・近似を `$config.dat` の `DEF_` 値にする | [実機] |
 
+### メッセージ（`KRC\R1\System\MsgLib.src`）
+
+| 事実 | 出典 |
+|---|---|
+| `MsgNotify` / `MsgQuit` / `MsgState` / `MsgLoop` / `MsgDialog` は `MsgLib.src` の GLOBAL DEF。2つ目以降の引数は省略できる（`MsgQuit("text", "module")` の形） | [実機] |
+| `MsgQuit` は確認メッセージ（`Set_KrlMsg(#QUIT, …)`）を出し、**確認されるまで `WHILE Exists_KrlMsg(…)` で待ってから戻る**。戻ったあとはプログラムが先へ進む。既定で先行実行を止める（`VL_Stop = TRUE`） | [実機] |
+
 ### `$config.dat` / `$machine.dat`
 
 | 事実 | 出典 |
@@ -223,6 +230,10 @@ S/T の概念）以外は KSS 8.7 側を優先する。
 | 入力: 電源準備 `$IN[2001]`、プロセス中 `$IN[2003]`、電流あり `$IN[2004]`、主電流 `$IN[2006]`（溶接機）。**`$IN[400]` AB System Ready / `$IN[407]` AB Wire Available（外部。点弧の前提条件）** | [実機] |
 | **ガスありの入力 `wArcIGasFlowAvailable[1..4]` は全部 `Active FALSE`。** ArcTech はガスが流れているかを見ていない（状態の一覧に `NoGasFlow` / `GasFlow` はあるので、入力を割り付ければ見る仕組みはある）。ガスの信号は出力 `$OUT[2008]`（"Gas flow"）の指令だけ | [実機] `ArcWovIo.dat` / `Arc0Global.dat` |
 | ガスの前流し・後流しの時間は、ArcTech の設定で最大 2.0 秒 | [実機] `ArcWovW1Modes.dat` |
+| **停止点の ARC ON / ARC OFF（オンザフライでない）では、ArcTech はロボットプログラムの中で前流し・後流しを `WAIT SEC` で待つ。** ARC ON: ガスの出力 → `WAIT SEC PreFlowTime` → 点弧。ARC OFF: クレータ → 溶接終了 → `WAIT SEC PostflowTime` → ガスを止める。どちらも `ArcMainNG(#ArcOnAfterMoveStd / #ArcOffAfterMoveStd)` の中で先行実行を止めたあとなので、**待つ間ロボットは止まっていて、プログラムの次の行は待ちが終わってから実行される** | [実機] `TP\ArcTech\ArcState.src`（`#PrepIgnition` / `#GasPostFlow`）/ `ArcMain.src` |
+| 溶接 OFF（コールド）のときは、前流し・開始時間・クレータ時間・後流しを待たない（`gArcWaitWhenCold = FALSE`） | [実機] `ArcUser\UserArcCustom.src` / `ArcState.src` |
+| 移動しながら前流しを始める機能（`Strike.PurgeTime`、TRIGGER の `#GasPreflow`）がある。`PurgeTime 0.0` なら働かない | [実機] `ArcMain.src` |
+| ウェルドモード `"WAAM3D CwMIG"` は `StrikeParamDisable FALSE`。TRUE のモードでは点弧の条件が溶接の条件で置き換わり、`PreFlowTime` が 0 になる（`ArcCopyWeldToStrike`） | [実機] `ArcWovW1Modes.dat` / `ArcMain.src` |
 | 溶接機（iWave）は、ガスが流れないと止まる | ユーザー確認 |
 | Channel の出力先: Ch2 → `$OUT[2064..2079]`、Ch3 → `$OUT[2080..2095]`、Ch4 → `$OUT[480..495]`、Ch5 → `$OUT[2096..2111]`、Ch6 → `$OUT[2112..2120]` | [実機] |
 
