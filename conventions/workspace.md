@@ -94,7 +94,7 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
 
 **R14. 2台の開発環境を揃える。VS Code は「設定の同期」で同期し、ソフト本体は `Library/tools/pc-setup/winget-packages.json` で同じものを入れる。**
 - VS Code: 2台とも GitHub アカウント（`yy144102-cyber`）で「設定の同期」をオンにする。拡張機能・設定・キー割り当ても同期する
-- ソフト本体（VS Code、git、Python、PowerShell 7、Claude デスクトップアプリ）: `winget import` で入れる（§4）。Python だけ版を 3.11.9 に固定する。ほかは自動で更新される
+- ソフト本体（VS Code、git、Python、PowerShell 7、Claude デスクトップアプリ）: `winget import` で入れる（§4）。**Python も含めて、それぞれのPCで最新の版にしていく**（2026-10-20 改訂。以前は Python だけ 3.11.9 に固定していた）。Python は winget の ID が版ごとに分かれている（`Python.Python.3.14` など）ので、新しい版が出たら一覧の ID を上げる
 - Python の追加パッケージは使っていない。krlcheck と相関式の検査は、標準の機能だけで動く（2026-10-17、import の行で確認）
 - 道具を足したら一覧に足して push し、もう1台で `winget import` し直す。**ここは手順に頼る。足し忘れても機械では気づけない**
 - 版は `Library/tools/pc-setup/check-env.ps1` で測り、下の表に書く
@@ -105,15 +105,15 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
 
 `pwsh -File Library/tools/pc-setup/check-env.ps1` の結果。
 
-| 項目 | このPC（2026-10-17） | 出張PC |
+| 項目 | このPC（2026-10-17） | 出張PC（ISC021B、2026-10-20） |
 |---|---|---|
-| OS | Windows 11 Pro 10.0.26200 | 未測定 |
-| PowerShell | 7.6.5（5.1 も併存） | 未測定 |
-| git | 2.53.0.windows.1 | 未測定 |
-| Python | 3.11.9 | 未測定 |
-| VS Code | 1.140.0（拡張機能 25） | 未測定 |
-| winget | 1.29.380 | 未測定 |
-| .NET SDK | 9.0.317 / 10.0.102 | 未測定（WAAM では使わない） |
+| OS | Windows 11 Pro 10.0.26200 | Windows 11 Home 10.0.26200 |
+| PowerShell | 7.6.5（5.1 も併存） | 7.6.7（MSIX。5.1 も併存） |
+| git | 2.53.0.windows.1 | 2.55.0.windows.5 |
+| Python | 3.11.9 | 3.14.7 |
+| VS Code | 1.140.0（拡張機能 25） | 1.142.0（拡張機能 27） |
+| winget | 1.29.380 | 1.29.380 |
+| .NET SDK | 9.0.317 / 10.0.102 | なし（WAAM では使わない） |
 
 ---
 
@@ -134,6 +134,10 @@ WAAM で作るロケットの部品は `WAAM`。分類のフォルダは、最�
    ```
    winget import -i Library/tools/pc-setup/winget-packages.json --accept-package-agreements --accept-source-agreements
    ```
+
+   **Python は、winget で入れても PATH に入らないことがある**（2026-10-20、出張PC）。そのままだと `python` / `python3` が Windows の「アプリ インストーラー」の入口（中身の無いスタブ）に当たり、krlcheck のタスクも Library のコミット前の検査も動かない。新しい端末で `python --version` が通らないときは:
+   - ユーザーの環境変数 PATH に、Python のフォルダ（`%LOCALAPPDATA%\Programs\Python\Python3xx`）とその `Scripts` を、WindowsApps より前に足す
+   - 設定 → アプリ → アプリの詳細設定 → アプリ実行エイリアスで、「アプリ インストーラー」の `python.exe` / `python3.exe` をオフにする（「Python」という名前の行は無い）。コミット前の検査は `python3` を先に探すので、オフにしないとスタブに当たって止まる
 
 4. VS Code で「設定の同期」をオンにする（R14）。左下の歯車 →「設定の同期をオンにする」→ すべての項目を選んだまま、GitHub（`yy144102-cyber`）でサインインする
 5. ワークスペース直下に `CLAUDE.md` を作り、次の3行を書く

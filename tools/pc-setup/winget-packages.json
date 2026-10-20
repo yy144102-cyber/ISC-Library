@@ -11,8 +11,7 @@
           "PackageIdentifier": "Git.Git"
         },
         {
-          "PackageIdentifier": "Python.Python.3.11",
-          "Version": "3.11.9"
+          "PackageIdentifier": "Python.Python.3.14"
         },
         {
           "PackageIdentifier": "Microsoft.PowerShell"
